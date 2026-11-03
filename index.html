@@ -41,7 +41,7 @@ body { margin: 0; background: var(--shell-bg); }
   --mile: #E39A4E; --today: #F07A70; color-scheme: dark }
 #app-ck * { box-sizing: border-box; }
 #app-ck { background: var(--bg); color: var(--fg); font-family: var(--font-ui); font-size: 14px; line-height: 1.45; }
-#app-ck .wrap { max-width: 1240px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+#app-ck .wrap { max-width: 1880px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 #app-ck header.top { background: var(--surface); border-bottom: 1px solid var(--line); }
 #app-ck header.top .wrap { padding-block: 18px 0; display: grid; gap: 14px; }
 #app-ck .brand { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: flex-end; justify-content: space-between; }
@@ -239,8 +239,8 @@ body { margin: 0; background: var(--shell-bg); }
 #app-ot table.edit input:focus, #app-ot table.edit select:focus { border-color: var(--accent); background: var(--surface); }
 #app-ot table.edit input[type="number"] { text-align: right; }
 #app-ot table.edit input[type="checkbox"] { width: auto; }
-#app-ot table.edit select { min-width: 112px; }
-#app-ot table.edit input[type="number"] { min-width: 72px; }
+#app-ot table.edit select { min-width: 108px; }
+#app-ot table.edit input[type="number"] { min-width: 56px; }
 #app-ot select[data-v="OK"], #app-ot select[data-v="Fait"], #app-ot select[data-v="Testée"], #app-ot select[data-v="Recetté"], #app-ot select[data-v="Oui"] { background: var(--ok-soft); color: var(--ok); font-weight: 600; }
 #app-ot select[data-v="KO"], #app-ot select[data-v="Bloquant"], #app-ot select[data-v="Problème"], #app-ot select[data-v="Non"] { background: var(--crit-soft); color: var(--crit); font-weight: 600; }
 #app-ot select[data-v="Réserve"], #app-ot select[data-v="En cours"], #app-ot select[data-v="Passerelle"], #app-ot select[data-v="Spécifié"] { background: var(--warn-soft); color: var(--warn); font-weight: 600; }
@@ -299,10 +299,10 @@ body { margin: 0; background: var(--shell-bg); }
 </style>
 <style>
 #app-ck { min-height: 0; }
-#app-ot .layout { max-width: 1240px; margin: 0 auto; padding: 0 max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px)); grid-template-columns: 220px minmax(0, 1fr); gap: 28px; min-height: 0; }
+#app-ot .layout { max-width: 1880px; margin: 0 auto; padding: 0 max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px)); grid-template-columns: 200px minmax(0, 1fr); gap: 24px; min-height: 0; }
 #app-ot nav.side { background: transparent; border-right: 0; padding: 24px 0 40px; position: sticky; top: 0; align-self: start; max-height: 100vh; overflow-y: auto; }
 #app-ot main { padding: 24px 0 48px; }
-#app-ot .navsel { max-width: 1240px; margin: 0 auto; }
+#app-ot .navsel { max-width: 1880px; margin: 0 auto; }
 @media (max-width: 820px) { #app-ot .layout { grid-template-columns: minmax(0, 1fr); } #app-ot nav.side { display: none; } #app-ot main { padding-top: 16px; } }
 </style>
 <script>/* Classeur partagé entre le cockpit et la boîte à outils : un seul classeur ouvert à la fois, gardé dans le navigateur (IndexedDB). */
@@ -1842,8 +1842,8 @@ DEFAULTS.pilotage = {"source":"Pilotage-PRINCE2-PACS-Editeur-Exemple.xlsx","situ
     }
   };
 
-  var MOD_COLS = [{ k: "site", l: "Site", w: 120 }, { k: "type", l: "Type", w: 54 }, { k: "constructeur", l: "Constructeur", w: 120 }, { k: "modele", l: "Modèle", w: 190 }, { k: "annee", l: "Année", t: "num", w: 64 }, { k: "aet", l: "AE Title", w: 110 }, { k: "ip", l: "Adresse IP", w: 110 }, { k: "port", l: "Port", t: "num", w: 64 },
-    { k: "worklist", l: "Worklist", t: "sel", o: STAT.wl }, { k: "statut", l: "Statut", t: "sel", o: STAT.modal }, { k: "test", l: "Testée le", t: "date" }, { k: "commentaire", l: "Commentaire", w: 200 }];
+  var MOD_COLS = [{ k: "site", l: "Site", w: 100 }, { k: "type", l: "Type", w: 50 }, { k: "constructeur", l: "Constructeur", w: 100 }, { k: "modele", l: "Modèle", w: 150 }, { k: "annee", l: "Année", t: "num", w: 56 }, { k: "aet", l: "AE Title", w: 96 }, { k: "ip", l: "Adresse IP", w: 104 }, { k: "port", l: "Port", t: "num", w: 56 },
+    { k: "worklist", l: "Worklist", t: "sel", o: STAT.wl }, { k: "statut", l: "Statut", t: "sel", o: STAT.modal }, { k: "test", l: "Testée le", t: "date" }, { k: "commentaire", l: "Commentaire", w: 160 }];
   V.modalites = {
     main: function () {
       return '<div id="sum"></div><div class="panel"><h3>Inventaire <small>types DICOM : CT scanner, MR IRM, DX radiologie, US échographie, MG mammographie, XA angiographie, NM médecine nucléaire</small></h3>' + table("modalites.rows", MOD_COLS, { num: true }) +
@@ -1914,7 +1914,7 @@ DEFAULTS.pilotage = {"source":"Pilotage-PRINCE2-PACS-Editeur-Exemple.xlsx","situ
 
   V.recette = {
     main: function () {
-      return '<div id="sum"></div><div class="panel"><h3>Scénarios</h3>' + table("recette.rows", [{ k: "domaine", l: "Domaine", w: 120 }, { k: "profil", l: "Profil", w: 110 }, { k: "intitule", l: "Scénario", w: 280 }, { k: "attendu", l: "Résultat attendu", w: 240 }, { k: "bloquant", l: "Bloquant", t: "chk" }, { k: "statut", l: "Statut", t: "sel", o: STAT.recette }, { k: "testeur", l: "Testeur", w: 120 }, { k: "commentaire", l: "Commentaire", w: 200 }], { num: true }) + "</div>";
+      return '<div id="sum"></div><div class="panel"><h3>Scénarios</h3>' + table("recette.rows", [{ k: "domaine", l: "Domaine", w: 100 }, { k: "profil", l: "Profil", w: 96 }, { k: "intitule", l: "Scénario", w: 240 }, { k: "attendu", l: "Résultat attendu", w: 200 }, { k: "bloquant", l: "Bloquant", t: "chk" }, { k: "statut", l: "Statut", t: "sel", o: STAT.recette }, { k: "testeur", l: "Testeur", w: 110 }, { k: "commentaire", l: "Commentaire", w: 170 }], { num: true }) + "</div>";
     },
     sum: function () {
       var s = recetteStats(), rows = S.recette.rows, res = rows.filter(function (r) { return r.statut === "Réserve" || r.statut === "KO"; });
@@ -1930,7 +1930,7 @@ DEFAULTS.pilotage = {"source":"Pilotage-PRINCE2-PACS-Editeur-Exemple.xlsx","situ
     main: function () {
       var b = S.bascule;
       return '<div id="sum"></div>' +
-        (ui.jourJ ? "" : '<div class="panel"><h3>Étapes <small>triées par heure prévue dans le mode jour J</small></h3>' + table("bascule.etapes", [{ k: "phase", l: "Phase", t: "sel", o: ["Préparation", "Gel", "Bascule", "Vérification", "Retour arrière", "Stabilisation"] }, { k: "prevu", l: "Prévu", t: "dt" }, { k: "duree", l: "Durée (min)", t: "num", w: 70 }, { k: "action", l: "Action", w: 280 }, { k: "responsable", l: "Responsable", w: 150 }, { k: "controle", l: "Point de contrôle", w: 220 }, { k: "statut", l: "Statut", t: "sel", o: STAT.etape }, { k: "reel", l: "Réalisé", t: "dt" }]) + "</div>") +
+        (ui.jourJ ? "" : '<div class="panel"><h3>Étapes <small>triées par heure prévue dans le mode jour J</small></h3>' + table("bascule.etapes", [{ k: "phase", l: "Phase", t: "sel", o: ["Préparation", "Gel", "Bascule", "Vérification", "Retour arrière", "Stabilisation"] }, { k: "prevu", l: "Prévu", t: "dt" }, { k: "duree", l: "Durée (min)", t: "num", w: 70 }, { k: "action", l: "Action", w: 230 }, { k: "responsable", l: "Responsable", w: 130 }, { k: "controle", l: "Point de contrôle", w: 180 }, { k: "statut", l: "Statut", t: "sel", o: STAT.etape }, { k: "reel", l: "Réalisé", t: "dt" }]) + "</div>") +
         '<div class="grid g2"><div class="panel"><h3>Critères Go / No-Go</h3>' + table("bascule.criteres", [{ k: "critere", l: "Critère", w: 300 }, { k: "ok", l: "Rempli", t: "sel", o: ["Non", "Oui"] }]) + "</div>" +
         '<div class="panel"><h3>Plan de retour arrière</h3><textarea rows="7" data-p="bascule.retour" aria-label="Plan de retour arrière">' + esc(b.retour) + "</textarea></div></div>";
     },
