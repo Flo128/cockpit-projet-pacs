@@ -1,16 +1,16 @@
-# Cockpit projet PACS
+# Pilotage PACS
 
-Cockpit de pilotage PRINCE2 d'un déploiement de PACS, vu du côté de l'éditeur (projet fictif : CH de Saint-Aubert).
+Une seule page pour piloter un déploiement de PACS côté éditeur (projet fictif : CH de Saint-Aubert) : le **cockpit** PRINCE2 et la **boîte à outils** (`#outils`), qui partagent le même classeur Excel du projet. Un classeur ouvert dans l'un est ouvert dans l'autre, et il est gardé dans le navigateur au rechargement.
 
 - Vues : synthèse et météo du projet, planning (Gantt), risques, points et décisions, marge et facturation, gouvernance.
 - Présentations plein écran : COPIL et COPROJ (sans données internes, à montrer au client) et revue interne (marge, charge, facturation, risques de l'affaire).
 - Bascule « Vue interne / Vue client » pour l'affichage.
 - Édition client dans `client/` : mêmes vues, mais les données internes (marge, coûts, charge, risques et points internes) sont retirées du fichier de données. C'est la seule version à transmettre à un client.
-- Les données viennent du classeur Excel « Pilotage PRINCE2 PACS, version éditeur » (`data/projet.json`). Le bouton « Mettre à jour depuis Excel » charge un classeur à jour dans le navigateur.
+- Les données viennent du classeur Excel « Pilotage PRINCE2 PACS, version éditeur » (`data/projet.json`). Le bouton « Ouvrir le classeur du projet » charge un classeur dans le navigateur, pour le cockpit et la boîte à outils à la fois.
 
-## Boîte à outils PACS (`outils/`)
+## Boîte à outils PACS (`#outils`)
 
-Une vue « Cette semaine » (planning et actions du classeur, prérequis, formation, bascule, compte rendu, retards) et 13 outils pour un déploiement PACS : stockage (cache) et archivage, estimateur de migration, prérequis client, inventaire des modalités, plan d'adressage DICOM, matrice des flux, cahier de recette, chronogramme de bascule (mode jour J), suivi de migration, plan de formation, guides de démarrage, générateur de compte rendu, simulateur d'avenant. Chaque outil exporte un document Excel ou PDF (client ou interne). Les saisies sont enregistrées dans le navigateur.
+Une vue « Cette semaine » (planning et actions du classeur, prérequis, formation, bascule, compte rendu, retards) et 13 outils pour un déploiement PACS : stockage (cache) et archivage, estimateur de migration, prérequis client, inventaire des modalités, plan d'adressage DICOM, matrice des flux, cahier de recette, chronogramme de bascule (mode jour J), suivi de migration, plan de formation, guides de démarrage, générateur de compte rendu, simulateur d'avenant. Chaque outil exporte un document Excel ou PDF (client ou interne). Les saisies sont enregistrées dans le navigateur, puis dans les onglets OT du classeur avec « Enregistrer dans le classeur ». L'ancienne adresse `outils/` redirige vers `#outils`.
 
 ## Un classeur Excel par projet (`classeurs/`)
 

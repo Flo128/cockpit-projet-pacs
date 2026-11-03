@@ -648,7 +648,7 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
       kpiBlock(m, x) +
       '<div class="grid g2"><section class="panel"><h2>Avancement par séquence</h2><div class="legend" style="margin:-4px 0 6px"><span style="--c:var(--accent)">Réalisé</span><span style="--c:var(--plan)">Prévu</span></div>' + seqRows(m) + "</section>" +
       '<section class="panel"><h2>Prochains jalons</h2>' + jalonsList(x.jalons, 6) + '<h2 style="margin-top:18px">Risques à surveiller <small>' + x.risquesOuverts.length + " ouverts</small></h2>" + riskTable(x.risquesOuverts.slice(0, 3), true) + "</section></div>" +
-      (m.outils ? '<section class="panel"><h2><span>Préparation technique <small>boîte à outils du projet</small></span>' + (OUTILS_URL && !m.clientOnly ? '<a class="btnlink" href="' + esc(OUTILS_URL) + '" target="_blank" rel="noopener">Ouvrir la boîte à outils</a>' : "") + "</h2>" + outilsKpis(m.outils, x.client) + "</section>" : "");
+      (m.outils ? '<section class="panel"><h2><span>Préparation technique <small>boîte à outils du projet</small></span>' + (OUTILS_URL && !m.clientOnly ? '<a class="btnlink" href="' + esc(OUTILS_URL) + '"' + (OUTILS_URL.charAt(0) === "#" ? "" : ' target="_blank" rel="noopener"') + ">Ouvrir la boîte à outils</a>" : "") + "</h2>" + outilsKpis(m.outils, x.client) + "</section>" : "");
   }
   function viewPlanning(m) {
     var opts = ['<button type="button" data-seq="" aria-pressed="' + (state.seqFiltre === "") + '">Tout le projet</button>'].concat(m.sequences.filter(function (s) { return s.nom; }).map(function (s) {
@@ -730,7 +730,7 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
         (m.recits.prochainComite.date ? '<p style="font-size:22px;margin:0"><strong>Prochain comité de pilotage :</strong> ' + fd(m.recits.prochainComite.date) + " · " + esc(m.recits.prochainComite.objet) + "</p>" : ""))
     ];
   }
-  var OUTILS_URL = "outils/";
+  var OUTILS_URL = "";
   function outilsKpis(o, client, big) {
     if (!o) return "";
     var r = function (a, b) { return b ? a + " / " + b : "–"; }, pc = function (a, b) { return b ? Math.round(a / b * 100) + "\u00a0%" : "–"; };
@@ -817,8 +817,8 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
     var body = { synthese: viewSynthese, planning: viewPlanning, risques: viewRisques, points: viewPoints, finances: viewFinances, gouvernance: viewGouvernance }[state.view](m, x);
     var b = state.banner;
     var banner = b ? '<div class="banner' + (b.err ? " err" : "") + '" role="status"><span>' + esc(b.text) + '</span><span class="actions">' + (b.actions || []).map(function (a) { return '<button type="button" class="' + (a.primary ? "primary" : "") + '" data-banner="' + a.id + '">' + esc(a.label) + "</button>"; }).join("") + "</span></div>" : "";
-    app.innerHTML = '<header class="top"><div class="wrap"><div class="brand"><div><div class="eyebrow">Pilotage PRINCE2 · ' + esc(m.meta.client.split("|")[0].trim()) + '</div><h1>' + esc(m.meta.projet) + '</h1><div class="sub">Situation au ' + fd(x.sit) + " · chef de projet " + esc(m.meta.chefDeProjet) + " · fin contractuelle " + fd(m.meta.finContrat) + (state.source === "local" ? ' · <strong>classeur importé (vue personnelle)</strong>' : "") + "</div></div>" +
-      '<div class="actions">' + (OUTILS_URL && !locked ? '<a class="btnlink" href="' + esc(OUTILS_URL) + '" target="_blank" rel="noopener">Boîte à outils</a>' : "") + '<button type="button" data-import="1">Mettre à jour depuis Excel</button></div></div>' +
+    app.innerHTML = '<header class="top"><div class="wrap"><div class="brand"><div><div class="eyebrow">Pilotage PRINCE2 · ' + esc(m.meta.client.split("|")[0].trim()) + '</div><h1>' + esc(m.meta.projet) + '</h1><div class="sub">Situation au ' + fd(x.sit) + " · chef de projet " + esc(m.meta.chefDeProjet) + " · fin contractuelle " + fd(m.meta.finContrat) + (state.wbName ? ' · <strong>classeur « ' + esc(state.wbName) + " »</strong>" : state.source === "local" ? ' · <strong>classeur importé (vue personnelle)</strong>' : "") + "</div></div>" +
+      '<div class="actions">' + (OUTILS_URL && !locked ? '<a class="btnlink" href="' + esc(OUTILS_URL) + '"' + (OUTILS_URL.charAt(0) === "#" ? "" : ' target="_blank" rel="noopener"') + ">Boîte à outils</a>" : "") + (state.wbName && !locked ? '<button type="button" data-closewb="1">Fermer le classeur</button>' : "") + '<button type="button" data-import="1">' + (locked ? "Mettre à jour depuis Excel" : "Ouvrir le classeur du projet") + '</button></div></div>' +
       '<div class="filters audience" role="group" aria-label="Public et présentations">' +
       (locked ? "" : '<span class="seg"><button type="button" data-aud="interne" aria-pressed="' + (aud === "interne") + '">Vue interne</button><button type="button" data-aud="client" aria-pressed="' + (aud === "client") + '">Vue client</button></span>') +
       (x.client ? '<button type="button" class="primary" data-present="copil">Présenter le COPIL</button><button type="button" class="primary" data-present="coproj">Présenter le COPROJ</button>'
@@ -832,6 +832,7 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
   /* ---------- navigation ---------- */
   function fromHash() {
     var h = (location.hash || "").replace("#", "");
+    if (/^outils/.test(h)) return;
     if (h === "interne" && state.model && state.model.clientOnly) h = "copil";
     if (h === "copil" || h === "coproj" || h === "interne") { if (state.deck !== h) { state.deck = h; state.slide = 0; } }
     else { state.deck = null; if (VIEWS.some(function (v) { return v[0] === h; })) state.view = h; }
@@ -862,6 +863,11 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
     if (t.dataset.rf) { state.filtreRisques = t.dataset.rf; render(); return; }
     if (t.dataset.pf) { state.filtrePoints = t.dataset.pf; render(); return; }
     if (t.dataset.import) { document.getElementById("xlsx-input").click(); return; }
+    if (t.dataset.closewb) {
+      var cur = window.PACS && window.PACS.current();
+      if (cur && cur.dirty) { state.banner = { text: "La boîte à outils a des modifications pas encore enregistrées dans « " + cur.name + " ». Fermer quand même ?", actions: [{ id: "closewb", label: "Fermer sans enregistrer", primary: true }, { id: "dismiss", label: "Annuler" }] }; render(); return; }
+      if (window.PACS) window.PACS.close("cockpit"); closeWorkbook(); return;
+    }
     if (t.dataset.banner) { onBanner(t.dataset.banner); return; }
   });
   document.addEventListener("fullscreenchange", function () { setTimeout(fitSlide, 50); });
@@ -896,49 +902,45 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
       document.head.appendChild(s);
     });
   }
+  function loadBuffer(buf, name, from) {
+    return loadSheetJS().then(function () {
+      var model = parseWorkbook(XLSX.read(buf, { type: "array" }));
+      if (state.model && state.model.clientOnly) model = toClient(model);
+      if (!model.meta.situation) throw new Error("La date de situation est vide dans l'onglet Accueil. Ouvrez le classeur dans Excel, enregistrez-le, puis réessayez.");
+      state.model = model; state.source = "local"; state.wbName = name;
+      state.banner = from === "outils" ? null : { text: "Classeur « " + name + " » ouvert : situation au " + fd(model.meta.situation) + "." + (window.PACS ? " La boîte à outils utilise le même classeur." : ""), actions: [{ id: "dismiss", label: "Fermer" }] };
+      render();
+    });
+  }
+  function closeWorkbook() {
+    state.wbName = null; state.banner = null;
+    fetch("data/projet.json", { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (m) { state.model = m; state.source = null; render(); }, function () { render(); });
+  }
   document.getElementById("xlsx-input").addEventListener("change", function (e) {
     var f = e.target.files && e.target.files[0]; e.target.value = "";
     if (!f) return;
     state.banner = { text: "Lecture de « " + f.name + " »…" }; render();
-    loadSheetJS().then(function () { return f.arrayBuffer(); }).then(function (buf) {
-      var model = parseWorkbook(XLSX.read(buf, { type: "array" }));
-      if (state.model && state.model.clientOnly) model = toClient(model);
-      if (!model.meta.situation) throw new Error("La date de situation est vide dans l'onglet Accueil. Ouvrez le classeur dans Excel, enregistrez-le, puis réessayez.");
-      pending = model; state.model = model; state.source = "local";
-      var canShare = !!(window.claude && window.claude.use);
-      state.banner = canShare
-        ? { text: "Classeur chargé : situation au " + fd(model.meta.situation) + ". Vous êtes seul à voir ces données pour l'instant.",
-            actions: [{ id: "publish", label: "Publier pour tous les lecteurs", primary: true }, { id: "dismiss", label: "Garder pour moi" }] }
-        : { text: "Classeur chargé : situation au " + fd(model.meta.situation) + ". Ces données restent dans votre navigateur et disparaissent au rechargement de la page.",
-            actions: [{ id: "dismiss", label: "Fermer" }] };
-      render();
-    }).catch(function (err) { state.banner = { err: true, text: err.message || String(err), actions: [{ id: "dismiss", label: "Fermer" }] }; render(); });
+    var bytes;
+    f.arrayBuffer().then(function (b) { bytes = new Uint8Array(b); return loadBuffer(bytes, f.name, "cockpit"); })
+      .then(function () { if (window.PACS && !(state.model && state.model.clientOnly)) window.PACS.open(bytes, f.name, "cockpit"); })
+      .catch(function (err) { state.banner = { err: true, text: err.message || String(err), actions: [{ id: "dismiss", label: "Fermer" }] }; render(); });
   });
   function onBanner(id) {
     if (id === "dismiss") { state.banner = null; render(); return; }
-    if (id === "publish" && pending) {
-      state.banner = { text: "Publication en cours…" }; render();
-      var cl = window.claude && window.claude.use ? window.claude.use("artifact") : Promise.resolve(null);
-      cl.then(function (art) {
-        if (!art) throw { code: "not_granted" };
-        return art.publish({ "data/projet.json": { content: JSON.stringify(pending), contentType: "application/json" } });
-      }).then(function () {
-        state.source = "publie"; pending = null;
-        state.banner = { text: "Publié : tous les lecteurs voient maintenant la situation au " + fd(state.model.meta.situation) + ".", actions: [{ id: "dismiss", label: "Fermer" }] }; render();
-      }).catch(function (err) {
-        var c = err && err.code, msg;
-        if (c === "conflict") msg = "Une version plus récente vient d'être publiée par quelqu'un d'autre ; la page se recharge avec elle.";
-        else if (c === "not_writer" || c === "not_granted" || c === "capability_disabled" || c === "consent_required" || c === "not_declared") msg = "Cette page est en lecture seule pour vous : les données importées restent visibles dans votre navigateur uniquement.";
-        else if (c === "too_large") msg = "Le classeur produit trop de données pour être publié.";
-        else msg = "La publication a échoué. Réessayez dans un instant.";
-        state.banner = { err: c !== "conflict", text: msg, actions: [{ id: "dismiss", label: "Fermer" }] }; render();
-      });
-    }
+    if (id === "closewb") { if (window.PACS) window.PACS.close("cockpit"); closeWorkbook(); }
   }
 
   /* ---------- démarrage ---------- */
   fetch("data/projet.json", { cache: "no-store" }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (m) {
     state.model = m; fromHash();
+    if (window.PACS && !m.clientOnly) {
+      window.PACS.on(function (ev) {
+        if (ev.from === "cockpit") return;
+        if (ev.type === "open") loadBuffer(ev.buf, ev.name, "outils").catch(function () {});
+        if (ev.type === "close") closeWorkbook();
+      });
+      window.PACS.restore().then(function (rec) { if (rec && !state.wbName) loadBuffer(rec.buf, rec.name, "outils").catch(function () {}); });
+    }
   }).catch(function () {
     app.innerHTML = '<div class="wrap" style="padding-block:40px"><div class="banner err"><span>Les données du projet n\'ont pas pu être chargées. Rechargez la page, ou chargez un classeur avec le bouton ci-dessous.</span><button type="button" data-import="1">Charger un classeur Excel</button></div></div>';
   });
