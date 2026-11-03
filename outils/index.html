@@ -42,6 +42,7 @@ button.primary { background: var(--accent); color: var(--accent-ink); border-col
 button.small { padding: 3px 8px; font-size: 12px; }
 button.ghost { border-color: transparent; background: transparent; color: var(--muted); }
 button.ghost:hover { color: var(--crit); }
+button:disabled { opacity: .6; cursor: progress; }
 .layout { display: grid; grid-template-columns: 250px minmax(0, 1fr); min-height: calc(100vh - 70px); }
 nav.side { border-right: 1px solid var(--line); background: var(--surface); padding: 16px 10px 40px max(10px, env(safe-area-inset-left, 0px)); }
 nav.side .grp { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 18px 10px 6px; }
@@ -568,7 +569,7 @@ if (typeof module !== "undefined") module.exports = DEFAULTS;
     var cum = S.suivi.jours.reduce(function (a, j) { return a + N(j.to); }, 0);
     var fx = S.flux.rows.filter(function (f) { return f.statut === "Recetté"; }).length;
     var card = function (id, m, d) { var t = TOOLS.filter(function (x) { return x.id === id; })[0]; return '<a class="card" href="#' + id + '"><span class="eyebrow">' + esc(t.g) + '</span><span class="t">' + esc(t.l) + '</span><span class="m">' + m + '</span><span class="d">' + esc(d) + "</span></a>"; };
-    return '<div class="toolhead"><h2>Boîte à outils du projet PACS</h2><p>' + esc(S.meta.projet) + ". Les données sont un exemple fictif : remplace-les par celles de ton projet. Tout ce que tu saisis est enregistré dans ce navigateur." + "</p></div>" +
+    return '<div class="toolhead"><h2>Boîte à outils du projet PACS</h2><p>' + esc(S.meta.projet) + ". Les données sont un exemple fictif : remplace-les par celles de ton projet. Tout ce que tu saisis est enregistré dans ce navigateur." + '</p><div style="margin-top:10px">' + exportButtons("accueil") + "</div></div>" +
       '<div class="cards">' +
       card("stockage", nf(st.a10 ? st.a10.total : 0) + " To", "Capacité à prévoir à " + S.stockage.annees + " ans") +
       card("migration", mg ? fd(mg.fin) : "–", "Fin estimée de la migration (" + nf(S.migration.volume) + " To)") +
@@ -680,6 +681,7 @@ if (typeof module !== "undefined") module.exports = DEFAULTS;
   };
 
   V.flux = {
+    svg: function () { var m = V.flux.sum().match(/<svg[\s\S]*<\/svg>/); return m ? m[0] : ""; },
     main: function () {
       return '<div class="panel"><h3>Systèmes</h3><div class="params">' + '<label>Systèmes du schéma, séparés par des virgules<input type="text" data-p="flux.systemesTxt" value="' + esc(S.flux.systemes.join(", ")) + '"></label></div></div>' +
         '<div class="panel"><h3>Flux</h3>' + table("flux.rows", [{ k: "source", l: "Source", t: "sel", o: S.flux.systemes }, { k: "cible", l: "Cible", t: "sel", o: S.flux.systemes }, { k: "protocole", l: "Protocole", t: "sel", o: PROTOS }, { k: "description", l: "Description", w: 280 }, { k: "statut", l: "Statut", t: "sel", o: STAT.flux }], { num: true }) + '</div><div id="sum"></div>';
@@ -849,6 +851,297 @@ if (typeof module !== "undefined") module.exports = DEFAULTS;
     }
   };
 
+  /* ================= exports Excel et PDF ================= */
+  var LIGHT = { bg: "#F3F5F8", surface: "#FFFFFF", sunk: "#EAEEF3", line: "#D9DFE7", fg: "#15212E", muted: "#5B6878", accent: "#1F5F8B", "accent-soft": "#CFE0EE", plan: "#9FBBD3", ok: "#2F7D53", "ok-soft": "#DCEFE3", warn: "#B8700F", "warn-soft": "#FBEBD2", crit: "#B93A33", "crit-soft": "#F7DCDA", mile: "#C9741B" };
+  var LIBS = {
+    XLSX: "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js",
+    jspdf: "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js",
+    autotable: "https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"
+  };
+  function loadScript(src) {
+    return new Promise(function (ok, ko) {
+      var s = document.createElement("script"); s.src = src; s.onload = ok;
+      s.onerror = function () { ko(new Error("Une bibliothèque d'export n'a pas pu être chargée. Vérifie la connexion internet puis réessaie.")); };
+      document.head.appendChild(s);
+    });
+  }
+  function needXLSX() { return window.XLSX ? Promise.resolve() : loadScript(LIBS.XLSX); }
+  function needPDF() {
+    return (window.jspdf ? Promise.resolve() : loadScript(LIBS.jspdf)).then(function () {
+      var proto = window.jspdf && window.jspdf.jsPDF && window.jspdf.jsPDF.API;
+      return proto && proto.autoTable ? null : loadScript(LIBS.autotable);
+    });
+  }
+  function stamp() { var d = new Date(), z = function (n) { return String(n).padStart(2, "0"); }; return d.getFullYear() + "-" + z(d.getMonth() + 1) + "-" + z(d.getDate()); }
+  function slug(s) { return String(s).normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
+  function saveFile(filename, blob) {
+    if (window.claude && window.claude.use) {
+      return window.claude.use("downloads").then(function (dl) {
+        if (!dl) return anchorSave(filename, blob);
+        return dl.save({ filename: filename, data: blob }).then(function () { return "saved"; });
+      });
+    }
+    return anchorSave(filename, blob);
+  }
+  function anchorSave(filename, blob) {
+    var url = URL.createObjectURL(blob), a = document.createElement("a");
+    a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+    return Promise.resolve("saved");
+  }
+
+  /* --- contenu : chaque outil décrit son document --- */
+  function T(name, cols, rows) { return { name: name, cols: cols, rows: rows }; }
+  function c(h, f, d) { return { h: h, f: f || "text", d: d || 0 }; }
+  var AUD = { client: "Document partageable avec le client", interne: "Document interne à l'éditeur, ne pas diffuser" };
+  var EXP = {
+    stockage: function () {
+      var r = calcStockage(), s = S.stockage;
+      return { title: "Dimensionnement du stockage", aud: "client", kpis: [["Volume produit la 1re année (une copie)", nf(r.annee1, 1) + " To"], ["Capacité à 5 ans", nf(r.a5 ? r.a5.total : 0) + " To"], ["Capacité à " + s.annees + " ans", nf(r.a10 ? r.a10.total : 0) + " To"], ["Volume utile à " + s.annees + " ans", nf(r.a10 ? r.a10.cumul : 0) + " To"]],
+        charts: [barChart(r.years.map(function (y) { return y.total; }), r.years.map(function (y) { return "A" + y.an; }), { label: "Capacité" })], chartNote: "Capacité totale à prévoir par année (To), copies et marge de sécurité incluses.",
+        tables: [T("Hypothèses", [c("Paramètre"), c("Valeur", "num", 2)], [["Ratio de compression sans perte", N(s.compression)], ["Nombre de copies", N(s.copies)], ["Marge de sécurité", N(s.marge)], ["Horizon (années)", N(s.annees)], ["Archives existantes à reprendre (To)", N(s.archives)]].map(function (x, i) { return i === 2 ? [x[0], pct(x[1])] : x; })),
+          T("Activité par modalité", [c("Modalité"), c("Examens par an", "num"), c("Taille moyenne (Mo)", "num"), c("Croissance annuelle", "pct", 1), c("Volume annuel compressé (To)", "num", 1)], s.rows.map(function (x) { return [x.type, N(x.examens), N(x.taille), N(x.croissance), N(x.examens) * N(x.taille) / 1e6 / Math.max(0.1, N(s.compression))]; })),
+          T("Projection", [c("Année"), c("Volume annuel (To)", "num", 1), c("Cumul utile (To)", "num", 1), c("Capacité totale (To)", "num", 0)], r.years.map(function (y) { return ["Année " + y.an, y.annuel, y.cumul, y.total]; }))],
+        texts: [{ h: "Méthode", b: "Volume annuel = examens × taille moyenne × (1 + croissance) ^ année, divisé par le ratio de compression. Capacité = cumul utile, archives reprises comprises, × nombre de copies × (1 + marge de sécurité)." }] };
+    },
+    migration: function () {
+      var m = S.migration, base = simMigration(1), need = debitNecessaire();
+      var sc = m.scenarios.map(function (k) { var r = simMigration(k); return ["Débit × " + nf(k, 1), N(m.debitHeure) * k, r ? fd(r.fin) : "–", r ? r.jours : "", r ? diffDays(r.fin, m.echeance) : ""]; });
+      var cols = ["var(--crit)", "var(--accent)", "var(--ok)"];
+      return { title: "Estimation de la migration des archives", aud: "client", kpis: [["Fin estimée au débit mesuré", base ? fd(base.fin) : "–"], ["Durée calendaire", base ? base.jours + " j" : "–"], ["Marge sur l'échéance (" + fd(m.echeance) + ")", base ? diffDays(base.fin, m.echeance) + " j" : "–"], ["Débit minimal pour tenir l'échéance", nf(need) + " Go/h"]],
+        charts: [lineChart(m.scenarios.map(function (k, i) { var r = simMigration(k); return r ? { c: cols[i], pts: r.pts } : null; }).filter(Boolean), { vline: diffDays(m.debut, m.echeance), vlabel: "Échéance", label: "Migration" })],
+        chartNote: "Volume migré cumulé (To) en fonction des jours écoulés. Rouge : débit divisé par deux ; bleu : débit mesuré ; vert : débit multiplié par 1,5. Trait pointillé : échéance.",
+        tables: [T("Hypothèses", [c("Paramètre"), c("Valeur")], [["Volume à migrer", nf(m.volume) + " To"], ["Débit mesuré (migration à blanc)", nf(m.debitHeure) + " Go/h"], ["Heures par jour de semaine", nf(m.heuresSemaine)], ["Heures par jour de week-end", nf(m.heuresWeekend)], ["Date de début", fd(m.debut)], ["Échéance", fd(m.echeance)], ["Part à reprendre après erreur", pct(m.erreurs)]]),
+          T("Scénarios", [c("Hypothèse"), c("Débit (Go/h)", "num"), c("Fin estimée"), c("Durée (j)", "num"), c("Marge sur l'échéance (j)", "num")], sc)] };
+    },
+    prerequis: function () {
+      var rows = S.prerequis.rows;
+      return { title: "Prérequis du projet", aud: "client", landscape: true, kpis: [["Prérequis remplis", rows.filter(function (r) { return r.statut === "Fait"; }).length + " / " + rows.length], ["Bloquants", String(rows.filter(function (r) { return r.statut === "Bloquant"; }).length)]],
+        tables: [T("Prérequis", [c("Catégorie"), c("Prérequis"), c("Site"), c("À la charge de"), c("Échéance", "date"), c("PV bloqué"), c("Statut")], rows.map(function (r) { return [r.categorie, r.libelle, r.site, r.responsable, r.echeance, r.pv, r.statut]; }))],
+        texts: [{ h: "Rappel", b: "Les prérequis à la charge du client conditionnent la signature des PV. Un prérequis non tenu à son échéance décale le PV qu'il bloque." }] };
+    },
+    modalites: function () {
+      var r = S.modalites.rows, n = function (k, v) { return r.filter(function (x) { return x[k] === v; }).length; };
+      return { title: "Inventaire des modalités", aud: "client", landscape: true, kpis: [["Connectées ou testées", n("statut", "Testée") + n("statut", "Connectée") + " / " + r.length], ["Testées de bout en bout", String(n("statut", "Testée"))], ["En problème", String(n("statut", "Problème"))], ["Sans worklist", String(n("worklist", "Non"))]],
+        tables: [T("Modalités", MOD_COLS.map(function (x) { return c(x.l, x.t === "num" ? (x.k === "annee" || x.k === "port" ? "int" : "num") : x.t === "date" ? "date" : "text"); }), r.map(function (x) { return MOD_COLS.map(function (k) { return x[k.k]; }); }))] };
+    },
+    aet: function () {
+      var p = aetPropose(), a = S.aet, r = S.modalites.rows;
+      return { title: "Plan d'adressage DICOM", aud: "client", landscape: true, kpis: [["Modalités", String(r.length)], ["AE Titles à renommer", String(p.filter(function (x, i) { return x !== r[i].aet; }).length)], ["PACS", (a.pacsAet || "") + " · " + (a.pacsIp || "") + " : " + (a.pacsPort || "")]],
+        tables: [T("Configuration", [c("Site"), c("Modalité"), c("AE Title actuel"), c("AE Title à configurer"), c("Adresse IP"), c("Port", "int"), c("AE Title du PACS"), c("IP du PACS"), c("Port du PACS", "int")], r.map(function (x, i) { return [x.site, x.type + " · " + x.modele, x.aet, p[i], x.ip, x.port, a.pacsAet, a.pacsIp, a.pacsPort]; }))],
+        texts: [{ h: "Convention", b: "AE Title = " + (a.prefixe ? "préfixe « " + a.prefixe + " », puis " : "") + (a.ordre === "site-type" ? "code du site puis type et numéro" : "type et numéro puis code du site") + ", séparés par « " + (a.separateur || "") + " ». 16 caractères au plus, en majuscules. Codes des sites : " + Object.keys(a.sites).map(function (k) { return k + " = " + a.sites[k]; }).join(", ") + "." }] };
+    },
+    flux: function () {
+      return { title: "Matrice des flux d'interopérabilité", aud: "client", landscape: true, charts: [V.flux.svg()],
+        tables: [T("Flux", [c("N°", "int"), c("Source"), c("Cible"), c("Protocole"), c("Description"), c("Statut")], S.flux.rows.map(function (r, i) { return [i + 1, r.source, r.cible, r.protocole, r.description, r.statut]; }))] };
+    },
+    recette: function () {
+      var s = recetteStats(), rows = S.recette.rows, res = rows.filter(function (r) { return r.statut === "Réserve" || r.statut === "KO"; });
+      return { title: "Cahier de recette", aud: "client", landscape: true, kpis: [["Scénarios exécutés", (s.total - s.nt) + " / " + s.total], ["Conformes", String(s.ok)], ["Avec réserve", String(s.res)], ["Non conformes", String(s.ko)], ["PV de VA possible", s.pret ? "Oui" : "Non"]],
+        tables: [T("Scénarios", [c("N°", "int"), c("Domaine"), c("Profil"), c("Scénario"), c("Résultat attendu"), c("Bloquant"), c("Statut"), c("Testeur"), c("Commentaire")], rows.map(function (r, i) { return [i + 1, r.domaine, r.profil, r.intitule, r.attendu, r.bloquant ? "Oui" : "Non", r.statut, r.testeur, r.commentaire]; })),
+          T("Réserves", [c("Scénario"), c("Bloquant"), c("Statut"), c("Commentaire")], res.map(function (r) { return [r.intitule, r.bloquant ? "Oui" : "Non", r.statut, r.commentaire]; }))],
+        texts: [{ h: "Conclusion", b: s.pret ? "Aucun scénario bloquant n'est en échec ou non testé : la vérification d'aptitude peut être prononcée avec les réserves listées." : "Des scénarios bloquants sont en échec ou non testés : la vérification d'aptitude doit être ajournée." }] };
+    },
+    bascule: function () {
+      var b = S.bascule, ok = b.criteres.filter(function (x) { return x.ok === "Oui"; }).length;
+      var et = b.etapes.slice().sort(function (x, y) { return (x.prevu || "") < (y.prevu || "") ? -1 : 1; });
+      return { title: "Chronogramme de bascule", aud: "client", landscape: true, kpis: [["Décision", ok === b.criteres.length ? "GO" : "NO-GO"], ["Critères remplis", ok + " / " + b.criteres.length], ["T0", fdt(b.t0)], ["Étapes réalisées", et.filter(function (e) { return e.statut === "Fait"; }).length + " / " + et.length]],
+        tables: [T("Critères Go - No-Go", [c("Critère"), c("Rempli")], b.criteres.map(function (x) { return [x.critere, x.ok]; })),
+          T("Étapes", [c("Prévu"), c("Phase"), c("Durée (min)", "int"), c("Action"), c("Responsable"), c("Point de contrôle"), c("Statut"), c("Réalisé")], et.map(function (e) { return [fdt(e.prevu), e.phase, N(e.duree), e.action, e.responsable, e.controle, e.statut, e.reel ? fdt(e.reel) : ""]; }))],
+        texts: [{ h: "Plan de retour arrière", b: b.retour }] };
+    },
+    suivi: function () {
+      var s = S.suivi, j = s.jours.slice().filter(function (x) { return x.date; }).sort(function (a, b) { return a.date < b.date ? -1 : 1; }), cum = 0;
+      var rows = j.map(function (x) { cum += N(x.to); return [x.date, N(x.to), cum, cum / Math.max(1, N(s.volume)), N(x.erreurs)]; });
+      var el = document.createElement("div"); el.innerHTML = V.suivi.sum(); var svg = el.querySelector("svg");
+      return { title: "Suivi de la migration", aud: "client", kpis: [["Migrés", nf(cum, 1) + " To sur " + nf(s.volume) + " To"], ["Avancement", pct(cum / Math.max(1, N(s.volume)))], ["Fin prévue", fd(s.fin)]].concat(Array.prototype.slice.call(el.querySelectorAll(".kpi")).slice(3, 4).map(function (k) { return [k.querySelector(".l").textContent, k.querySelector(".v").textContent]; })),
+        charts: svg ? [svg.outerHTML] : [], chartNote: "Trait plein : cumul réalisé puis projection au rythme moyen. Pointillé clair : plan linéaire. Trait rouge : fin prévue.", tables: [T("Relevés quotidiens", [c("Date", "date"), c("To migrés", "num", 2), c("Cumul (To)", "num", 1), c("Avancement", "pct", 1), c("Lots en erreur", "int")], rows)] };
+    },
+    formation: function () {
+      var f = S.formation, st = formationStats();
+      return { title: "Plan de formation", aud: "client", landscape: true, kpis: st.sites.map(function (s) { return [s.site, pct(s.taux) + (s.pret ? " (prêt)" : " (pas prêt)")]; }).concat([["Heures dispensées", nf(st.heures)]]),
+        tables: [T("Taux par profil et par site", [c("Profil")].concat(f.sites.map(function (s) { return c(s, "pct", 0); })), f.profils.map(function (p) { return [p.profil].concat(f.sites.map(function (s) { var x = st.m[p.profil + "|" + s]; return x && x.eff ? Math.min(x.forme, x.eff) / x.eff : ""; })); })),
+          T("Profils et effectifs", [c("Profil"), c("Durée (h)", "num", 1)].concat(f.sites.map(function (s) { return c("Effectif " + s, "int"); })), f.profils.map(function (p) { return [p.profil, N(p.duree)].concat(f.sites.map(function (s, i) { return N((p.effectifs || [])[i]); })); })),
+          T("Sessions", [c("Date", "date"), c("Site"), c("Profil"), c("Formateur"), c("Places", "int"), c("Présents", "int")], f.sessions.map(function (x) { return [x.date, x.site, x.profil, x.formateur, N(x.places), N(x.presents)]; }))],
+        texts: [{ h: "Règle de bascule", b: "Un site ne bascule que si chaque profil atteint " + pct(f.seuil) + " d'utilisateurs formés." }] };
+    },
+    guides: function (all) {
+      var keys = all ? Object.keys(GUIDES) : [ui.guide];
+      return { title: all ? "Guides de démarrage" : "Guide de démarrage : " + ui.guide, aud: "client",
+        tables: all ? keys.map(function (k) { var g = GUIDES[k]; return T(k, [c("Rubrique"), c("Contenu")], [["Objet", g.intro]].concat(g.jour.map(function (x, i) { return ["Étape " + (i + 1), x]; })).concat(g.astuces.map(function (x) { return ["Bon à savoir", x]; }))); }) : [],
+        texts: [].concat.apply([], keys.map(function (k) { var g = GUIDES[k]; return [{ h: k + " : " + g.intro, b: g.jour.map(function (x, i) { return (i + 1) + ". " + x; }).join("\n") }, { h: "Bon à savoir", b: g.astuces.map(function (x) { return "- " + x; }).join("\n") }, { h: "En cas de panne", b: "- Appliquer la procédure de mode dégradé affichée en salle.\n- Ne pas renvoyer plusieurs fois un examen : prévenir le référent PACS.\n\nContacts : référent PACS du service (à compléter) ; " + S.meta.support }]; })),
+        pageBreak: true };
+    },
+    cr: function () {
+      var cr = ui.cr && !ui.cr.loading && !ui.cr.error ? ui.cr : parseCR(S.cr.notes, S.cr.date);
+      var t = function (n, arr, act) { return T(n, act ? [c("Action"), c("Responsable"), c("Échéance", "date")] : [c(n)], arr.map(function (x) { return act ? [x.texte, x.responsable || "", x.echeance || ""] : [x.texte]; })); };
+      return { title: "Compte rendu : " + S.cr.instance + " du " + fd(S.cr.date), aud: S.cr.instance === "Revue interne" ? "interne" : "client",
+        texts: [cr.participants ? { h: "Participants", b: cr.participants } : null, cr.resume ? { h: "Synthèse", b: cr.resume } : null, cr.discussion && cr.discussion.length ? { h: "Points abordés", b: cr.discussion.map(function (x) { return "- " + x; }).join("\n") } : null].filter(Boolean),
+        tables: [t("Décisions", cr.decisions), t("Actions", cr.actions, true), t("Points à inscrire au registre", cr.points), t("Risques à inscrire au registre", cr.risques)].filter(function (x) { return x.rows.length; }),
+        after: cr.prochain ? [{ h: "Prochaine réunion", b: cr.prochain }] : [] };
+    },
+    avenant: function (variant) {
+      var a = S.avenant, k = avenantCalc();
+      if (variant === "client") {
+        var el = document.createElement("div"); el.innerHTML = V.avenant.sum();
+        return { title: "Proposition d'avenant", aud: "client", texts: [{ h: a.intitule, b: el.querySelector("#av-text").textContent }],
+          tables: [T("Contenu de la prestation", [c("Élément"), c("Quantité")], a.profils.filter(function (p) { return N(p.jours); }).map(function (p) { return [p.profil, nf(p.jours) + " jours"]; }).concat(a.achats.map(function (x) { return [x.libelle, "1"]; }))),
+            T("Montant", [c("Libellé"), c("Montant HT", "eur")], [["Montant de l'avenant", k.prix]])], textsFirst: true };
+      }
+      return { title: "Chiffrage interne de l'avenant", aud: "interne", kpis: [["Coût de revient", eur(k.cout)], ["Prix plancher à " + pct(a.margeVisee), eur(k.plancher)], ["Prix catalogue", eur(k.catalogue)], ["Prix proposé", eur(k.prix) + " (marge " + pct(k.marge, 1) + ")"], ["Marge du projet", pct(k.avant, 1) + " → " + pct(k.apres, 1)]],
+        tables: [T("Main-d'œuvre", [c("Profil"), c("Jours", "num", 1), c("Coût / jour", "eur"), c("Vente / jour", "eur"), c("Coût total", "eur"), c("Vente totale", "eur")], a.profils.map(function (p) { return [p.profil, N(p.jours), N(p.cout), N(p.vente), N(p.jours) * N(p.cout), N(p.jours) * N(p.vente)]; })),
+          T("Achats et licences", [c("Libellé"), c("Coût", "eur"), c("Vente", "eur")], a.achats.map(function (x) { return [x.libelle, N(x.cout), N(x.vente)]; })),
+          T("Synthèse", [c("Élément"), c("Montant", "eur")], [["Coût de revient", k.cout], ["Prix plancher", k.plancher], ["Prix catalogue", k.catalogue], ["Prix proposé", k.prix], ["CA du projet après avenant", N(a.caProjet) + k.prix], ["Coût du projet après avenant", N(a.coutProjet) + k.cout]])],
+        texts: [{ h: "Objet", b: a.intitule + ". Impact sur le délai : " + nf(a.delaiJours) + " jours." }] };
+    }
+  };
+  var EXPORT_ORDER = ["stockage", "migration", "prerequis", "modalites", "aet", "flux", "recette", "bascule", "suivi", "formation", "guides", "cr", "avenant"];
+
+  /* --- format d'une valeur selon sa colonne --- */
+  function fmtCell(v, col) {
+    if (v === "" || v == null) return "";
+    if (col.f === "date") return /^\d{4}-\d{2}-\d{2}/.test(String(v)) ? fd(String(v)) : String(v);
+    if (typeof v !== "number") return String(v);
+    if (col.f === "pct") return pct(v, col.d);
+    if (col.f === "eur") return eur(v);
+    if (col.f === "int") return String(Math.round(v));
+    if (col.f === "num") return nf(v, col.d);
+    return String(v);
+  }
+  function clean(s) {
+    return String(s == null ? "" : s).replace(/[  ]/g, " ").replace(/→/g, "->").replace(/←/g, "<-").replace(/↔/g, "<->").replace(/≥/g, ">=").replace(/≤/g, "<=")
+      .replace(/×/g, "x").replace(/✕/g, "x").replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/◆/g, "*");
+  }
+
+  /* --- Excel --- */
+  function buildXlsx(specs, filename) {
+    var XL = window.XLSX, wb = XL.utils.book_new(), used = {};
+    function sheetName(n) { var b = clean(n).replace(/[\[\]\*\?\/\\:]/g, " ").slice(0, 31).trim() || "Feuille", s = b, i = 2; while (used[s]) { s = b.slice(0, 28) + " " + i++; } used[s] = 1; return s; }
+    function addSheet(name, aoa, cols, headRow) {
+      var ws = XL.utils.aoa_to_sheet(aoa);
+      ws["!cols"] = (aoa.reduce(function (w, r) { r.forEach(function (v, i) { var l = String(v == null ? "" : v).length; w[i] = Math.min(60, Math.max(w[i] || 8, l + 2)); }); return w; }, [])).map(function (w) { return { wch: w }; });
+      if (cols) for (var r = headRow + 1; r < aoa.length; r++) cols.forEach(function (col, ci) {
+        var cell = ws[XL.utils.encode_cell({ r: r, c: ci })]; if (!cell || typeof cell.v !== "number") return;
+        cell.z = col.f === "pct" ? (col.d ? "0.0%" : "0%") : col.f === "eur" ? '#,##0 "€"' : col.f === "int" ? "0" : col.f === "num" ? (col.d ? "#,##0." + "0".repeat(col.d) : "#,##0") : cell.z;
+      });
+      XL.utils.book_append_sheet(wb, ws, sheetName(name));
+    }
+    var sum = [[clean(specs.length > 1 ? "Dossier du projet PACS" : specs[0].title)], [clean(S.meta.projet)], [clean(S.meta.client)], ["Généré le " + fd(stamp()) + " par " + clean(S.meta.chefDeProjet)], []];
+    specs.forEach(function (sp) {
+      sum.push([clean(sp.title), clean(AUD[sp.aud])]);
+      (sp.kpis || []).forEach(function (k) { sum.push(["  " + clean(k[0]), clean(k[1])]); });
+      (sp.texts || []).concat(sp.after || []).forEach(function (t) { sum.push(["  " + clean(t.h), clean(t.b)]); });
+      sum.push([]);
+    });
+    addSheet("Synthèse", sum);
+    specs.forEach(function (sp) {
+      (sp.tables || []).forEach(function (t) {
+        var aoa = [t.cols.map(function (x) { return clean(x.h); })].concat(t.rows.map(function (r) { return r.map(function (v, i) { var col = t.cols[i] || {}; return col.f === "date" ? fmtCell(v, col) : typeof v === "string" ? clean(v) : v; }); }));
+        addSheet((specs.length > 1 ? sp.title.split(" ")[0] + " - " : "") + t.name, aoa, t.cols, 0);
+      });
+    });
+    var buf = XL.write(wb, { bookType: "xlsx", type: "array" });
+    return new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+  }
+
+  /* --- graphiques en image pour le PDF --- */
+  function svgToPng(svg) {
+    return new Promise(function (ok) {
+      var m = svg.match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/), W = m ? +m[1] : 640, H = m ? +m[2] : 240;
+      var s = svg.replace(/var\(--([a-z-]+)\)/g, function (x, k) { return LIGHT[k] || "#15212E"; }).replace(/<svg /, '<svg xmlns="http://www.w3.org/2000/svg" ').replace(/ width="100%"/, "").replace(/ style="[^"]*"/, "").replace(/<svg ([^>]*?)>/, function (x, a) { return "<svg " + a.replace(/ (width|height)="[^"]*"/g, "") + ' width="' + W + '" height="' + H + '" font-family="Helvetica, Arial, sans-serif">'; });
+      var img = new Image(), url = URL.createObjectURL(new Blob([s], { type: "image/svg+xml" }));
+      img.onload = function () { var cv = document.createElement("canvas"); cv.width = W * 2; cv.height = H * 2; var cx = cv.getContext("2d"); cx.fillStyle = "#FFFFFF"; cx.fillRect(0, 0, cv.width, cv.height); cx.drawImage(img, 0, 0, cv.width, cv.height); URL.revokeObjectURL(url); ok({ data: cv.toDataURL("image/png"), w: W, h: H }); };
+      img.onerror = function () { URL.revokeObjectURL(url); ok(null); };
+      img.src = url;
+    });
+  }
+
+  /* --- PDF --- */
+  function buildPdf(specs) {
+    var charts = []; specs.forEach(function (sp, i) { (sp.charts || []).forEach(function (ch) { charts.push({ i: i, svg: ch }); }); });
+    return Promise.all(charts.map(function (x) { return svgToPng(x.svg); })).then(function (imgs) {
+      var J = window.jspdf.jsPDF, doc = new J({ orientation: specs.length === 1 && specs[0].landscape ? "landscape" : "portrait", unit: "mm", format: "a4" });
+      var ACC = [31, 95, 139], INK = [21, 33, 46], MUT = [91, 104, 120];
+      function pw() { return doc.internal.pageSize.getWidth(); } function ph() { return doc.internal.pageSize.getHeight(); }
+      var y = 0;
+      function ensure(h) { if (y + h > ph() - 16) { doc.addPage(); y = 16; } }
+      function text(t, size, style, color, gap) {
+        doc.setFont("helvetica", style || "normal"); doc.setFontSize(size); doc.setTextColor.apply(doc, color || INK);
+        var lines = doc.splitTextToSize(clean(t), pw() - 28); lines.forEach(function (ln) { ensure(size * 0.45); doc.text(ln, 14, y); y += size * 0.42; }); y += gap || 0;
+      }
+      // en-tête
+      doc.setFillColor.apply(doc, ACC); doc.rect(0, 0, pw(), 3, "F");
+      y = 14; text(specs.length > 1 ? "Dossier du projet PACS" : specs[0].title, 18, "bold", INK, 1.5);
+      text(S.meta.projet + " · " + S.meta.client, 10, "normal", MUT, 0.5);
+      text("Généré le " + fd(stamp()) + " par " + S.meta.chefDeProjet, 9, "normal", MUT, 3);
+      var ci = 0;
+      specs.forEach(function (sp, si) {
+        if (specs.length > 1) { if (si > 0) { doc.addPage(); y = 16; } text(sp.title, 14, "bold", ACC, 1); }
+        if (sp.pageBreak === true && specs.length === 1) { /* guides : une section par profil */ }
+        doc.setFont("helvetica", "bold"); doc.setFontSize(8); doc.setTextColor.apply(doc, sp.aud === "interne" ? [185, 58, 51] : [47, 125, 83]); ensure(5); doc.text(clean(AUD[sp.aud]).toUpperCase(), 14, y); y += 6;
+        if (sp.kpis && sp.kpis.length) {
+          var n = Math.min(4, sp.kpis.length), bw = (pw() - 28 - (n - 1) * 3) / n;
+          sp.kpis.forEach(function (k, i) {
+            if (i % n === 0) { ensure(19); if (i) y += 19; }
+            var x = 14 + (i % n) * (bw + 3);
+            doc.setDrawColor(217, 223, 231); doc.setFillColor(243, 245, 248); doc.roundedRect(x, y, bw, 16, 1.5, 1.5, "FD");
+            doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.setTextColor.apply(doc, INK); doc.text(doc.splitTextToSize(clean(k[1]), bw - 4)[0], x + 2.5, y + 6);
+            doc.setFont("helvetica", "normal"); doc.setFontSize(6.8); doc.setTextColor.apply(doc, MUT); doc.text(doc.splitTextToSize(clean(k[0]), bw - 4).slice(0, 2), x + 2.5, y + 10.5);
+          });
+          y += 22;
+        }
+        var textsBlock = function (arr) { (arr || []).forEach(function (t) { ensure(12); text(t.h, 10.5, "bold", INK, 0.8); text(t.b, 9.5, "normal", INK, 3); }); };
+        if (sp.textsFirst) textsBlock(sp.texts);
+        (sp.charts || []).forEach(function () {
+          var im = imgs[ci++]; if (!im) return;
+          var w = pw() - 28, h = w * im.h / im.w; if (h > 110) { h = 110; w = h * im.w / im.h; }
+          ensure(h + 4); doc.addImage(im.data, "PNG", 14, y, w, h); y += h + 3;
+          if (sp.chartNote) text(sp.chartNote, 8, "normal", MUT, 3); else y += 2;
+        });
+        (sp.tables || []).forEach(function (t) {
+          ensure(16); text(t.name, 10.5, "bold", INK, 1);
+          doc.autoTable({ startY: y, head: [t.cols.map(function (x) { return clean(x.h); })], body: t.rows.map(function (r) { return r.map(function (v, i) { return clean(fmtCell(v, t.cols[i] || {})); }); }),
+            margin: { left: 14, right: 14, top: 14, bottom: 16 }, styles: { font: "helvetica", fontSize: 8, cellPadding: 1.6, textColor: INK, lineColor: [217, 223, 231], lineWidth: 0.1, overflow: "linebreak" },
+            headStyles: { fillColor: ACC, textColor: [255, 255, 255], fontStyle: "bold" }, alternateRowStyles: { fillColor: [247, 248, 250] },
+            columnStyles: t.cols.reduce(function (o, col, i) { if (col.f !== "text" && col.f !== "date") o[i] = { halign: "right" }; return o; }, {}),
+            didParseCell: function (d) { if (d.section !== "body") return; var hh = (t.cols[d.column.index] || {}).h; if (["Statut", "Rempli"].indexOf(hh) < 0) return; var v = String(d.cell.raw); var map = { "OK": [47, 125, 83], "Fait": [47, 125, 83], "Testée": [47, 125, 83], "Recetté": [47, 125, 83], "Oui": [47, 125, 83], "KO": [185, 58, 51], "Bloquant": [185, 58, 51], "Problème": [185, 58, 51], "Non": [185, 58, 51], "Réserve": [184, 112, 15], "En cours": [184, 112, 15] }; if (map[v]) { d.cell.styles.textColor = map[v]; d.cell.styles.fontStyle = "bold"; } } });
+          y = doc.lastAutoTable.finalY + 6;
+        });
+        if (!sp.textsFirst) textsBlock(sp.texts);
+        textsBlock(sp.after);
+      });
+      var np = doc.getNumberOfPages();
+      for (var p = 1; p <= np; p++) {
+        doc.setPage(p); doc.setFont("helvetica", "normal"); doc.setFontSize(7.5); doc.setTextColor.apply(doc, MUT);
+        doc.text(clean(S.meta.projet), 14, ph() - 8); doc.text("Page " + p + " / " + np, pw() - 14, ph() - 8, { align: "right" });
+      }
+      return doc.output("blob");
+    });
+  }
+
+  function runExport(kind, ids, variant, btn) {
+    var specs = ids.map(function (id) { return EXP[id](id === "guides" && ids.length > 1 ? true : variant); });
+    if (ids.length > 1 && variant === "client") specs = specs.filter(function (s) { return s.aud === "client"; });
+    var base = ids.length > 1 ? (variant === "client" ? "Dossier-client-PACS" : "Dossier-complet-PACS") : slug(specs[0].title);
+    var filename = base + "_" + stamp() + "." + kind;
+    var label = btn ? btn.textContent : ""; if (btn) { btn.disabled = true; btn.textContent = "Préparation…"; }
+    var done = function () { if (btn) { btn.disabled = false; btn.textContent = label; } };
+    (kind === "xlsx" ? needXLSX().then(function () { return buildXlsx(specs, filename); }) : needPDF().then(function () { return buildPdf(specs); }))
+      .then(function (blob) { return saveFile(filename, blob); })
+      .then(function (st) { done(); if (st === "saved") { msg = { text: "« " + filename + " » est prêt.", cls: "ok" }; render(); } })
+      .catch(function (err) {
+        done(); var c2 = err && err.code;
+        if (c2 === "declined") return;
+        msg = { cls: "err", text: c2 === "rate_limited" ? "Une demande de téléchargement est déjà ouverte. Termine-la puis réessaie." : c2 === "unavailable" || c2 === "not_granted" || c2 === "capability_disabled" ? "Le téléchargement n'est pas disponible dans cette vue. Ouvre la page dans un navigateur pour exporter." : (err && err.message) || "L'export a échoué. Réessaie." };
+        render();
+      });
+  }
+  function exportButtons(id) {
+    if (id === "accueil") return '<div class="actions"><button type="button" data-exp="xlsx" data-all="1">Tout exporter en Excel</button><button type="button" data-exp="pdf" data-all="1">Dossier complet en PDF</button><button type="button" data-exp="pdf" data-all="1" data-var="client">Dossier client en PDF</button></div><p class="note" style="margin:6px 0 0">Le dossier complet contient le chiffrage interne de l\'avenant ; le dossier client ne contient que les documents partageables.</p>';
+    if (id === "avenant") return '<div class="actions"><button type="button" data-exp="pdf" data-var="client">Proposition client (PDF)</button><button type="button" data-exp="xlsx">Chiffrage interne (Excel)</button><button type="button" data-exp="pdf">Chiffrage interne (PDF)</button></div>';
+    return '<div class="actions"><button type="button" data-exp="xlsx">Exporter en Excel</button><button type="button" data-exp="pdf">Exporter en PDF</button></div>';
+  }
+
   /* ================= rendu ================= */
   var app = document.getElementById("app");
   function render() {
@@ -862,7 +1155,7 @@ if (typeof module !== "undefined") module.exports = DEFAULTS;
     var reset = ui.confirmReset ? '<span class="confirm"><span class="note">Effacer tes saisies et revenir à l\'exemple ?</span><button type="button" class="small primary" data-act="reset-yes">Oui, réinitialiser</button><button type="button" class="small" data-act="reset-no">Annuler</button></span>' : '<button type="button" class="small" data-act="reset">Réinitialiser l\'exemple</button>';
     app.innerHTML = '<header class="top"><div class="in"><div><div class="eyebrow">Projet PACS · ' + esc(S.meta.client) + '</div><h1>Boîte à outils PACS</h1></div><div class="actions"><span class="chip" id="dirty"' + (dirty ? "" : " hidden") + '>Modifications enregistrées dans ce navigateur</span>' + share + '<button type="button" class="small" data-act="copy-data">Copier les données</button>' + reset + "</div></div></header>" + sel +
       '<div class="layout"><nav class="side" aria-label="Outils">' + side + "</nav><main>" + banner +
-      (t.id !== "accueil" ? '<div class="toolhead"><div class="eyebrow">' + esc(t.g) + "</div><h2>" + esc(t.l) + "</h2><p>" + esc(t.d) + "</p></div>" : "") + V[t.id].main() + "</main></div>";
+      (t.id !== "accueil" ? '<div class="toolhead"><div class="eyebrow">' + esc(t.g) + "</div><h2>" + esc(t.l) + "</h2><p>" + esc(t.d) + '</p><div style="margin-top:10px">' + exportButtons(t.id) + "</div></div>" : "") + V[t.id].main() + "</main></div>";
     refreshSum();
   }
   function refreshSum() { var el = document.getElementById("sum"), v = V[view]; if (el && v && v.sum) el.innerHTML = v.sum(); }
@@ -894,6 +1187,7 @@ if (typeof module !== "undefined") module.exports = DEFAULTS;
     if (d.add) { var arr = getP(S, d.add); arr.push(blankRow(d.add)); saveDraft(); render(); return; }
     if (d.del) { var ps = d.del.split("."), idx = +ps.pop(); getP(S, ps.join(".")).splice(idx, 1); saveDraft(); render(); return; }
     if (d.guide) { ui.guide = d.guide; render(); return; }
+    if (d.exp) { runExport(d.exp, d.all ? EXPORT_ORDER : [view], d.var, b); return; }
     if (d.step !== undefined) { var st = S.bascule.etapes[+d.step]; st.statut = d.st; st.reel = d.st === "À faire" ? "" : nowLocal(); saveDraft(); refreshSum(); return; }
     if (d.msg) { if (d.msg === "close") { msg = null; render(); return; } if (d.msg === "keep") { msg = null; render(); return; } if (d.msg === "discard") { clearDraft(); S = clone(shared || DEFAULTS); msg = null; render(); return; } return; }
     var a = d.act; if (!a) return;
