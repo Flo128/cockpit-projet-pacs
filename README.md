@@ -14,7 +14,7 @@ Une vue « Cette semaine » (planning et actions du classeur, prérequis, format
 
 ## Un classeur Excel par projet (`classeurs/`)
 
-Chaque projet a son classeur de pilotage PRINCE2 (version éditeur). Ses onglets verts « OT … » sont la base de données de la boîte à outils :
+Chaque projet a son classeur de pilotage PRINCE2 (version éditeur). Ses onglets violets « OT … » sont la base de données de la boîte à outils :
 
 - **Boîte à outils → classeur** : bouton « Classeur du projet », puis « Ouvrir le classeur du projet » ; après modification, « Enregistrer dans le classeur » télécharge le classeur mis à jour. Seuls les onglets OT sont réécrits : planning, budget, tableau de bord et documents restent intacts. « Créer un classeur à partir de ces données » part du modèle vide.
 - **Pilotage → boîte à outils** : nom du projet, client, chef de projet (Accueil), chiffre d'affaires et coût prévu (Budget), dates de migration et de bascule (Planning) sont liés par formule dans « OT Paramètres » et repris en lecture seule par la boîte à outils.
