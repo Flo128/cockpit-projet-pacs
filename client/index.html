@@ -737,7 +737,7 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
   function deckCoproj(m, x) {
     var pvAVenir = { facturation: { jalons: m.facturation.jalons.filter(function (j) { return !j.datePV && j.statut === "Prévu"; }).slice(0, 4) } };
     return [
-      slide("Comité de projet · semaine du " + fd(x.debutPeriode) + " au " + fd(x.sit), m.meta.projet, '<ol class="agenda"><li>Travaux de la semaine</li><li>Prévu sur deux semaines</li><li>Actions en cours</li><li>Points ouverts</li><li>Risques à suivre</li><li>Jalons et PV à venir</li>' + (m.outils ? "<li>Préparation technique</li>" : "") + '<li>Attendus et livrables</li></ol>', "cover"),
+      slide("COPROJ · semaine du " + fd(x.debutPeriode) + " au " + fd(x.sit), m.meta.projet, '<ol class="agenda"><li>Travaux de la semaine</li><li>Prévu sur deux semaines</li><li>Actions en cours</li><li>Points ouverts</li><li>Risques à suivre</li><li>Jalons et PV à venir</li>' + (m.outils ? "<li>Préparation technique</li>" : "") + '<li>Attendus et livrables</li></ol>', "cover"),
       slide("1 · Semaine écoulée", "Travaux de la période", taskTable(x.travaux.slice(0, 8))),
       slide("2 · À venir", "Prévu sur les deux prochaines semaines", taskTable(x.aVenir.slice(0, 8))),
       slide("3 · Suivi", "Actions en cours", actionsTable(x.actions.slice(0, 6))),

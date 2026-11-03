@@ -615,7 +615,7 @@
    "niveau": "Élevé",
    "proprietaire": "Chef de projet",
    "reponse": "Partager",
-   "actions": "Créneaux réservés avec le chef de pôle, suivi en comité de projet.",
+   "actions": "Créneaux réservés avec le chef de pôle, suivi en COPROJ.",
    "echeance": "2027-01-15",
    "statut": "Ouvert",
    "diffusion": "Partagé"
@@ -1065,7 +1065,7 @@
   {
    "id": "D06",
    "date": "2026-10-30",
-   "instance": "Comité projet",
+   "instance": "COPROJ",
    "sequence": "S2 Conception & infrastructure",
    "texte": "Action : obtenir du distributeur une date de livraison ferme et un plan de rattrapage.",
    "responsable": "Chef de projet",
@@ -1075,7 +1075,7 @@
   {
    "id": "D07",
    "date": "2026-10-30",
-   "instance": "Comité projet",
+   "instance": "COPROJ",
    "sequence": "S2 Conception & infrastructure",
    "texte": "Action (client) : climatiser la salle serveur du site secondaire.",
    "responsable": "Client (DSI)",
@@ -1117,7 +1117,7 @@
    },
    {
     "role": "Chef de projet",
-    "instance": "Comité de projet",
+    "instance": "COPROJ",
     "titulaire": "Chef de projet PACS (Florian CROSES)",
     "responsabilites": "Pilote dans les tolérances : planning, charge, marge, facturation, risques, relation client."
    },
@@ -1142,7 +1142,7 @@
     "role": "Valide le PID, les PV et les avenants, autorise les séquences."
    },
    {
-    "instance": "Comité de projet",
+    "instance": "COPROJ",
     "membres": "Chefs de projet éditeur et client, chefs d'équipe",
     "frequence": "Hebdomadaire",
     "role": "Avancement, prérequis client, risques, points."
