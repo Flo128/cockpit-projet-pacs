@@ -1780,5 +1780,49 @@
    "date": "2026-12-11",
    "objet": "Revue de fin de séquence 2 et PV d'installation"
   }
+ },
+ "outils": {
+  "prerequis": {
+   "fait": 3,
+   "bloquant": 1,
+   "total": 14
+  },
+  "modalites": {
+   "testees": 5,
+   "connectees": 6,
+   "probleme": 3,
+   "total": 20
+  },
+  "flux": {
+   "recettes": 3,
+   "ko": 1,
+   "total": 11
+  },
+  "recette": {
+   "ok": 9,
+   "reserve": 2,
+   "ko": 1,
+   "total": 20,
+   "blKO": 0,
+   "blNT": 5
+  },
+  "migration": {
+   "migre": 16.449999999999996,
+   "volume": 85
+  },
+  "formation": {
+   "presents": 99,
+   "effectifs": 183,
+   "seuil": 0.9
+  },
+  "gonogo": {
+   "ok": 0,
+   "total": 7
+  },
+  "avenant": {
+   "intitule": "Connexion à la plateforme régionale de partage d'images (point P04)",
+   "prix": 23250,
+   "cout": 14850
+  }
  }
 }

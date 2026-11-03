@@ -69,6 +69,11 @@ main .wrap { padding-block: 24px 48px; display: grid; gap: 20px; }
 .kpi { background: var(--surface); padding: 14px 16px; display: grid; gap: 4px; align-content: start; }
 .kpi .v { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
 .kpi .l { font-size: 12px; color: var(--muted); }
+.kpis.ot { background: none; border: 0; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+.kpis.ot .kpi { border: 1px solid var(--line); border-radius: var(--radius); }
+.btnlink { display: inline-flex; align-items: center; font: inherit; font-size: 13px; font-weight: 600; color: var(--accent); text-decoration: none; border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 6px 12px; }
+.btnlink:hover { border-color: var(--accent); }
+.btnlink:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .weather { display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: center; }
 .weather svg { width: 64px; height: 64px; }
 .weather .state { font-size: 20px; font-weight: 700; }
@@ -278,7 +283,32 @@ function parseWorkbook(wb) {
     },
     prochainComite: { date: dt(CR, "C46"), objet: txt(CR, "E46") }
   };
+  m.outils = parseOutils(wb);
   return m;
+}
+/* Onglets « OT … » de la boîte à outils : indicateurs de préparation technique. */
+function parseOutils(wb) {
+  if (!wb.Sheets["OT Paramètres"]) return null;
+  function v(sh, a) { var ws = wb.Sheets[sh], c = ws && ws[a]; return c ? c.v : null; }
+  function filled(x) { return x !== null && x !== undefined && String(x).trim() !== ""; }
+  function n(x) { x = typeof x === "number" ? x : Number(String(x || "").replace(",", ".")); return isNaN(x) ? 0 : x; }
+  function scan(sh, keyCol, fn) { for (var r = 5; r <= 204; r++) if (filled(v(sh, keyCol + r))) fn(r); }
+  var param = {};
+  scan("OT Paramètres", "B", function (r) { param[String(v("OT Paramètres", "B" + r)).trim()] = v("OT Paramètres", "D" + r); });
+  var o = { prerequis: { fait: 0, bloquant: 0, total: 0 }, modalites: { testees: 0, connectees: 0, probleme: 0, total: 0 }, flux: { recettes: 0, ko: 0, total: 0 },
+    recette: { ok: 0, reserve: 0, ko: 0, total: 0, blKO: 0, blNT: 0 }, migration: { migre: 0, volume: n(param["suivi.volume"]) }, formation: { presents: 0, effectifs: 0, seuil: n(param["formation.seuil"]) },
+    gonogo: { ok: 0, total: 0 }, avenant: { intitule: filled(param["avenant.intitule"]) ? String(param["avenant.intitule"]) : "", prix: 0, cout: 0 } };
+  scan("OT Prérequis", "B", function (r) { var st = v("OT Prérequis", "G" + r); o.prerequis.total++; if (st === "Fait") o.prerequis.fait++; if (st === "Bloquant") o.prerequis.bloquant++; });
+  scan("OT Modalités", "D", function (r) { var st = v("OT Modalités", "J" + r); o.modalites.total++; if (st === "Testée") o.modalites.testees++; if (st === "Connectée") o.modalites.connectees++; if (st === "Problème") o.modalites.probleme++; });
+  scan("OT Flux", "A", function (r) { var st = v("OT Flux", "E" + r); o.flux.total++; if (st === "Recetté") o.flux.recettes++; if (st === "KO") o.flux.ko++; });
+  scan("OT Recette", "C", function (r) { var st = v("OT Recette", "F" + r) || "Non testé", bl = v("OT Recette", "E" + r) === "Oui"; o.recette.total++; if (st === "OK") o.recette.ok++; if (st === "Réserve") o.recette.reserve++; if (st === "KO") o.recette.ko++; if (bl && st === "KO") o.recette.blKO++; if (bl && st === "Non testé") o.recette.blNT++; });
+  scan("OT Suivi migration", "A", function (r) { o.migration.migre += n(v("OT Suivi migration", "B" + r)); });
+  scan("OT Formation profils", "A", function (r) { ["C", "D", "E", "F", "G", "H"].forEach(function (c) { o.formation.effectifs += n(v("OT Formation profils", c + r)); }); });
+  scan("OT Formation sessions", "C", function (r) { o.formation.presents += n(v("OT Formation sessions", "F" + r)); });
+  scan("OT Go-NoGo", "A", function (r) { o.gonogo.total++; if (v("OT Go-NoGo", "B" + r) === "Oui") o.gonogo.ok++; });
+  scan("OT Avenant MO", "A", function (r) { o.avenant.prix += n(v("OT Avenant MO", "B" + r)) * n(v("OT Avenant MO", "D" + r)); o.avenant.cout += n(v("OT Avenant MO", "B" + r)) * n(v("OT Avenant MO", "C" + r)); });
+  scan("OT Avenant achats", "A", function (r) { o.avenant.prix += n(v("OT Avenant achats", "C" + r)); o.avenant.cout += n(v("OT Avenant achats", "B" + r)); });
+  return o;
 }
 /* Vue client : tolérances sans marge ni charge, risque recalculé sur les seuls risques partagés. */
 function clientTolerances(m) {
@@ -301,6 +331,7 @@ function toClient(m) {
   c.tiles = { reel: m.tiles.reel, prevu: m.tiles.prevu };
   c.facturation = { jalons: m.facturation.jalons.map(function (j) { return { id: j.id, jalon: j.jalon, declencheur: j.declencheur, sequence: j.sequence, datePrevue: j.datePrevue, datePV: j.datePV, statut: j.statut }; }) };
   c.recits = { commentaire: m.recits.commentaire, decisionsDemandees: m.recits.decisionsDemandees, prochainComite: m.recits.prochainComite };
+  if (c.outils) delete c.outils.avenant;
   delete c.budget; delete c.ressources; delete c.lecons; delete c.businessCase;
   return c;
 }
@@ -589,7 +620,8 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
       '<section class="panel"><h2>Tolérances <small>gestion par exception</small></h2>' + gauges(x.tolerances) + '<div class="legend"><span style="--c:var(--fg)">Traits : 80 % (vigilance) et 100 % (exception)</span></div></section></div>' +
       kpiBlock(m, x) +
       '<div class="grid g2"><section class="panel"><h2>Avancement par séquence</h2><div class="legend" style="margin:-4px 0 6px"><span style="--c:var(--accent)">Réalisé</span><span style="--c:var(--plan)">Prévu</span></div>' + seqRows(m) + "</section>" +
-      '<section class="panel"><h2>Prochains jalons</h2>' + jalonsList(x.jalons, 6) + '<h2 style="margin-top:18px">Risques à surveiller <small>' + x.risquesOuverts.length + " ouverts</small></h2>" + riskTable(x.risquesOuverts.slice(0, 3), true) + "</section></div>";
+      '<section class="panel"><h2>Prochains jalons</h2>' + jalonsList(x.jalons, 6) + '<h2 style="margin-top:18px">Risques à surveiller <small>' + x.risquesOuverts.length + " ouverts</small></h2>" + riskTable(x.risquesOuverts.slice(0, 3), true) + "</section></div>" +
+      (m.outils ? '<section class="panel"><h2><span>Préparation technique <small>boîte à outils du projet</small></span>' + (OUTILS_URL && !m.clientOnly ? '<a class="btnlink" href="' + esc(OUTILS_URL) + '" target="_blank" rel="noopener">Ouvrir la boîte à outils</a>' : "") + "</h2>" + outilsKpis(m.outils, x.client) + "</section>" : "");
   }
   function viewPlanning(m) {
     var opts = ['<button type="button" data-seq="" aria-pressed="' + (state.seqFiltre === "") + '">Tout le projet</button>'].concat(m.sequences.filter(function (s) { return s.nom; }).map(function (s) {
@@ -671,21 +703,39 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
         (m.recits.prochainComite.date ? '<p style="font-size:22px;margin:0"><strong>Prochain comité de pilotage :</strong> ' + fd(m.recits.prochainComite.date) + " · " + esc(m.recits.prochainComite.objet) + "</p>" : ""))
     ];
   }
+  var OUTILS_URL = "outils/";
+  function outilsKpis(o, client, big) {
+    if (!o) return "";
+    var r = function (a, b) { return b ? a + " / " + b : "–"; }, pc = function (a, b) { return b ? Math.round(a / b * 100) + "\u00a0%" : "–"; };
+    var items = [
+      [r(o.prerequis.fait, o.prerequis.total), "Prérequis client faits", o.prerequis.bloquant ? o.prerequis.bloquant + " bloquant" + (o.prerequis.bloquant > 1 ? "s" : "") : "Aucun bloquant", o.prerequis.bloquant ? "crit" : ""],
+      [r(o.modalites.testees, o.modalites.total), "Modalités testées", o.modalites.probleme ? o.modalites.probleme + " en problème" : o.modalites.connectees + " connectée" + (o.modalites.connectees > 1 ? "s" : "") + " à tester", o.modalites.probleme ? "warn" : ""],
+      [r(o.flux.recettes, o.flux.total), "Flux recettés", o.flux.ko ? o.flux.ko + " en échec" : "Aucun en échec", o.flux.ko ? "crit" : ""],
+      [pc(o.recette.ok + o.recette.reserve, o.recette.total), "Recette passée", o.recette.blKO ? o.recette.blKO + " bloquant" + (o.recette.blKO > 1 ? "s" : "") + " KO" : o.recette.blNT + " bloquant" + (o.recette.blNT > 1 ? "s" : "") + " à tester", o.recette.blKO ? "crit" : ""],
+      [o.migration.volume ? pc(o.migration.migre, o.migration.volume) : "–", "Archives migrées", o.migration.volume ? fmtNum(o.migration.migre) + "\u00a0To sur " + fmtNum(o.migration.volume) + "\u00a0To" : "Pas de migration", ""],
+      [o.formation.effectifs ? pc(Math.min(o.formation.presents, o.formation.effectifs), o.formation.effectifs) : "–", "Utilisateurs formés", "Seuil du Go : " + Math.round(o.formation.seuil * 100) + "\u00a0%", ""],
+      [r(o.gonogo.ok, o.gonogo.total), "Critères Go / No-Go remplis", "", ""]
+    ];
+    var av = !client && o.avenant && (o.avenant.prix || o.avenant.intitule) ? '<p class="note" style="margin:12px 0 0">Interne · avenant en préparation : <strong>' + esc(eur(o.avenant.prix)) + "</strong> au prix catalogue (coût " + esc(eur(o.avenant.cout)) + ")" + (o.avenant.intitule ? " pour « " + esc(o.avenant.intitule) + " »" : "") + ". Prix final et marge dans la boîte à outils.</p>" : "";
+    return '<div class="kpis ot">' + items.map(function (i) { return '<div class="kpi' + (i[3] === "internal" ? " internal-k" : "") + '"><div class="v"' + (i[3] && i[3] !== "internal" ? ' style="color:var(--' + i[3] + ')"' : "") + ">" + esc(i[0]) + '</div><div class="l">' + esc(i[1]) + "</div>" + (i[2] ? '<div class="l" style="font-weight:600">' + esc(i[2]) + "</div>" : "") + "</div>"; }).join("") + "</div>" + av;
+  }
+  function fmtNum(v) { return Number(v || 0).toLocaleString("fr-FR", { maximumFractionDigits: 1 }); }
   function deckCoproj(m, x) {
     var pvAVenir = { facturation: { jalons: m.facturation.jalons.filter(function (j) { return !j.datePV && j.statut === "Prévu"; }).slice(0, 4) } };
     return [
-      slide("Comité de projet · semaine du " + fd(x.debutPeriode) + " au " + fd(x.sit), m.meta.projet, '<ol class="agenda"><li>Travaux de la semaine</li><li>Prévu sur deux semaines</li><li>Actions en cours</li><li>Points ouverts</li><li>Risques à suivre</li><li>Jalons et PV à venir</li><li>Attendus et livrables</li></ol>', "cover"),
+      slide("Comité de projet · semaine du " + fd(x.debutPeriode) + " au " + fd(x.sit), m.meta.projet, '<ol class="agenda"><li>Travaux de la semaine</li><li>Prévu sur deux semaines</li><li>Actions en cours</li><li>Points ouverts</li><li>Risques à suivre</li><li>Jalons et PV à venir</li>' + (m.outils ? "<li>Préparation technique</li>" : "") + '<li>Attendus et livrables</li></ol>', "cover"),
       slide("1 · Semaine écoulée", "Travaux de la période", taskTable(x.travaux.slice(0, 8))),
       slide("2 · À venir", "Prévu sur les deux prochaines semaines", taskTable(x.aVenir.slice(0, 8))),
       slide("3 · Suivi", "Actions en cours", actionsTable(x.actions.slice(0, 6))),
       slide("4 · Points", "Points ouverts", pointsTable(x.pointsOuverts.slice(0, 6))),
       slide("5 · Risques", "Risques à suivre", riskTable(x.risquesOuverts.slice(0, 6), true)),
       slide("6 · Jalons", "Jalons et PV à venir", '<div class="grid" style="grid-template-columns:1fr 1.2fr;gap:36px"><div><h4 style="margin:0 0 8px;font-size:18px">Jalons du planning</h4>' + jalonsList(x.jalons, 5) + '</div><div><h4 style="margin:0 0 8px;font-size:18px">PV contractuels attendus</h4>' + pvTable(pvAVenir, x) + "</div></div>"),
-      slide("7 · Attendus", "Attendus du client et livrables à venir", '<div class="grid" style="grid-template-columns:1fr 1fr;gap:36px"><div><h4 style="margin:0 0 8px;font-size:18px">Attendus du client</h4>' +
+      m.outils ? slide("7 · Préparation technique", "Prérequis, modalités, interfaces, recette, migration et formation", outilsKpis(m.outils, true, true) + '<p class="note" style="font-size:15px;margin-top:14px">Source : boîte à outils du projet (onglets « OT » du classeur de pilotage).</p>') : null,
+      slide((m.outils ? "8" : "7") + " · Attendus", "Attendus du client et livrables à venir", '<div class="grid" style="grid-template-columns:1fr 1fr;gap:36px"><div><h4 style="margin:0 0 8px;font-size:18px">Attendus du client</h4>' +
         (x.attenduClient.length ? '<div class="tablewrap"><table><tbody>' + x.attenduClient.slice(0, 5).map(function (t) { return "<tr><td>" + esc(t.tache) + '<div class="note">' + esc(t.responsable) + " · " + fd(t.fin) + "</div></td><td>" + pill(t.statut) + "</td></tr>"; }).join("") + "</tbody></table></div>" : '<p class="empty">Aucun.</p>') +
         '</div><div><h4 style="margin:0 0 8px;font-size:18px">Livrables attendus sous 30 jours</h4>' +
         (x.produits30.length ? '<div class="tablewrap"><table><tbody>' + x.produits30.map(function (p) { return "<tr><td>" + esc(p.produit) + '<div class="note">' + esc(p.approbateur) + " · " + fd(p.datePrevue) + "</div></td><td>" + pill(p.statut) + "</td></tr>"; }).join("") + "</tbody></table></div>" : '<p class="empty">Aucun.</p>') + "</div></div>")
-    ];
+    ].filter(Boolean);
   }
   function deckInterne(m, x) {
     var mt = METEO[x.meteo], b = m.budget;
@@ -741,7 +791,7 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
     var b = state.banner;
     var banner = b ? '<div class="banner' + (b.err ? " err" : "") + '" role="status"><span>' + esc(b.text) + '</span><span class="actions">' + (b.actions || []).map(function (a) { return '<button type="button" class="' + (a.primary ? "primary" : "") + '" data-banner="' + a.id + '">' + esc(a.label) + "</button>"; }).join("") + "</span></div>" : "";
     app.innerHTML = '<header class="top"><div class="wrap"><div class="brand"><div><div class="eyebrow">Pilotage PRINCE2 · ' + esc(m.meta.client.split("|")[0].trim()) + '</div><h1>' + esc(m.meta.projet) + '</h1><div class="sub">Situation au ' + fd(x.sit) + " · chef de projet " + esc(m.meta.chefDeProjet) + " · fin contractuelle " + fd(m.meta.finContrat) + (state.source === "local" ? ' · <strong>classeur importé (vue personnelle)</strong>' : "") + "</div></div>" +
-      '<div class="actions"><button type="button" data-import="1">Mettre à jour depuis Excel</button></div></div>' +
+      '<div class="actions">' + (OUTILS_URL && !locked ? '<a class="btnlink" href="' + esc(OUTILS_URL) + '" target="_blank" rel="noopener">Boîte à outils</a>' : "") + '<button type="button" data-import="1">Mettre à jour depuis Excel</button></div></div>' +
       '<div class="filters audience" role="group" aria-label="Public et présentations">' +
       (locked ? "" : '<span class="seg"><button type="button" data-aud="interne" aria-pressed="' + (aud === "interne") + '">Vue interne</button><button type="button" data-aud="client" aria-pressed="' + (aud === "client") + '">Vue client</button></span>') +
       (x.client ? '<button type="button" class="primary" data-present="copil">Présenter le COPIL</button><button type="button" class="primary" data-present="coproj">Présenter le COPROJ</button>'
