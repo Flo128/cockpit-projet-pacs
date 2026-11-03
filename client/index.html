@@ -115,6 +115,7 @@ tr:last-child td { border-bottom: none; }
 .tip-btn { width: 22px; height: 22px; padding: 0; border-radius: 50%; font-size: 12px; font-weight: 700; line-height: 1; color: var(--accent); border-color: var(--accent); }
 .tip-pop { display: none; position: absolute; left: 0; top: calc(100% + 8px); z-index: 30; width: min(680px, calc(100vw - 48px)); max-height: 70vh; overflow: auto;
   background: var(--surface); color: var(--fg); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 10px 30px rgba(10, 20, 30, .18); padding: 16px 18px; font-size: 13px; font-weight: 400; letter-spacing: 0; text-transform: none; line-height: 1.45; }
+@media (min-width: 721px) { .tip.right .tip-pop { left: auto; right: 0; } }
 .tip:hover .tip-pop, .tip:focus-within .tip-pop, .tip.open .tip-pop { display: block; }
 .tip-pop h4 { margin: 14px 0 6px; font-size: 13px; }
 .tip-pop h4:first-child { margin-top: 0; }
@@ -557,13 +558,26 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
       "<p style=\"margin:4px 0 0\"><strong>Règle :</strong> on retient la plus forte des colonnes d'impact. Une perte de données reste à 5 même si elle ne coûte rien en marge.</p>" +
       "<p style=\"margin:6px 0 0\" class=\"note\">Exemple R01 (migration de 85 To) : signaux déjà visibles, P = 4 ; retard de plus de 10 jours sur la VSR (20 % de la facturation), I = 4 ; criticité 16, critique.</p>" +
       "<h4>Qui cote</h4><ul><li><strong>Tout membre du projet</strong> peut signaler un risque.</li><li><strong>Le chef de projet</strong> l'inscrit au registre et propose P et I.</li>" +
-      "<li><strong>Le propriétaire</strong> valide la cotation, choisit la réponse (éviter, réduire, transférer, partager, accepter) et suit les actions.</li>" +
+      "<li><strong>Le propriétaire</strong> valide la cotation, choisit la réponse (éviter, réduire, plan de repli, transférer, partager, accepter) et suit les actions.</li>" +
       "<li><strong>L'assurance projet</strong> (PMO, contrôle de gestion) vérifie que les notes ne sont pas sous-estimées.</li>" +
       "<li><strong>Le comité de pilotage ou la revue interne</strong> valide les risques critiques et arbitre au-delà de la tolérance.</li></ul>" +
       "<h4>Quand coter</h4><ol><li>À l'initialisation, en atelier de risques.</li><li>Chaque semaine en COPROJ : la probabilité monte si le risque se rapproche, baisse si une action porte ses fruits.</li>" +
       "<li>À chaque fin de séquence, avant le COPIL.</li><li>Après une action : on recote le risque résiduel, puis on le clôt quand il ne peut plus se produire.</li></ol>" +
       "<p style=\"margin:8px 0 0\" class=\"note\">Un risque qui s'est produit n'est plus un risque : il devient un point, à traiter au registre des points.</p>";
     return '<span class="tip"><button type="button" class="tip-btn" data-tip="1" aria-expanded="false" aria-label="Comment coter un risque">?</button><span class="tip-pop" role="tooltip">' + html + "</span></span>";
+  }
+  function tipReponse() {
+    var R = [["Éviter", "Supprimer la cause, souvent en changeant le plan : le risque ne peut plus survenir ou n'a plus d'effet.", "Perte de données à la migration : contrôles d'intégrité par lot, ancien PACS gardé en lecture 12 mois."],
+      ["Réduire", "Agir pour diminuer la probabilité, l'impact, ou les deux. La réponse la plus courante.", "Migration plus longue que prévu : migration à blanc dès mars pour mesurer le vrai débit."],
+      ["Plan de repli", "Ne rien changer maintenant, mais préparer à l'avance ce qu'on fera si le risque survient.", "Échec de la bascule : plan de retour arrière testé et chronométré, point de décision le samedi à 10 h."],
+      ["Transférer", "Faire porter l'impact financier à un tiers : contrat, pénalités, assurance. Le risque existe toujours.", "Retard du partenaire de migration : pénalités prévues dans son contrat de sous-traitance."],
+      ["Partager", "Répartir le risque et ses conséquences entre plusieurs parties, souvent le client et l'éditeur.", "Référents radiologie peu disponibles : créneaux réservés avec le chef de pôle, effort des deux côtés."],
+      ["Accepter", "Ne rien faire, en connaissance de cause : agir coûterait plus que le risque. On le surveille et on le trace.", "Départ d'un ingénieur clé : documentation à jour et binôme, sans autre action."]];
+    var html = "<h4>Réponse au risque</h4><p style=\"margin:0\">La stratégie choisie par le propriétaire du risque pour le traiter (menaces, selon PRINCE2).</p>" +
+      "<ul style=\"list-style:none;padding:0;margin-top:8px;gap:8px\">" + R.map(function (r) { return "<li><strong>" + esc(r[0]) + "</strong> : " + esc(r[1]) + "<br><span class=\"note\">Exemple : " + esc(r[2]) + "</span></li>"; }).join("") + "</ul>" +
+      "<p style=\"margin:6px 0 0\"><strong>Règle :</strong> une réponse ne vaut que par ses actions. Préciser qui fait quoi et pour quand, puis recoter le risque résiduel.</p>" +
+      "<p style=\"margin:6px 0 0\" class=\"note\">Pour les opportunités (risques positifs), PRINCE2 prévoit quatre autres réponses : exploiter, améliorer, partager, rejeter.</p>";
+    return '<span class="tip right"><button type="button" class="tip-btn" data-tip="1" aria-expanded="false" aria-label="Les réponses au risque">?</button><span class="tip-pop" role="tooltip">' + html + "</span></span>";
   }
 
   /* ---------- Gantt ---------- */
@@ -636,9 +650,9 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
     var list = state.filtreRisques === "ouverts" ? x.risquesOuverts : x.risques.slice().sort(function (a, b) { return (b.criticite || 0) - (a.criticite || 0); });
     var counts = ["Critique", "Élevé", "Modéré", "Faible"].map(function (n) { return [n, x.risquesOuverts.filter(function (r) { return r.niveau === n; }).length]; });
     return '<div class="grid g2"><section class="panel"><h2><span>Matrice des risques ouverts ' + tipRisques() + '</span></h2>' + matrix(x.risquesOuverts) + "</section>" +
-      '<section class="panel"><h2>Répartition</h2><div class="kpis">' + counts.map(function (c) { return '<div class="kpi"><div class="v" style="color:var(--' + niveauClass(c[0]) + ')">' + c[1] + '</div><div class="l">' + c[0] + "</div></div>"; }).join("") + "</div>" +
+      '<section class="panel"><h2>Répartition</h2><div class="kpis" style="grid-template-columns:repeat(2,minmax(0,1fr))">' + counts.map(function (c) { return '<div class="kpi"><div class="v" style="color:var(--' + niveauClass(c[0]) + ')">' + c[1] + '</div><div class="l">' + c[0] + "</div></div>"; }).join("") + "</div>" +
       '<p class="note" style="margin-top:12px">Criticité = probabilité × impact. Critique à partir de 15, élevé à partir de 8, modéré à partir de 4.</p></section></div>' +
-      '<section class="panel"><h2><span>Registre des risques ' + tipRisques() + '</span></h2><div class="filters" style="margin-bottom:12px"><button type="button" data-rf="ouverts" aria-pressed="' + (state.filtreRisques === "ouverts") + '">Ouverts</button><button type="button" data-rf="tous" aria-pressed="' + (state.filtreRisques === "tous") + '">Tous</button></div>' + riskTable(list) + "</section>";
+      '<section class="panel"><h2><span>Registre des risques ' + tipRisques() + '</span><span class="note" style="display:inline-flex;gap:6px;align-items:center;font-weight:500">Réponses au risque ' + tipReponse() + '</span></h2><div class="filters" style="margin-bottom:12px"><button type="button" data-rf="ouverts" aria-pressed="' + (state.filtreRisques === "ouverts") + '">Ouverts</button><button type="button" data-rf="tous" aria-pressed="' + (state.filtreRisques === "tous") + '">Tous</button></div>' + riskTable(list) + "</section>";
   }
   function viewPoints(m, x) {
     var list = state.filtrePoints === "ouverts" ? x.pointsOuverts : x.points;

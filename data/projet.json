@@ -769,6 +769,22 @@
    "echeance": "2027-05-07",
    "statut": "Ouvert",
    "diffusion": "Interne"
+  },
+  {
+   "id": "R13",
+   "date": "2026-10-30",
+   "description": "Échec de la bascule (flux ou modalités non fonctionnels le samedi matin) : service d'imagerie dégradé.",
+   "categorie": "Technique",
+   "probabilite": 2,
+   "impact": 5,
+   "criticite": 10,
+   "niveau": "Élevé",
+   "proprietaire": "Chef de projet",
+   "reponse": "Plan de repli",
+   "actions": "Plan de retour arrière testé et chronométré (2 h), ancien PACS maintenu prêt, point de décision le samedi à 10 h.",
+   "echeance": "2027-05-22",
+   "statut": "Ouvert",
+   "diffusion": "Partagé"
   }
  ],
  "points": [
