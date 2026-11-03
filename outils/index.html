@@ -455,13 +455,14 @@ if (typeof module !== "undefined") module.exports = DEFAULTS;
 
   /* ================= calculs ================= */
   function calcStockage() {
-    var s = S.stockage, H = Math.max(1, N(s.horizon)), years = [], arch = N(s.archives), annee1 = 0;
+    var s = S.stockage, H = Math.max(1, N(s.horizon)), years = [], arch = N(s.archives), annee1 = 0, nets = [];
     var brut = function (t) { return s.rows.reduce(function (a, r) { return a + N(r.examens) * Math.pow(1 + N(r.croissance), t) * N(r.taille) / 1e6; }, 0); };
     var kArch = Math.max(1, N(s.copiesArchive)) * (1 + N(s.marge)), kCache = Math.max(1, N(s.copiesCache)) * (1 + N(s.marge));
     for (var t = 0; t < H; t++) {
-      var b = brut(t), netA = b / Math.max(0.1, N(s.compressionArchive));
+      var b = brut(t), netA = b / Math.max(0.1, N(s.compressionArchive)), C = Math.round(N(s.conservation));
       if (t === 0) annee1 = b;
-      arch += netA;
+      nets.push(netA); arch += netA;
+      if (C > 0 && t - C >= 0) arch -= nets[t - C]; // examens arrivés au terme de la durée de conservation : purgés
       var cache = b * Math.min(1, N(s.cacheMois) / 12) / Math.max(0.1, N(s.compressionCache)) + (N(s.cacheMois) > 12 && t > 0 ? brut(t - 1) * Math.min(1, (N(s.cacheMois) - 12) / 12) / Math.max(0.1, N(s.compressionCache)) : 0);
       years.push({ an: t + 1, brut: b, archUtile: arch, archTotal: arch * kArch, cacheUtile: cache, cacheTotal: cache * kCache, total: arch * kArch + cache * kCache });
     }
