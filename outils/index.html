@@ -102,6 +102,11 @@ select[data-v="Connectée"], select[data-v="Développé"] { background: var(--ac
 .wbpanel p { margin: 6px 0; }
 .btnlink { display: inline-flex; align-items: center; font-size: 13px; font-weight: 600; color: var(--accent); text-decoration: none; border: 1px solid var(--line); background: var(--surface); border-radius: 5px; padding: 3px 8px; font-size: 12px; }
 .btnlink:hover { border-color: var(--accent); }
+a.srclink { color: var(--accent); text-decoration: none; font-weight: 600; }
+a.srclink:hover { text-decoration: underline; }
+.wkday + .wkday { margin-top: 14px; }
+.wkday h4 { margin: 0 0 6px; font-size: 14px; display: flex; gap: 8px; align-items: center; }
+.wkjalon { margin: 0 0 6px; font-weight: 600; color: var(--mile); }
 .chip.wbchip.todo { background: var(--warn-soft); color: var(--warn); }
 .chip.wbchip { background: var(--ok-soft); color: var(--ok); max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .linkb { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 999px; background: var(--ok-soft); color: var(--ok); }
@@ -318,6 +323,7 @@ var DEFAULTS = {
 };
 if (typeof module !== "undefined") module.exports = DEFAULTS;
 
+DEFAULTS.pilotage = {"source":"Pilotage-PRINCE2-PACS-Editeur-Exemple.xlsx","situation":"2026-11-03","taches":[{"id":"T01","sequence":"S0 Élaboration","tache":"Revue de passation avant-vente / projet (contrat, CCTP, engagements)","responsable":"Chef de projet","debut":"2026-09-07","fin":"2026-09-09","jalon":false,"pct":1},{"id":"T02","sequence":"S0 Élaboration","tache":"Lancement interne et affectation des ressources","responsable":"Exécutif","debut":"2026-09-09","fin":"2026-09-11","jalon":false,"pct":1},{"id":"T03","sequence":"S0 Élaboration","tache":"Réunion de lancement avec le client","responsable":"Chef de projet","debut":"2026-09-14","fin":"2026-09-14","jalon":true,"pct":1},{"id":"T04","sequence":"S0 Élaboration","tache":"Décision de lancer l'initialisation (revue interne)","responsable":"Exécutif","debut":"2026-09-18","fin":"2026-09-18","jalon":true,"pct":1},{"id":"T05","sequence":"S1 Initialisation","tache":"Audit des prérequis et de l'existant chez le client","responsable":"Ingénieur intégration","debut":"2026-09-21","fin":"2026-10-02","jalon":false,"pct":1},{"id":"T06","sequence":"S1 Initialisation","tache":"Inventaire des modalités et des flux avec le biomédical","responsable":"Ingénieur intégration","debut":"2026-09-21","fin":"2026-10-02","jalon":false,"pct":1},{"id":"T07","sequence":"S1 Initialisation","tache":"Plan d'assurance qualité (PAQ) et plan projet","responsable":"Chef de projet","debut":"2026-09-28","fin":"2026-10-09","jalon":false,"pct":1},{"id":"T08","sequence":"S1 Initialisation","tache":"Plan de charge et planning des ressources","responsable":"Chef de projet","debut":"2026-10-05","fin":"2026-10-14","jalon":false,"pct":1},{"id":"T09","sequence":"S1 Initialisation","tache":"Validation du PID et du PAQ en comité de pilotage","responsable":"Comité de pilotage","debut":"2026-10-16","fin":"2026-10-16","jalon":true,"pct":1},{"id":"T10","sequence":"S2 Conception & infrastructure","tache":"Dossier d'architecture technique (haute disponibilité, PRA)","responsable":"Ingénieur intégration","debut":"2026-10-19","fin":"2026-11-06","jalon":false,"pct":0.6},{"id":"T11","sequence":"S2 Conception & infrastructure","tache":"Validation sécurité avec le RSSI du client","responsable":"Chef de projet","debut":"2026-10-26","fin":"2026-11-13","jalon":false,"pct":0.4},{"id":"T12","sequence":"S2 Conception & infrastructure","tache":"Vérification des prérequis client (salle serveur, réseau, comptes)","responsable":"Client (DSI)","debut":"2026-10-26","fin":"2026-11-13","jalon":false,"pct":0.3},{"id":"T13","sequence":"S2 Conception & infrastructure","tache":"Commande et livraison du matériel (jalon de facturation)","responsable":"Distributeur / ADV","debut":"2026-11-02","fin":"2026-11-20","jalon":false,"pct":0},{"id":"T14","sequence":"S2 Conception & infrastructure","tache":"Installation de la plateforme et PV d'installation","responsable":"Ingénieurs d'installation","debut":"2026-11-23","fin":"2026-12-04","jalon":false,"pct":0},{"id":"T15","sequence":"S2 Conception & infrastructure","tache":"Revue de fin de séquence 2 (comité de pilotage)","responsable":"Comité de pilotage","debut":"2026-12-11","fin":"2026-12-11","jalon":true,"pct":0},{"id":"T16","sequence":"S3 Paramétrage & intégration","tache":"Interface RIS ↔ PACS avec l'éditeur du RIS (HL7, worklist)","responsable":"Ingénieur intégration","debut":"2026-12-14","fin":"2027-01-22","jalon":false,"pct":0},{"id":"T17","sequence":"S3 Paramétrage & intégration","tache":"Connexion des modalités (scanner, IRM, radio, écho, mammographie)","responsable":"Ingénieurs d'installation","debut":"2027-01-04","fin":"2027-02-05","jalon":false,"pct":0},{"id":"T18","sequence":"S3 Paramétrage & intégration","tache":"Intégration au DPI du client","responsable":"Ingénieur intégration","debut":"2027-01-11","fin":"2027-02-12","jalon":false,"pct":0},{"id":"T19","sequence":"S3 Paramétrage & intégration","tache":"Paramétrage des workflows avec les référents du client","responsable":"Spécialiste applicatif","debut":"2027-01-18","fin":"2027-02-19","jalon":false,"pct":0},{"id":"T20","sequence":"S3 Paramétrage & intégration","tache":"Revue de fin de séquence 3 (comité de pilotage)","responsable":"Comité de pilotage","debut":"2027-02-26","fin":"2027-02-26","jalon":true,"pct":0},{"id":"T21","sequence":"S4 Migration & recette","tache":"Migration à blanc d'un échantillon d'archives","responsable":"Partenaire migration","debut":"2027-03-01","fin":"2027-03-12","jalon":false,"pct":0},{"id":"T22","sequence":"S4 Migration & recette","tache":"Accompagnement de la recette fonctionnelle du client","responsable":"Spécialiste applicatif","debut":"2027-03-08","fin":"2027-04-02","jalon":false,"pct":0},{"id":"T23","sequence":"S4 Migration & recette","tache":"Tests de bascule HA / PRA","responsable":"Ingénieurs d'installation","debut":"2027-03-22","fin":"2027-04-09","jalon":false,"pct":0},{"id":"T24","sequence":"S4 Migration & recette","tache":"Migration des archives historiques (85 To)","responsable":"Partenaire migration","debut":"2027-03-15","fin":"2027-05-28","jalon":false,"pct":0},{"id":"T25","sequence":"S4 Migration & recette","tache":"PV de vérification d'aptitude (VA), jalon de facturation","responsable":"Comité de pilotage","debut":"2027-04-23","fin":"2027-04-23","jalon":true,"pct":0},{"id":"T26","sequence":"S5 Formation & bascule","tache":"Formation des référents et des administrateurs","responsable":"Formateur","debut":"2027-04-26","fin":"2027-05-07","jalon":false,"pct":0},{"id":"T27","sequence":"S5 Formation & bascule","tache":"Formation des utilisateurs (radiologues, manipulateurs)","responsable":"Formateur","debut":"2027-05-03","fin":"2027-05-18","jalon":false,"pct":0},{"id":"T28","sequence":"S5 Formation & bascule","tache":"Comité Go / No-Go de bascule","responsable":"Comité de pilotage","debut":"2027-05-19","fin":"2027-05-19","jalon":true,"pct":0},{"id":"T29","sequence":"S5 Formation & bascule","tache":"Bascule en production (week-end)","responsable":"Ingénieurs d'installation","debut":"2027-05-21","fin":"2027-05-24","jalon":false,"pct":0},{"id":"T30","sequence":"S5 Formation & bascule","tache":"Accompagnement post-démarrage","responsable":"Support / chef de projet","debut":"2027-05-25","fin":"2027-06-11","jalon":false,"pct":0},{"id":"T31","sequence":"S6 Clôture","tache":"PV de vérification de service régulier (VSR), jalon de facturation","responsable":"Client","debut":"2027-05-25","fin":"2027-06-18","jalon":false,"pct":0},{"id":"T32","sequence":"S6 Clôture","tache":"Passation au support (dossier d'exploitation)","responsable":"Chef de projet","debut":"2027-06-14","fin":"2027-06-18","jalon":false,"pct":0},{"id":"T33","sequence":"S6 Clôture","tache":"Rapport de fin de projet et retour d'expérience interne","responsable":"Chef de projet","debut":"2027-06-14","fin":"2027-06-23","jalon":false,"pct":0},{"id":"T34","sequence":"S6 Clôture","tache":"Clôture et enquête de satisfaction client","responsable":"Comité de pilotage","debut":"2027-06-25","fin":"2027-06-25","jalon":true,"pct":0}],"actions":[{"id":"D01","date":"2026-09-18","instance":"Revue interne","texte":"Décision : lancement de l'initialisation ; ressources affectées (chef de projet, 2 ingénieurs, partenaire de migration).","responsable":"Exécutif","echeance":"","statut":"Fait"},{"id":"D02","date":"2026-10-16","instance":"COPIL","texte":"Décision : PID et PAQ validés par le client ; tolérances fixées (délai 10 j, marge 3 points, charge 10 j).","responsable":"Exécutif","echeance":"","statut":"Fait"},{"id":"D03","date":"2026-10-16","instance":"COPIL","texte":"Décision : demande P01 acceptée par l'avenant n°1 (12 000 € HT, +5 jours).","responsable":"Directeur de compte","echeance":"","statut":"Fait"},{"id":"D04","date":"2026-10-16","instance":"COPIL","texte":"Décision : séquence 2 autorisée, commande du matériel lancée.","responsable":"Exécutif","echeance":"","statut":"Fait"},{"id":"D05","date":"2026-10-30","instance":"Comité technique","texte":"Action : intégrer le PRA au dossier d'architecture (v2) après le refus du RSSI du client.","responsable":"Ingénieur intégration","echeance":"2026-11-06","statut":"En cours"},{"id":"D06","date":"2026-10-30","instance":"Comité projet","texte":"Action : obtenir du distributeur une date de livraison ferme et un plan de rattrapage.","responsable":"Chef de projet","echeance":"2026-11-06","statut":"En cours"},{"id":"D07","date":"2026-10-30","instance":"Comité projet","texte":"Action (client) : climatiser la salle serveur du site secondaire.","responsable":"Client (DSI)","echeance":"2026-11-20","statut":"À faire"},{"id":"D08","date":"2026-10-30","instance":"Revue interne","texte":"Décision : renfort d'un troisième ingénieur en janvier pour sécuriser la séquence 3.","responsable":"Exécutif","echeance":"2027-01-04","statut":"À faire"}]};
 </script>
 <script>
 (function () {
@@ -578,6 +584,7 @@ if (typeof module !== "undefined") module.exports = DEFAULTS;
   var PROTOS = ["HL7 ADT", "HL7 ORM", "HL7 ORU", "DICOM C-STORE", "DICOM C-FIND / C-MOVE", "DICOM MWL (worklist)", "DICOM MPPS", "DICOM Storage Commitment", "Lien contextuel (URL)", "XDS-I", "Autre"];
   var TOOLS = [
     { id: "accueil", g: "", l: "Vue d'ensemble" },
+    { id: "semaine", g: "", l: "Cette semaine", d: "Tout ce qui est à faire dans la semaine, rassemblé depuis le planning et les actions du classeur de pilotage et depuis les outils : prérequis, sessions de formation, étapes de bascule, actions du dernier compte rendu. Les retards et les points à traiter sont listés à part." },
     { id: "stockage", g: "Avant-vente et cadrage", l: "Stockage et archivage", d: "Dimensionne séparément le cache en ligne (examens récents, accès rapide) et l'archive long terme (toute la durée de conservation, compressée), à partir de l'activité par modalité." },
     { id: "migration", g: "Avant-vente et cadrage", l: "Estimateur de migration", d: "Estime la durée de migration des archives jour par jour, selon le débit mesuré à la migration à blanc et les fenêtres de travail, avec plusieurs hypothèses de débit." },
     { id: "prerequis", g: "Avant-vente et cadrage", l: "Prérequis client", d: "Liste des prérequis à la charge du client et de l'éditeur, par site, avec le PV que chacun bloque. À envoyer dès la notification du marché." },
@@ -620,6 +627,87 @@ if (typeof module !== "undefined") module.exports = DEFAULTS;
       card("avenant", eur(av.prix), "Prix proposé pour : " + S.avenant.intitule) +
       "</div>";
   } };
+
+  /* ---------- Cette semaine ---------- */
+  var JOURS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+  function semaineBornes() {
+    var t = D(today()), wd = (t.getUTCDay() + 6) % 7;
+    var lun = addDays(iso(t), -wd + 7 * (ui.wk || 0));
+    return { lun: lun, dim: addDays(lun, 6) };
+  }
+  function semaineItems() {
+    var w = semaineBornes(), items = [], retard = [], encours = [], atraiter = [], jalons = [];
+    var inW = function (d) { return d && d >= w.lun && d <= w.dim; }, before = function (d) { return d && d < w.lun; };
+    var add = function (it) { (inW(it.date) ? items : retard).push(it); };
+    var pl = S.pilotage;
+    if (pl) {
+      pl.taches.forEach(function (t) {
+        if (N(t.pct) >= 1 || !t.debut) return;
+        if (t.jalon && inW(t.fin)) { jalons.push({ date: t.fin, quoi: t.tache, qui: t.responsable, src: "Planning", ref: t.id }); return; }
+        if (t.fin && before(t.fin)) { retard.push({ date: t.fin, quoi: t.tache, qui: t.responsable, src: "Planning", ref: t.id, statut: nf(N(t.pct) * 100) + " %" }); return; }
+        if (!t.jalon && t.debut <= w.dim && (t.fin || t.debut) >= w.lun) encours.push({ date: t.debut, fin: t.fin, quoi: t.tache, qui: t.responsable, src: "Planning", ref: t.id, statut: nf(N(t.pct) * 100) + " %" });
+      });
+      pl.actions.forEach(function (a) {
+        if (a.statut === "Fait" || !a.echeance || !(inW(a.echeance) || before(a.echeance))) return;
+        add({ date: a.echeance, quoi: cap(a.texte.replace(/^Action\s*(\(client\))?\s*:\s*/i, "")), qui: a.responsable, src: a.instance || "Décisions", ref: a.id, statut: a.statut });
+      });
+    }
+    S.prerequis.rows.forEach(function (r, i) {
+      if (r.statut === "Fait" || !r.echeance || !(inW(r.echeance) || before(r.echeance))) return;
+      add({ date: r.echeance, quoi: "Prérequis : " + r.libelle, qui: r.responsable + (r.site ? " · " + r.site : ""), src: "Prérequis", tool: "prerequis", statut: r.statut, done: { p: "prerequis.rows." + i + ".statut", v: "Fait" } });
+    });
+    S.bascule.etapes.forEach(function (e, i) {
+      var d = (e.prevu || "").slice(0, 10);
+      if (e.statut === "Fait" || !inW(d)) return;
+      items.push({ date: d, heure: (e.prevu || "").slice(11, 16), quoi: "Bascule : " + e.action, qui: e.responsable, src: "Bascule", tool: "bascule", statut: e.statut, done: { p: "bascule.etapes." + i + ".statut", v: "Fait" } });
+    });
+    S.formation.sessions.forEach(function (x) {
+      if (!inW(x.date)) return;
+      items.push({ date: x.date, quoi: "Formation " + x.profil + " (" + x.site + ")", qui: x.formateur + " · " + nf(x.places) + " places", src: "Formation", tool: "formation" });
+    });
+    var lastDec = pl ? pl.actions.reduce(function (m, a) { return a.date > m ? a.date : m; }, "") : "";
+    if (S.cr.notes && S.cr.date && S.cr.date > lastDec) {
+      parseCR(S.cr.notes, S.cr.date).actions.forEach(function (a) {
+        if (!a.echeance || !(inW(a.echeance) || before(a.echeance))) return;
+        add({ date: a.echeance, quoi: a.texte, qui: a.responsable, src: "Compte rendu du " + fd(S.cr.date), tool: "cr", statut: "À reporter dans le classeur" });
+      });
+    }
+    var su = S.suivi;
+    if (su.debut && su.fin && su.debut <= w.dim && su.fin >= w.lun) encours.push({ date: su.debut, fin: su.fin, quoi: "Relever chaque jour les To migrés et les études en erreur", qui: "Partenaire migration", src: "Suivi de migration", tool: "suivi" });
+    S.modalites.rows.forEach(function (m) { if (m.statut === "Problème") atraiter.push({ quoi: "Modalité " + (m.aet || m.modele) + " : " + (m.commentaire || "problème de connexion"), qui: m.site, src: "Modalités", tool: "modalites", statut: "Problème" }); });
+    S.flux.rows.forEach(function (f) { if (f.statut === "KO") atraiter.push({ quoi: "Flux " + f.protocole + " " + f.source + " → " + f.cible + " en échec", qui: "", src: "Flux", tool: "flux", statut: "KO" }); });
+    S.recette.rows.forEach(function (r) { if (r.bloquant && r.statut === "KO") atraiter.push({ quoi: "Scénario bloquant KO : " + r.intitule, qui: r.testeur, src: "Recette", tool: "recette", statut: "KO" }); });
+    S.prerequis.rows.forEach(function (r) { if (r.statut === "Bloquant" && !(r.echeance && (inW(r.echeance) || before(r.echeance)))) atraiter.push({ quoi: "Prérequis bloquant : " + r.libelle, qui: r.responsable, src: "Prérequis", tool: "prerequis", statut: "Bloquant" }); });
+    var byDate = function (a, b) { return (a.date + (a.heure || "")).localeCompare(b.date + (b.heure || "")); };
+    items.sort(byDate); retard.sort(byDate); encours.sort(byDate); jalons.sort(byDate);
+    return { w: w, items: items, retard: retard, encours: encours, atraiter: atraiter, jalons: jalons };
+  }
+  function cap(t) { return t ? t.charAt(0).toUpperCase() + t.slice(1) : t; }
+  function semRow(it, showDate) {
+    var src = it.tool ? '<a class="srclink" href="#' + it.tool + '">' + esc(it.src) + "</a>" : esc(it.src) + (it.ref ? " " + esc(it.ref) : "");
+    var st = it.statut ? pill(it.statut, /Bloquant|KO|Problème/.test(it.statut) ? "crit" : "") : "";
+    var when = showDate && !it.fin ? fd(it.date) : (it.heure || ""), range = it.fin ? "Du " + fd(it.date) + " au " + fd(it.fin) : "";
+    var sub = [range, it.qui].filter(Boolean).join(" · ");
+    return "<tr>" + (when || !it.fin ? "<td class=\"mono\" style=\"white-space:nowrap\">" + esc(when) + "</td>" : "") + "<td" + (it.fin ? ' colspan="2"' : "") + ">" + esc(it.quoi) + (sub ? '<div class="note">' + esc(sub) + "</div>" : "") + '</td><td class="note" style="white-space:nowrap">' + src + "</td><td>" + st + "</td><td>" + (it.done ? '<button type="button" class="small" data-wkdone="' + it.done.p + '" data-v="' + esc(it.done.v) + '">Fait</button>' : "") + "</td></tr>";
+  }
+  function semTable(list, showDate, empty) { return list.length ? '<div class="tablewrap"><table><tbody>' + list.map(function (x) { return semRow(x, showDate); }).join("") + "</tbody></table></div>" : '<p class="note" style="margin:0">' + empty + "</p>"; }
+  V.semaine = {
+    main: function () {
+      var r = semaineItems(), w = r.w;
+      var nav = '<div class="actions" style="margin-bottom:14px;align-items:center"><button type="button" class="small" data-act="wk-prev">← Semaine précédente</button><button type="button" class="small' + (ui.wk ? "" : " primary") + '" data-act="wk-now">Cette semaine</button><button type="button" class="small" data-act="wk-next">Semaine suivante →</button><strong style="margin-left:6px">Semaine du ' + fd(w.lun) + " au " + fd(w.dim) + "</strong></div>";
+      var src = S.pilotage ? '<p class="note" style="margin:0 0 14px">Planning et actions lus dans « ' + esc(S.pilotage.source || "le classeur du projet") + " »" + (ui.wb ? "." : " à sa dernière ouverture. Rouvre le classeur pour les mettre à jour.") + "</p>" : '<p class="note" style="margin:0 0 14px">Ouvre le classeur du projet (bouton « Classeur du projet ») pour ajouter les tâches du planning et les actions des comités.</p>';
+      var jours = JOURS.map(function (j, k) {
+        var d = addDays(w.lun, k), l = r.items.filter(function (x) { return x.date === d; }), jl = r.jalons.filter(function (x) { return x.date === d; });
+        if (!l.length && !jl.length) return "";
+        return '<div class="wkday"><h4>' + j + " " + fd(d).slice(0, 5) + (d === today() ? " " + pill("Aujourd'hui", "ok") : "") + "</h4>" + jl.map(function (x) { return '<p class="wkjalon">◆ Jalon : ' + esc(x.quoi) + (x.qui ? " · " + esc(x.qui) : "") + "</p>"; }).join("") + (l.length ? semTable(l, false, "") : "") + "</div>";
+      }).join("");
+      return nav + src + kpis([[String(r.items.length + r.jalons.length), "À faire cette semaine"], [String(r.encours.length), "Tâches en cours"], [String(r.retard.length), "En retard", r.retard.length ? "crit" : "ok"], [String(r.atraiter.length), "Points à traiter", r.atraiter.length ? "warn" : "ok"]]) +
+        (r.retard.length ? '<div class="panel" style="margin-top:16px;border-color:var(--crit)"><h3>En retard <small>échéance passée, non fait</small></h3>' + semTable(r.retard, true, "") + "</div>" : "") +
+        '<div class="panel" style="margin-top:16px"><h3>Jour par jour</h3>' + (jours || '<p class="note" style="margin:0">Rien de daté cette semaine.</p>') + "</div>" +
+        '<div class="grid g2" style="margin-top:16px"><div class="panel"><h3>Tâches en cours <small>planning et suivi</small></h3>' + semTable(r.encours, true, "Aucune tâche en cours cette semaine.") + "</div>" +
+        '<div class="panel"><h3>À traiter <small>sans échéance</small></h3>' + semTable(r.atraiter, false, "Rien à signaler.") + "</div></div>";
+    }
+  };
 
   V.stockage = {
     main: function () {
@@ -957,6 +1045,16 @@ if (typeof module !== "undefined") module.exports = DEFAULTS;
         tables: [T("Hypothèses", [c("Paramètre"), c("Valeur")], [["Volume à migrer", nf(m.volume) + " To"], ["Débit mesuré (migration à blanc)", nf(m.debitHeure) + " Go/h"], ["Heures par jour de semaine", nf(m.heuresSemaine)], ["Heures par jour de week-end", nf(m.heuresWeekend)], ["Date de début", fd(m.debut)], ["Échéance", fd(m.echeance)], ["Part à reprendre après erreur", pct(m.erreurs)]]),
           T("Scénarios", [c("Hypothèse"), c("Débit (Go/h)", "num"), c("Fin estimée"), c("Durée (j)", "num"), c("Marge sur l'échéance (j)", "num")], sc)] };
     },
+    semaine: function () {
+      var r = semaineItems(), w = r.w;
+      var row = function (x) { return [x.date ? fd(x.date) + (x.heure ? " " + x.heure : "") + (x.fin ? " → " + fd(x.fin) : "") : "", x.quoi, x.qui || "", x.src + (x.ref ? " " + x.ref : ""), x.statut || ""]; };
+      var cols = [c("Date"), c("À faire"), c("Qui"), c("Source"), c("Statut")];
+      var tables = [T("Cette semaine (jalons compris)", cols, r.jalons.map(function (x) { var o = row(x); o[1] = "Jalon : " + o[1]; return o; }).concat(r.items.map(row)).sort(function (a, b) { return a[0].split("/").reverse().join("").localeCompare(b[0].split("/").reverse().join("")); }))];
+      if (r.retard.length) tables.unshift(T("En retard", cols, r.retard.map(row)));
+      tables.push(T("Tâches en cours", cols, r.encours.map(row)));
+      if (r.atraiter.length) tables.push(T("À traiter (sans échéance)", cols, r.atraiter.map(row)));
+      return { title: "Plan de la semaine du " + fd(w.lun) + " au " + fd(w.dim), aud: "interne", landscape: true, kpis: [["À faire cette semaine", String(r.items.length + r.jalons.length)], ["Tâches en cours", String(r.encours.length)], ["En retard", String(r.retard.length)], ["Points à traiter", String(r.atraiter.length)]], tables: tables };
+    },
     prerequis: function () {
       var rows = S.prerequis.rows;
       return { title: "Prérequis du projet", aud: "client", landscape: true, kpis: [["Prérequis remplis", rows.filter(function (r) { return r.statut === "Fait"; }).length + " / " + rows.length], ["Bloquants", String(rows.filter(function (r) { return r.statut === "Bloquant"; }).length)]],
@@ -1186,6 +1284,30 @@ if (typeof module !== "undefined") module.exports = DEFAULTS;
   }
 
   /* ================= classeur du projet (onglets OT) ================= */
+/* Instantané des onglets de pilotage (Planning, Décisions) lu dans le classeur du projet. */
+function pilotSnapshot(wb, source) {
+  var P = wb.Sheets.Planning, Dc = wb.Sheets["Décisions"], A = wb.Sheets.Accueil;
+  if (!P) return null;
+  function v(ws, a) { var c = ws && ws[a]; return c ? c.v : ""; }
+  function day(x) {
+    if (typeof x !== "number" || x < 20000) return "";
+    return new Date(Date.UTC(1899, 11, 30) + Math.round(x) * 864e5).toISOString().slice(0, 10);
+  }
+  function txt(x) { return x == null ? "" : String(x).trim(); }
+  var taches = [], actions = [];
+  for (var r = 6; r <= 85; r++) {
+    var t = txt(v(P, "C" + r)); if (!t) continue;
+    var pc = v(P, "I" + r);
+    taches.push({ id: txt(v(P, "A" + r)), sequence: txt(v(P, "B" + r)), tache: t, responsable: txt(v(P, "D" + r)), debut: day(v(P, "E" + r)), fin: day(v(P, "F" + r)), jalon: txt(v(P, "H" + r)) === "Oui", pct: typeof pc === "number" ? pc : 0 });
+  }
+  if (Dc) for (var k = 6; k <= 55; k++) {
+    var x = txt(v(Dc, "E" + k)); if (!x) continue;
+    actions.push({ id: txt(v(Dc, "A" + k)), date: day(v(Dc, "B" + k)), instance: txt(v(Dc, "C" + k)), texte: x, responsable: txt(v(Dc, "F" + k)), echeance: day(v(Dc, "G" + k)), statut: txt(v(Dc, "H" + k)) });
+  }
+  return { source: source || "", situation: day(v(A, "C11")), taches: taches, actions: actions };
+}
+
+
   var OTS = {"version":1,"params":[{"bloc":"Projet","k":"meta.projet","lib":"Nom du projet","t":"text","link":"=IF(Accueil!$C$5=\"\",\"\",Accueil!$C$5)"},{"bloc":"Projet","k":"meta.client","lib":"Client","t":"text","link":"=IF(Accueil!$C$6=\"\",\"\",Accueil!$C$6)"},{"bloc":"Projet","k":"meta.chefDeProjet","lib":"Chef de projet","t":"text","link":"=IF(Accueil!$C$7=\"\",\"\",Accueil!$C$7)"},{"bloc":"Projet","k":"meta.support","lib":"Contact du support (guides)","t":"text"},{"bloc":"Stockage","k":"stockage.cacheMois","lib":"Profondeur du cache (mois)","t":"num"},{"bloc":"Stockage","k":"stockage.compressionCache","lib":"Taux de compression du cache (1 = sans)","t":"num"},{"bloc":"Stockage","k":"stockage.copiesCache","lib":"Copies du cache","t":"num"},{"bloc":"Stockage","k":"stockage.compressionArchive","lib":"Taux de compression de l'archive","t":"num"},{"bloc":"Stockage","k":"stockage.copiesArchive","lib":"Copies de l'archive","t":"num"},{"bloc":"Stockage","k":"stockage.conservation","lib":"Durée de conservation (ans)","t":"num"},{"bloc":"Stockage","k":"stockage.horizon","lib":"Horizon de projection (ans)","t":"num"},{"bloc":"Stockage","k":"stockage.marge","lib":"Marge de sécurité","t":"pct"},{"bloc":"Stockage","k":"stockage.archives","lib":"Archives existantes à reprendre (To)","t":"num"},{"bloc":"Stockage","k":"stockage.recompression","lib":"Archives reprises recompressées à la migration (Oui / Non)","t":"text"},{"bloc":"Migration","k":"migration.volume","lib":"Volume à migrer (To)","t":"num"},{"bloc":"Migration","k":"migration.debitHeure","lib":"Débit (Go / heure)","t":"num"},{"bloc":"Migration","k":"migration.heuresSemaine","lib":"Heures par jour de semaine","t":"num"},{"bloc":"Migration","k":"migration.heuresWeekend","lib":"Heures par jour de week-end","t":"num"},{"bloc":"Migration","k":"migration.debut","lib":"Début de la migration","t":"date","link":"=IFERROR(INDEX(Planning!$E$6:$E$85,MATCH(\"Migration des archives*\",Planning!$C$6:$C$85,0)),\"\")"},{"bloc":"Migration","k":"migration.echeance","lib":"Échéance de la migration","t":"date","link":"=IFERROR(INDEX(Planning!$F$6:$F$85,MATCH(\"Migration des archives*\",Planning!$C$6:$C$85,0)),\"\")"},{"bloc":"Migration","k":"migration.erreurs","lib":"Taux d'études en erreur","t":"pct"},{"bloc":"Migration","k":"migration.scenarios","lib":"Scénarios de débit (coefficients séparés par ;)","t":"numlist"},{"bloc":"Nommage AET","k":"aet.prefixe","lib":"Préfixe des AE Titles","t":"text"},{"bloc":"Nommage AET","k":"aet.separateur","lib":"Séparateur","t":"text"},{"bloc":"Nommage AET","k":"aet.ordre","lib":"Ordre (type-site ou site-type)","t":"text"},{"bloc":"Interfaces","k":"flux.systemes","lib":"Systèmes de la cartographie (séparés par ;)","t":"list"},{"bloc":"Bascule","k":"bascule.t0","lib":"Heure H de la bascule (date et heure)","t":"datetime","link":"=IFERROR(INDEX(Planning!$E$6:$E$85,IFERROR(MATCH(\"Bascule*\",Planning!$C$6:$C$85,0),MATCH(\"Mise en production*\",Planning!$C$6:$C$85,0)))+TIME(18,0,0),\"\")"},{"bloc":"Bascule","k":"bascule.retour","lib":"Plan de retour arrière","t":"text"},{"bloc":"Suivi de migration","k":"suivi.volume","lib":"Volume à migrer (To)","t":"num"},{"bloc":"Suivi de migration","k":"suivi.debut","lib":"Début","t":"date","link":"=IFERROR(INDEX(Planning!$E$6:$E$85,MATCH(\"Migration des archives*\",Planning!$C$6:$C$85,0)),\"\")"},{"bloc":"Suivi de migration","k":"suivi.fin","lib":"Fin prévue","t":"date","link":"=IFERROR(INDEX(Planning!$F$6:$F$85,MATCH(\"Migration des archives*\",Planning!$C$6:$C$85,0)),\"\")"},{"bloc":"Formation","k":"formation.seuil","lib":"Seuil de couverture pour le Go","t":"pct"},{"bloc":"Formation","k":"formation.sites","lib":"Sites (séparés par ;, 6 au plus)","t":"list"},{"bloc":"Compte rendu","k":"cr.instance","lib":"Instance","t":"text"},{"bloc":"Compte rendu","k":"cr.date","lib":"Date de la réunion","t":"date"},{"bloc":"Compte rendu","k":"cr.notes","lib":"Notes brutes","t":"text"},{"bloc":"Avenant","k":"avenant.intitule","lib":"Objet de l'avenant","t":"text"},{"bloc":"Avenant","k":"avenant.margeVisee","lib":"Marge visée","t":"pct"},{"bloc":"Avenant","k":"avenant.caProjet","lib":"Chiffre d'affaires du projet","t":"eur","link":"=IF(Budget!$D$34=\"\",\"\",Budget!$D$34)"},{"bloc":"Avenant","k":"avenant.coutProjet","lib":"Coût prévu du projet","t":"eur","link":"=IF(Budget!$D$37=\"\",\"\",Budget!$D$37)"},{"bloc":"Avenant","k":"avenant.delaiJours","lib":"Délai supplémentaire (jours ouvrés)","t":"num"}],"lists":[{"sheet":"OT Stockage","path":"stockage.rows","title":"Volumétrie par type d'examen","cols":[{"k":"type","lib":"Type d'examen","t":"text","w":32},{"k":"examens","lib":"Examens par an","t":"num","w":14},{"k":"taille","lib":"Taille moyenne (Mo)","t":"num","w":14},{"k":"croissance","lib":"Croissance annuelle","t":"pct","w":14}]},{"sheet":"OT Prérequis","path":"prerequis.rows","title":"Prérequis client","cols":[{"k":"categorie","lib":"Catégorie","t":"text","w":20},{"k":"libelle","lib":"Prérequis","t":"text","w":50},{"k":"site","lib":"Site","t":"text","w":16},{"k":"responsable","lib":"Responsable","t":"text","w":14},{"k":"echeance","lib":"Échéance","t":"date","w":12},{"k":"pv","lib":"Nécessaire pour","t":"text","w":16},{"k":"statut","lib":"Statut","t":"text","w":12,"opts":["À faire","En cours","Fait","Bloquant"]}]},{"sheet":"OT Modalités","path":"modalites.rows","title":"Inventaire des modalités","cols":[{"k":"site","lib":"Site","t":"text","w":16},{"k":"type","lib":"Type DICOM","t":"text","w":9},{"k":"constructeur","lib":"Constructeur","t":"text","w":16},{"k":"modele","lib":"Modèle","t":"text","w":26},{"k":"annee","lib":"Année","t":"int","w":8},{"k":"aet","lib":"AE Title","t":"text","w":12},{"k":"ip","lib":"Adresse IP","t":"text","w":13},{"k":"port","lib":"Port","t":"int","w":8},{"k":"worklist","lib":"Worklist","t":"text","w":11,"opts":["Oui","Non","Passerelle"]},{"k":"statut","lib":"Statut","t":"text","w":13,"opts":["À connecter","Connectée","Testée","Problème"]},{"k":"test","lib":"Date du test","t":"date","w":12},{"k":"commentaire","lib":"Commentaire","t":"text","w":36}]},{"sheet":"OT Nommage AET","path":"aet.sites","shape":"map","title":"Codes de site pour le nommage des AE Titles","cols":[{"k":"site","lib":"Site","t":"text","w":24},{"k":"code","lib":"Code","t":"text","w":10}]},{"sheet":"OT Flux","path":"flux.rows","title":"Cartographie des flux","cols":[{"k":"source","lib":"Source","t":"text","w":16},{"k":"cible","lib":"Cible","t":"text","w":16},{"k":"protocole","lib":"Protocole","t":"text","w":24},{"k":"description","lib":"Description","t":"text","w":44},{"k":"statut","lib":"Statut","t":"text","w":12,"opts":["À spécifier","Spécifié","Développé","Recetté","KO"]}]},{"sheet":"OT Recette","path":"recette.rows","title":"Cahier de recette","cols":[{"k":"domaine","lib":"Domaine","t":"text","w":16},{"k":"profil","lib":"Profil","t":"text","w":14},{"k":"intitule","lib":"Scénario","t":"text","w":44},{"k":"attendu","lib":"Résultat attendu","t":"text","w":36},{"k":"bloquant","lib":"Bloquant","t":"bool","w":10,"opts":["Oui","Non"]},{"k":"statut","lib":"Statut","t":"text","w":11,"opts":["Non testé","OK","Réserve","KO"]},{"k":"testeur","lib":"Testeur","t":"text","w":18},{"k":"commentaire","lib":"Commentaire","t":"text","w":34}]},{"sheet":"OT Bascule","path":"bascule.etapes","title":"Chronogramme de bascule","cols":[{"k":"phase","lib":"Phase","t":"text","w":14},{"k":"prevu","lib":"Prévu","t":"datetime","w":16},{"k":"duree","lib":"Durée (min)","t":"num","w":10},{"k":"action","lib":"Action","t":"text","w":44},{"k":"responsable","lib":"Responsable","t":"text","w":22},{"k":"controle","lib":"Contrôle","t":"text","w":30},{"k":"statut","lib":"Statut","t":"text","w":10,"opts":["À faire","Fait","KO"]},{"k":"reel","lib":"Réalisé à","t":"datetime","w":16}]},{"sheet":"OT Go-NoGo","path":"bascule.criteres","title":"Critères Go / No-Go","cols":[{"k":"critere","lib":"Critère","t":"text","w":60},{"k":"ok","lib":"Rempli","t":"text","w":10,"opts":["Oui","Non"]}]},{"sheet":"OT Suivi migration","path":"suivi.jours","title":"Relevés quotidiens de la migration","cols":[{"k":"date","lib":"Date","t":"date","w":12},{"k":"to","lib":"To migrés","t":"num","w":11},{"k":"erreurs","lib":"Études en erreur","t":"int","w":14}]},{"sheet":"OT Formation profils","path":"formation.profils","title":"Profils et effectifs à former","cols":[{"k":"profil","lib":"Profil","t":"text","w":22},{"k":"duree","lib":"Durée (h)","t":"num","w":10},{"k":"effectifs","lib":"Effectif","t":"multi","n":6,"from":"formation.sites","w":16}]},{"sheet":"OT Formation sessions","path":"formation.sessions","title":"Sessions de formation","cols":[{"k":"date","lib":"Date","t":"date","w":12},{"k":"site","lib":"Site","t":"text","w":18},{"k":"profil","lib":"Profil","t":"text","w":20},{"k":"formateur","lib":"Formateur","t":"text","w":22},{"k":"places","lib":"Places","t":"int","w":9},{"k":"presents","lib":"Présents","t":"int","w":9}]},{"sheet":"OT Avenant MO","path":"avenant.profils","title":"Avenant : main-d'œuvre","cols":[{"k":"profil","lib":"Profil","t":"text","w":32},{"k":"jours","lib":"Jours","t":"num","w":9},{"k":"cout","lib":"Coût jour","t":"eur","w":12},{"k":"vente","lib":"Prix de vente jour","t":"eur","w":14}]},{"sheet":"OT Avenant achats","path":"avenant.achats","title":"Avenant : achats et licences","cols":[{"k":"libelle","lib":"Libellé","t":"text","w":40},{"k":"cout","lib":"Coût","t":"eur","w":12},{"k":"vente","lib":"Prix de vente","t":"eur","w":14}]}]};
   var OT_R0 = 5, OT_PARAM = "OT Paramètres";
   var NS_MAIN = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
@@ -1467,6 +1589,7 @@ if (typeof module !== "undefined") module.exports = DEFAULTS;
       var wb = XLSX.read(buf, { type: "array" }), res = otRead(wb);
       if (!res.hasOT && !res.pilot) throw { code: "not_pilot" };
       S = otMerge(S, res.data);
+      var snap = pilotSnapshot(wb, f.name); if (snap) S.pilotage = snap;
       ui.wb = { name: f.name, buf: buf, linked: res.linked, hasOT: res.hasOT };
       ui.wbPanel = res.hasOT ? false : true;
       saveDraft(); ui.wbDirty = false;
@@ -1524,6 +1647,7 @@ if (typeof module !== "undefined") module.exports = DEFAULTS;
     var d = b.dataset;
     if (d.add) { var arr = getP(S, d.add); arr.push(blankRow(d.add)); saveDraft(); render(); return; }
     if (d.del) { var ps = d.del.split("."), idx = +ps.pop(); getP(S, ps.join(".")).splice(idx, 1); saveDraft(); render(); return; }
+    if (d.wkdone) { setP(S, d.wkdone, d.v); if (/^bascule\.etapes\.\d+\.statut$/.test(d.wkdone)) setP(S, d.wkdone.replace(/statut$/, "reel"), nowLocal()); saveDraft(); render(); return; }
     if (d.guide) { ui.guide = d.guide; render(); return; }
     if (d.exp) { runExport(d.exp, d.all ? EXPORT_ORDER : [view], d.var, b); return; }
     if (d.step !== undefined) { var st = S.bascule.etapes[+d.step]; st.statut = d.st; st.reel = d.st === "À faire" ? "" : nowLocal(); saveDraft(); refreshSum(); return; }
@@ -1550,6 +1674,9 @@ if (typeof module !== "undefined") module.exports = DEFAULTS;
     if (a === "reset-no") { ui.confirmReset = false; render(); return; }
     if (a === "reset-yes") { clearDraft(); S = clone(shared || DEFAULTS); ui.confirmReset = false; msg = { text: "Données réinitialisées.", cls: "ok" }; render(); return; }
     if (a === "publish") { publish(); return; }
+    if (a === "wk-prev") { ui.wk = (ui.wk || 0) - 1; render(); return; }
+    if (a === "wk-next") { ui.wk = (ui.wk || 0) + 1; render(); return; }
+    if (a === "wk-now") { ui.wk = 0; render(); return; }
     if (a === "wb-panel") { ui.wbPanel = !ui.wbPanel; render(); return; }
     if (a === "wb-open") { var fi = document.getElementById("wbfile"); if (fi) fi.click(); return; }
     if (a === "wb-save") { if (ui.wb && ui.wb.hasOT) wbWrite(false); return; }
@@ -1593,6 +1720,7 @@ if (typeof module !== "undefined") module.exports = DEFAULTS;
     shared = base;
     S = clone(base);
     ["stockage", "migration", "prerequis", "modalites", "aet", "flux", "recette", "bascule", "suivi", "formation", "cr", "avenant", "meta"].forEach(function (k) { if (!S[k]) S[k] = clone(DEFAULTS[k]); });
+    if (S.pilotage === undefined && DEFAULTS.pilotage) S.pilotage = clone(DEFAULTS.pilotage);
     if (!S.meta.situation) S.meta.situation = "2026-11-03";
     var st0 = S.stockage;
     if (st0.recompression == null) st0.recompression = "Non";
