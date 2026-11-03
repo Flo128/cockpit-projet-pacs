@@ -3,7 +3,9 @@
 Cockpit de pilotage PRINCE2 d'un déploiement de PACS, vu du côté de l'éditeur (projet fictif : CH de Saint-Aubert).
 
 - Vues : synthèse et météo du projet, planning (Gantt), risques, points et décisions, marge et facturation, gouvernance.
-- Présentations plein écran pour le comité de pilotage (COPIL) et le comité de projet (COPROJ).
+- Présentations plein écran : COPIL et COPROJ (sans données internes, à montrer au client) et revue interne (marge, charge, facturation, risques de l'affaire).
+- Bascule « Vue interne / Vue client » pour l'affichage.
+- Édition client dans `client/` : mêmes vues, mais les données internes (marge, coûts, charge, risques et points internes) sont retirées du fichier de données. C'est la seule version à transmettre à un client.
 - Les données viennent du classeur Excel « Pilotage PRINCE2 PACS, version éditeur » (`data/projet.json`). Le bouton « Mettre à jour depuis Excel » charge un classeur à jour dans le navigateur.
 
 Auteur : Florian CROSES

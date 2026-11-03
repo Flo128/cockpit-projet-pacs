@@ -48,6 +48,9 @@ button.primary { background: var(--accent); color: var(--accent-ink); border-col
 nav.tabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
 nav.tabs a { padding: 10px 14px; color: var(--muted); text-decoration: none; font-weight: 600; border-bottom: 2px solid transparent; white-space: nowrap; }
 nav.tabs a[aria-current="page"] { color: var(--fg); border-bottom-color: var(--accent); }
+.audience { align-items: center; }
+.audience button[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+button.primary.internal { background: var(--fg); border-color: var(--fg); color: var(--bg); }
 main .wrap { padding-block: 24px 48px; display: grid; gap: 20px; }
 .banner { border: 1px solid var(--accent); background: var(--accent-soft); border-radius: var(--radius); padding: 12px 16px; display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; }
 .banner.err { border-color: var(--crit); background: var(--crit-soft); }
@@ -191,12 +194,12 @@ function parseWorkbook(wb) {
   m.risques = rows("Risques", 6, 65, "C", function (r) {
     var R = "Risques";
     return { id: txt(R, "A" + r), date: dt(R, "B" + r), description: txt(R, "C" + r), categorie: txt(R, "D" + r), probabilite: num(R, "E" + r), impact: num(R, "F" + r),
-      criticite: num(R, "G" + r), niveau: txt(R, "H" + r), proprietaire: txt(R, "I" + r), reponse: txt(R, "J" + r), actions: txt(R, "K" + r), echeance: dt(R, "L" + r), statut: txt(R, "M" + r) };
+      criticite: num(R, "G" + r), niveau: txt(R, "H" + r), proprietaire: txt(R, "I" + r), reponse: txt(R, "J" + r), actions: txt(R, "K" + r), echeance: dt(R, "L" + r), statut: txt(R, "M" + r), diffusion: txt(R, "N" + r) || "Partagé" };
   });
   m.points = rows("Points", 6, 65, "D", function (r) {
     var P = "Points";
     return { id: txt(P, "A" + r), date: dt(P, "B" + r), type: txt(P, "C" + r), description: txt(P, "D" + r), emisPar: txt(P, "E" + r), priorite: txt(P, "F" + r),
-      niveau: txt(P, "G" + r), impactDelai: num(P, "H" + r), montant: num(P, "I" + r), statut: txt(P, "J" + r), decision: txt(P, "K" + r) };
+      niveau: txt(P, "G" + r), impactDelai: num(P, "H" + r), montant: num(P, "I" + r), statut: txt(P, "J" + r), decision: txt(P, "K" + r), diffusion: txt(P, "L" + r) || "Partagé" };
   });
   if (wb.Sheets["Produits"]) m.produits = rows("Produits", 6, 45, "B", function (r) {
     var P = "Produits";
@@ -270,13 +273,37 @@ function parseWorkbook(wb) {
   };
   return m;
 }
-if (typeof module !== "undefined") module.exports = parseWorkbook;
+/* Vue client : tolérances sans marge ni charge, risque recalculé sur les seuls risques partagés. */
+function clientTolerances(m) {
+  var crit = m.risques.filter(function (r) { return r.diffusion !== "Interne" && r.statut !== "Clos" && (r.criticite || 0) >= 15; }).length;
+  return m.tolerances.filter(function (t) { return t.dimension !== "Marge" && t.dimension !== "Charge"; }).map(function (t) {
+    if (t.dimension !== "Risques") return t;
+    var c = t.tolerance ? crit / t.tolerance : (crit > 0 ? 9.99 : 0);
+    return { dimension: t.dimension, indicateur: "Risques critiques partagés non clos (criticité ≥ 15)", tolerance: t.tolerance, actuel: crit, consommee: c,
+      etat: c > 1 ? "Rouge" : c >= 0.8 ? "Orange" : "Vert", action: t.action };
+  });
+}
+/* Édition client : retire toutes les données internes à l'éditeur. */
+function toClient(m) {
+  var c = JSON.parse(JSON.stringify(m));
+  c.clientOnly = true;
+  c.tolerances = clientTolerances(m);
+  c.risques = c.risques.filter(function (r) { return r.diffusion !== "Interne"; });
+  c.points = c.points.filter(function (p) { return p.diffusion !== "Interne"; });
+  c.decisions = (c.decisions || []).filter(function (d) { return d.instance !== "Revue interne"; });
+  c.tiles = { reel: m.tiles.reel, prevu: m.tiles.prevu };
+  c.facturation = { jalons: m.facturation.jalons.map(function (j) { return { id: j.id, jalon: j.jalon, declencheur: j.declencheur, sequence: j.sequence, datePrevue: j.datePrevue, datePV: j.datePV, statut: j.statut }; }) };
+  c.recits = { commentaire: m.recits.commentaire, decisionsDemandees: m.recits.decisionsDemandees, prochainComite: m.recits.prochainComite };
+  delete c.budget; delete c.ressources; delete c.lecons; delete c.businessCase;
+  return c;
+}
+if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbook, toClient: toClient, clientTolerances: clientTolerances };
 
 </script>
 <script>
 (function () {
   "use strict";
-  var state = { ganttLW: (function () { try { var v = parseInt(localStorage.getItem("ganttLW"), 10); return v >= 160 && v <= 700 ? v : 330; } catch (e) { return 330; } })(), model: null, view: "synthese", deck: null, slide: 0, filtreRisques: "ouverts", filtrePoints: "ouverts", seqFiltre: "", source: "publie", banner: null };
+  var state = { ganttLW: (function () { try { var v = parseInt(localStorage.getItem("ganttLW"), 10); return v >= 160 && v <= 700 ? v : 330; } catch (e) { return 330; } })(), audience: (function () { try { return localStorage.getItem("audience") === "client" ? "client" : "interne"; } catch (e) { return "interne"; } })(), model: null, view: "synthese", deck: null, slide: 0, filtreRisques: "ouverts", filtrePoints: "ouverts", seqFiltre: "", source: "publie", banner: null };
   var VIEWS = [["synthese", "Synthèse"], ["planning", "Planning"], ["risques", "Risques"], ["points", "Points et décisions"], ["finances", "Marge et facturation"], ["gouvernance", "Gouvernance"]];
   var app = document.getElementById("app");
 
@@ -300,22 +327,28 @@ if (typeof module !== "undefined") module.exports = parseWorkbook;
   function niveauClass(n) { return n === "Critique" ? "crit" : n === "Élevé" ? "warn" : n === "Modéré" ? "info" : "ok"; }
 
   /* ---------- données dérivées ---------- */
-  function derive(m) {
+  function derive(m, aud) {
+    var client = aud === "client" || !!m.clientOnly;
     var sit = m.meta.situation;
-    var etats = m.tolerances.map(function (t) { return t.etat; });
+    var tols = client && !m.clientOnly ? clientTolerances(m) : m.tolerances;
+    var etats = tols.map(function (t) { return t.etat; });
     var meteo = etats.indexOf("Rouge") >= 0 ? "orage" : etats.indexOf("Orange") >= 0 ? "nuage" : "soleil";
-    var risquesOuverts = m.risques.filter(function (r) { return r.statut !== "Clos"; }).sort(function (a, b) { return (b.criticite || 0) - (a.criticite || 0); });
-    var pointsOuverts = m.points.filter(function (p) { return ["Clos", "Refusé", "Approuvé"].indexOf(p.statut) < 0; });
+    var risques = client ? m.risques.filter(function (r) { return r.diffusion !== "Interne"; }) : m.risques;
+    var points = client ? m.points.filter(function (p) { return p.diffusion !== "Interne"; }) : m.points;
+    var decisions = (m.decisions || []).filter(function (d) { return !client || d.instance !== "Revue interne"; });
+    var risquesOuverts = risques.filter(function (r) { return r.statut !== "Clos"; }).sort(function (a, b) { return (b.criticite || 0) - (a.criticite || 0); });
+    var pointsOuverts = points.filter(function (p) { return ["Clos", "Refusé", "Approuvé"].indexOf(p.statut) < 0; });
     var jalons = m.planning.filter(function (t) { return t.jalon && t.fin >= sit && (t.reel || 0) < 1; }).sort(function (a, b) { return a.fin < b.fin ? -1 : 1; });
     var debutPeriode = addDays(sit, -7);
     var travaux = m.planning.filter(function (t) { return t.debut && t.debut <= sit && t.fin >= debutPeriode; });
     var aVenir = m.planning.filter(function (t) { return t.debut && t.debut <= addDays(sit, 14) && t.fin > sit && (t.reel || 0) < 1; });
-    var actions = (m.decisions || []).filter(function (d) { return d.statut && d.statut !== "Fait"; });
+    var actions = decisions.filter(function (d) { return d.statut && d.statut !== "Fait"; });
     var produits30 = (m.produits || []).filter(function (p) { return p.datePrevue && p.datePrevue >= debutPeriode && p.datePrevue <= addDays(sit, 30); });
     var attenduClient = m.planning.filter(function (t) { return /^client/i.test(t.responsable) && (t.reel || 0) < 1; });
     var enCours = m.sequences.filter(function (s) { return s.debut && s.statut !== "Terminée" && s.debut <= sit; })[0] || null;
-    return { sit: sit, meteo: meteo, risquesOuverts: risquesOuverts, pointsOuverts: pointsOuverts, jalons: jalons, travaux: travaux, aVenir: aVenir,
-      actions: actions, produits30: produits30, attenduClient: attenduClient, sequenceEnCours: enCours, debutPeriode: debutPeriode };
+    var critiques = risquesOuverts.filter(function (r) { return (r.criticite || 0) >= 15; }).length;
+    return { client: client, sit: sit, meteo: meteo, tolerances: tols, risques: risques, points: points, decisions: decisions, risquesOuverts: risquesOuverts, pointsOuverts: pointsOuverts,
+      critiques: critiques, jalons: jalons, travaux: travaux, aVenir: aVenir, actions: actions, produits30: produits30, attenduClient: attenduClient, sequenceEnCours: enCours, debutPeriode: debutPeriode };
   }
 
   /* ---------- briques ---------- */
@@ -335,15 +368,30 @@ if (typeof module !== "undefined") module.exports = parseWorkbook;
     return '<svg viewBox="0 0 64 72" width="' + size + '" height="' + size + '" role="img" aria-label="Météo : ' + METEO[k].label + '">' + inner + "</svg>";
   }
   function kpiBlock(m, x) {
-    var t = m.tiles, f = m.facturation, r = m.ressources.total;
-    var items = [
-      [pct(t.reel), "Avancement réalisé (prévu " + pct(t.prevu) + ")"],
-      [pct(t.marge, 1), "Marge prévue (offre " + pct(m.budget.marge.initiale, 1) + ")"],
-      [keur(f.facture), "Facturé sur " + keur(f.total)],
-      [(r.prevision || 0) + " j", "Charge prévue (vendu " + (r.vendus || 0) + " j)"],
-      [String(t.risquesCritiques || 0), "Risque" + ((t.risquesCritiques || 0) > 1 ? "s" : "") + " critique" + ((t.risquesCritiques || 0) > 1 ? "s" : "") + " ouvert" + ((t.risquesCritiques || 0) > 1 ? "s" : "")],
-      [String(x.pointsOuverts.length), "Points ouverts"]
-    ];
+    var t = m.tiles, n = x.critiques, items;
+    var plur = function (k, s) { return k > 1 ? s + "s" : s; };
+    if (x.client) {
+      var delai = (x.tolerances.filter(function (tt) { return tt.dimension === "Délai"; })[0] || {}).actuel || 0;
+      var prods = m.produits || [], ok = prods.filter(function (p) { return p.statut === "Approuvé"; }).length;
+      items = [
+        [pct(t.reel), "Avancement réalisé (prévu " + pct(t.prevu) + ")"],
+        [delai ? "+" + delai + " j" : "À l'heure", delai ? "Retard prévu sur la date contractuelle" : "Date contractuelle tenue (" + fd(m.meta.finContrat) + ")"],
+        [x.jalons[0] ? fds(x.jalons[0].fin) : "–", x.jalons[0] ? "Prochain jalon : " + x.jalons[0].tache : "Aucun jalon à venir"],
+        [ok + " / " + prods.length, "Livrables approuvés"],
+        [String(n), plur(n, "Risque") + " " + plur(n, "critique") + " " + plur(n, "ouvert")],
+        [String(x.pointsOuverts.length), "Points ouverts"]
+      ];
+    } else {
+      var f = m.facturation, r = m.ressources.total;
+      items = [
+        [pct(t.reel), "Avancement réalisé (prévu " + pct(t.prevu) + ")"],
+        [pct(t.marge, 1), "Marge prévue (offre " + pct(m.budget.marge.initiale, 1) + ")"],
+        [keur(f.facture), "Facturé sur " + keur(f.total)],
+        [(r.prevision || 0).toLocaleString("fr-FR") + " j", "Charge prévue (vendu " + (r.vendus || 0).toLocaleString("fr-FR") + " j)"],
+        [String(n), plur(n, "Risque") + " " + plur(n, "critique") + " " + plur(n, "ouvert")],
+        [String(x.pointsOuverts.length), "Points ouverts"]
+      ];
+    }
     return '<div class="kpis">' + items.map(function (i) { return '<div class="kpi"><div class="v">' + esc(i[0]) + '</div><div class="l">' + esc(i[1]) + "</div></div>"; }).join("") + "</div>";
   }
   function seqRows(m) {
@@ -361,8 +409,8 @@ if (typeof module !== "undefined") module.exports = parseWorkbook;
     if (t.dimension === "Délai" || t.dimension === "Charge") return v + " j";
     return String(v);
   }
-  function gauges(m) {
-    return m.tolerances.map(function (t) {
+  function gauges(list) {
+    return list.map(function (t) {
       var c = Math.min(1.2, t.consommee || 0), col = t.etat === "Rouge" ? "var(--crit)" : t.etat === "Orange" ? "var(--warn)" : "var(--ok)";
       return '<div class="gauge"><div class="head"><strong>' + esc(t.dimension) + "</strong>" + pill(t.etat, etatClass(t.etat)) + "</div>" +
         '<div class="track" role="img" aria-label="' + esc(t.dimension) + " : " + pct(t.consommee) + ' de la tolérance consommée"><div class="fill" style="width:' + (c / 1.2 * 100).toFixed(1) + "%;background:" + col + '"></div>' +
@@ -531,7 +579,7 @@ if (typeof module !== "undefined") module.exports = parseWorkbook;
     return '<div class="grid g2"><section class="panel"><h2>Météo du projet <small>situation au ' + fd(x.sit) + '</small></h2><div class="weather">' + meteoIcon(x.meteo) +
       '<div><div class="state" style="color:var(--' + mt.cls + ')">' + mt.label + "</div><div>" + esc(mt.note) + "</div>" + (x.sequenceEnCours ? '<div class="note" style="margin-top:4px">Séquence en cours : ' + esc(x.sequenceEnCours.nom) + "</div>" : "") + "</div></div>" +
       (m.recits.commentaire ? '<div class="quote" style="margin-top:16px">' + esc(m.recits.commentaire) + '</div><p class="note" style="margin-top:6px">Commentaire du chef de projet (rapport de point).</p>' : "") + "</section>" +
-      '<section class="panel"><h2>Tolérances <small>gestion par exception</small></h2>' + gauges(m) + '<div class="legend"><span style="--c:var(--fg)">Traits : 80 % (vigilance) et 100 % (exception)</span></div></section></div>' +
+      '<section class="panel"><h2>Tolérances <small>gestion par exception</small></h2>' + gauges(x.tolerances) + '<div class="legend"><span style="--c:var(--fg)">Traits : 80 % (vigilance) et 100 % (exception)</span></div></section></div>' +
       kpiBlock(m, x) +
       '<div class="grid g2"><section class="panel"><h2>Avancement par séquence</h2><div class="legend" style="margin:-4px 0 6px"><span style="--c:var(--accent)">Réalisé</span><span style="--c:var(--plan)">Prévu</span></div>' + seqRows(m) + "</section>" +
       '<section class="panel"><h2>Prochains jalons</h2>' + jalonsList(x.jalons, 6) + '<h2 style="margin-top:18px">Risques à surveiller <small>' + x.risquesOuverts.length + " ouverts</small></h2>" + riskTable(x.risquesOuverts.slice(0, 3), true) + "</section></div>";
@@ -546,7 +594,7 @@ if (typeof module !== "undefined") module.exports = parseWorkbook;
       '<section class="panel"><h2>Tâches <small>' + list.length + "</small></h2>" + taskTable(list) + "</section>";
   }
   function viewRisques(m, x) {
-    var list = state.filtreRisques === "ouverts" ? x.risquesOuverts : m.risques.slice().sort(function (a, b) { return (b.criticite || 0) - (a.criticite || 0); });
+    var list = state.filtreRisques === "ouverts" ? x.risquesOuverts : x.risques.slice().sort(function (a, b) { return (b.criticite || 0) - (a.criticite || 0); });
     var counts = ["Critique", "Élevé", "Modéré", "Faible"].map(function (n) { return [n, x.risquesOuverts.filter(function (r) { return r.niveau === n; }).length]; });
     return '<div class="grid g2"><section class="panel"><h2><span>Matrice des risques ouverts ' + tipRisques() + '</span></h2>' + matrix(x.risquesOuverts) + "</section>" +
       '<section class="panel"><h2>Répartition</h2><div class="kpis">' + counts.map(function (c) { return '<div class="kpi"><div class="v" style="color:var(--' + niveauClass(c[0]) + ')">' + c[1] + '</div><div class="l">' + c[0] + "</div></div>"; }).join("") + "</div>" +
@@ -554,12 +602,12 @@ if (typeof module !== "undefined") module.exports = parseWorkbook;
       '<section class="panel"><h2><span>Registre des risques ' + tipRisques() + '</span></h2><div class="filters" style="margin-bottom:12px"><button type="button" data-rf="ouverts" aria-pressed="' + (state.filtreRisques === "ouverts") + '">Ouverts</button><button type="button" data-rf="tous" aria-pressed="' + (state.filtreRisques === "tous") + '">Tous</button></div>' + riskTable(list) + "</section>";
   }
   function viewPoints(m, x) {
-    var list = state.filtrePoints === "ouverts" ? x.pointsOuverts : m.points;
-    var av = m.points.filter(function (p) { return p.type === "Demande de changement" && p.statut === "Approuvé"; });
+    var list = state.filtrePoints === "ouverts" ? x.pointsOuverts : x.points;
+    var av = x.client ? [] : x.points.filter(function (p) { return p.type === "Demande de changement" && p.statut === "Approuvé"; });
     return '<section class="panel"><h2>Registre des points <small>demandes de changement, hors spécification, problèmes</small></h2><div class="filters" style="margin-bottom:12px"><button type="button" data-pf="ouverts" aria-pressed="' + (state.filtrePoints === "ouverts") + '">Ouverts</button><button type="button" data-pf="tous" aria-pressed="' + (state.filtrePoints === "tous") + '">Tous</button></div>' + pointsTable(list) +
       (av.length ? '<p class="note" style="margin-top:10px">Avenants signés : ' + av.map(function (p) { return esc(p.id) + " (" + eur(p.montant) + ")"; }).join(", ") + ".</p>" : "") + "</section>" +
       '<section class="panel"><h2>Actions en cours <small>issues des comités</small></h2>' + actionsTable(x.actions) + "</section>" +
-      '<section class="panel"><h2>Journal des décisions</h2>' + actionsTable((m.decisions || []).filter(function (d) { return d.statut === "Fait"; })) + "</section>";
+      '<section class="panel"><h2>Journal des décisions</h2>' + actionsTable(x.decisions.filter(function (d) { return d.statut === "Fait"; })) + "</section>";
   }
   function viewFinances(m) {
     var b = m.budget;
@@ -571,7 +619,7 @@ if (typeof module !== "undefined") module.exports = parseWorkbook;
       b.lignes.map(function (l) { return "<tr><td>" + esc(l.poste) + "</td><td>" + esc(l.categorie) + '</td><td class="num">' + eur(l.initial) + '</td><td class="num">' + eur(l.prevision) + '</td><td class="num">' + eur(l.engage) + '</td><td class="num" style="color:' + ((l.ecart || 0) > 0 ? "var(--warn)" : "inherit") + '">' + ((l.ecart || 0) > 0 ? "+" : "") + eur(l.ecart) + '</td><td class="note">' + esc(l.commentaire) + "</td></tr>"; }).join("") +
       '<tr><td><strong>Total</strong></td><td></td><td class="num"><strong>' + eur(b.total.initial) + '</strong></td><td class="num"><strong>' + eur(b.total.prevision) + '</strong></td><td class="num"><strong>' + eur(b.total.engage) + '</strong></td><td class="num"><strong>+' + eur(b.total.ecart) + "</strong></td><td></td></tr></tbody></table></div></section>";
   }
-  function viewGouvernance(m) {
+  function viewGouvernance(m, x) {
     var o = m.organisation || { roles: [], instances: [], raci: { roles: [], activites: [] } };
     var raciCls = { A: "crit", R: "info", C: "warn", I: "" };
     return '<div class="grid g2"><section class="panel"><h2>Rôles PRINCE2</h2><div class="tablewrap"><table><tbody>' + o.roles.map(function (r) { return "<tr><td><strong>" + esc(r.role) + '</strong><div class="note">' + esc(r.instance) + "</div></td><td>" + esc(r.titulaire) + '<div class="note">' + esc(r.responsabilites) + "</div></td></tr>"; }).join("") + "</tbody></table></div></section>" +
@@ -581,55 +629,88 @@ if (typeof module !== "undefined") module.exports = parseWorkbook;
       o.raci.activites.map(function (a) { return "<tr><td>" + esc(a.activite) + "</td>" + a.valeurs.map(function (v) { return '<td style="text-align:center">' + (v ? pill(v, raciCls[v]) : "") + "</td>"; }).join("") + "</tr>"; }).join("") + "</tbody></table></div></section>" +
       '<section class="panel"><h2>Produits contractuels <small>principe 6 : orientation produit</small></h2><div class="tablewrap"><table><thead><tr><th>ID</th><th>Produit</th><th>Critères de qualité</th><th>Approbateur</th><th>Date prévue</th><th>Statut</th></tr></thead><tbody>' +
       (m.produits || []).map(function (p) { return '<tr><td class="id">' + esc(p.id) + "</td><td>" + esc(p.produit) + '<div class="note">' + esc(seqCode(p.sequence)) + "</div></td><td>" + esc(p.criteres) + "</td><td>" + esc(p.approbateur) + '</td><td class="mono">' + fd(p.datePrevue) + "</td><td>" + pill(p.statut) + "</td></tr>"; }).join("") + "</tbody></table></div></section>" +
-      (m.lecons && m.lecons.length ? '<section class="panel"><h2>Leçons</h2><div class="tablewrap"><table><thead><tr><th>Source</th><th>Constat</th><th>Recommandation</th></tr></thead><tbody>' + m.lecons.map(function (l) { return "<tr><td>" + esc(l.source) + '<div class="note">' + esc(seqCode(l.sequence)) + "</div></td><td>" + esc(l.constat) + "</td><td>" + esc(l.recommandation) + "</td></tr>"; }).join("") + "</tbody></table></div></section>" : "");
+      (!x.client && m.lecons && m.lecons.length ? '<section class="panel"><h2>Leçons</h2><div class="tablewrap"><table><thead><tr><th>Source</th><th>Constat</th><th>Recommandation</th></tr></thead><tbody>' + m.lecons.map(function (l) { return "<tr><td>" + esc(l.source) + '<div class="note">' + esc(seqCode(l.sequence)) + "</div></td><td>" + esc(l.constat) + "</td><td>" + esc(l.recommandation) + "</td></tr>"; }).join("") + "</tbody></table></div></section>" : "");
   }
 
   /* ---------- présentations ---------- */
   function slide(kick, title, body, cls) { return { kick: kick, title: title, body: body, cls: cls || "" }; }
+  function pvTable(m, x) {
+    var list = m.facturation.jalons;
+    if (!list.length) return '<p class="empty">Aucun jalon contractuel.</p>';
+    return '<div class="tablewrap"><table><thead><tr><th>Jalon contractuel</th><th>PV ou événement</th><th>Date prévue</th><th>Date du PV</th><th>Statut</th></tr></thead><tbody>' +
+      list.map(function (j) {
+        var st = j.datePV || j.statut === "Facturé" || j.statut === "Payé" ? "PV signé" : (j.datePrevue && j.datePrevue < x.sit ? "En retard" : "À venir");
+        return "<tr><td>" + esc(j.jalon) + '<div class="note">' + esc(seqCode(j.sequence)) + "</div></td><td>" + esc(j.declencheur) + '</td><td class="mono">' + fd(j.datePrevue) + '</td><td class="mono">' + fd(j.datePV) + "</td><td>" + pill(st, st === "PV signé" ? "ok" : st === "En retard" ? "crit" : "") + "</td></tr>";
+      }).join("") + "</tbody></table></div>";
+  }
+  function actionsShort(list, n) {
+    if (!list.length) return '<p class="empty">Aucune action en cours.</p>';
+    return '<div class="tablewrap"><table><tbody>' + list.slice(0, n).map(function (d) { return "<tr><td>" + esc(d.texte.replace(/^(Action|Décision)\s*(\(client\))?\s*:\s*/, "")) + '<div class="note">' + esc(d.responsable) + " · " + fd(d.echeance) + "</div></td><td>" + pill(d.statut) + "</td></tr>"; }).join("") + "</tbody></table></div>";
+  }
   function deckCopil(m, x) {
     var mt = METEO[x.meteo];
     var dem = (m.recits.decisionsDemandees || "").split(/\n+/).filter(Boolean);
     var copilPoints = x.pointsOuverts.filter(function (p) { return p.niveau === "COPIL"; });
-    var exc = m.tolerances.some(function (t) { return t.etat !== "Vert"; }) && m.recits.exception.recommandation;
     return [
-      slide("Comité de pilotage · " + fd(x.sit), m.meta.projet, '<ol class="agenda"><li>Météo et synthèse</li><li>Avancement et jalons</li><li>Tolérances</li><li>Risques majeurs</li><li>Économie de l\'affaire</li><li>Décisions attendues</li><li>Prochaines étapes</li></ol>', "cover"),
+      slide("Comité de pilotage · " + fd(x.sit), m.meta.projet, '<ol class="agenda"><li>Météo et synthèse</li><li>Avancement et jalons</li><li>Tolérances</li><li>Risques majeurs</li><li>Jalons contractuels et PV</li><li>Décisions attendues</li><li>Prochaines étapes</li></ol>', "cover"),
       slide("1 · Météo et synthèse", "Météo : " + mt.label.toLowerCase(), '<div class="weather">' + meteoIcon(x.meteo, 96) + '<div><div class="state" style="font-size:28px;color:var(--' + mt.cls + ')">' + mt.label + '</div><div style="font-size:20px">' + esc(mt.note) + "</div></div></div>" + kpiBlock(m, x).replace('class="kpis"', 'class="kpis" style="grid-template-columns:repeat(3,1fr)"') + (m.recits.commentaire ? '<div class="quote" style="font-size:18px">' + esc(m.recits.commentaire) + "</div>" : "")),
       slide("2 · Avancement", "Avancement par séquence et jalons", '<div class="grid" style="grid-template-columns:1.4fr 1fr;gap:32px"><div><div class="legend" style="margin:0 0 6px;font-size:15px"><span style="--c:var(--accent)">Réalisé</span><span style="--c:var(--plan)">Prévu</span></div>' + seqRows(m) + "</div><div><h4 style=\"margin:0 0 8px;font-size:18px\">Prochains jalons</h4>" + jalonsList(x.jalons, 5) + "</div></div>"),
-      slide("3 · Gestion par exception", "Tolérances du projet", '<div class="grid" style="grid-template-columns:1fr 1fr;gap:4px 40px">' + gauges(m) + "</div>"),
+      slide("3 · Gestion par exception", "Tolérances du projet", '<div class="grid" style="grid-template-columns:1fr 1fr;gap:4px 40px">' + gauges(x.tolerances) + "</div>"),
       slide("4 · Risques", "Risques majeurs", '<div class="grid" style="grid-template-columns:1.8fr 1fr;gap:28px"><div>' + riskTable(x.risquesOuverts.slice(0, 4), true) + "</div><div>" + matrix(x.risquesOuverts) + "</div></div>"),
-      slide("5 · Économie de l'affaire", "Marge, facturation et charge", '<div class="grid" style="grid-template-columns:1fr 1fr;gap:40px"><div>' + margeBlock(m, true) + "</div><div>" + factuBar(m) +
-        '<div class="kpis" style="margin-top:20px;grid-template-columns:1fr 1fr"><div class="kpi"><div class="v">' + (m.ressources.total.prevision || 0) + ' j</div><div class="l">charge prévue pour ' + (m.ressources.total.vendus || 0) + ' j vendus</div></div><div class="kpi"><div class="v">' + keur(m.facturation.reste) + '</div><div class="l">reste à facturer</div></div></div></div></div>'),
+      slide("5 · Contrat", "Jalons contractuels et PV", pvTable(m, x)),
       slide("6 · Décisions", "Décisions attendues du comité", (dem.length ? '<ol style="font-size:22px;margin:0;padding-left:28px;display:grid;gap:12px">' + dem.map(function (d) { return "<li>" + esc(d.replace(/^\d+\.\s*/, "")) + "</li>"; }).join("") + "</ol>" : '<p class="empty">Aucune décision demandée.</p>') +
-        (copilPoints.length ? '<div><h4 style="margin:0 0 8px;font-size:18px">Points soumis au comité</h4>' + pointsTable(copilPoints) + "</div>" : "") +
-        (exc ? '<div class="quote" style="font-size:18px"><strong>Recommandation du chef de projet (rapport d\'exception) :</strong> ' + esc(m.recits.exception.recommandation) + "</div>" : "")),
-      slide("7 · Suite", "Prochaines étapes", '<div class="grid" style="grid-template-columns:1fr 1fr;gap:40px"><div><h4 style="margin:0 0 8px;font-size:18px">Jalons</h4>' + jalonsList(x.jalons, 5) + "</div><div><h4 style=\"margin:0 0 8px;font-size:18px\">Actions en cours</h4>" +
-        '<div class="tablewrap"><table><tbody>' + x.actions.slice(0, 5).map(function (d) { return "<tr><td>" + esc(d.texte.replace(/^(Action|Décision)\s*(\(client\))?\s*:\s*/, "")) + '<div class="note">' + esc(d.responsable) + " · " + fd(d.echeance) + "</div></td></tr>"; }).join("") + "</tbody></table></div></div></div>" +
+        (copilPoints.length ? '<div><h4 style="margin:0 0 8px;font-size:18px">Points soumis au comité</h4>' + pointsTable(copilPoints) + "</div>" : "")),
+      slide("7 · Suite", "Prochaines étapes", '<div class="grid" style="grid-template-columns:1fr 1fr;gap:40px"><div><h4 style="margin:0 0 8px;font-size:18px">Jalons</h4>' + jalonsList(x.jalons, 5) + "</div><div><h4 style=\"margin:0 0 8px;font-size:18px\">Actions en cours</h4>" + actionsShort(x.actions, 5) + "</div></div>" +
         (m.recits.prochainComite.date ? '<p style="font-size:22px;margin:0"><strong>Prochain comité de pilotage :</strong> ' + fd(m.recits.prochainComite.date) + " · " + esc(m.recits.prochainComite.objet) + "</p>" : ""))
     ];
   }
   function deckCoproj(m, x) {
+    var pvAVenir = { facturation: { jalons: m.facturation.jalons.filter(function (j) { return !j.datePV && j.statut === "Prévu"; }).slice(0, 4) } };
     return [
-      slide("Comité de projet · semaine du " + fd(x.debutPeriode) + " au " + fd(x.sit), m.meta.projet, '<ol class="agenda"><li>Travaux de la semaine</li><li>Prévu sur deux semaines</li><li>Actions en cours</li><li>Points ouverts</li><li>Risques à suivre</li><li>Charge des ressources</li><li>Attendus et livrables</li></ol>', "cover"),
+      slide("Comité de projet · semaine du " + fd(x.debutPeriode) + " au " + fd(x.sit), m.meta.projet, '<ol class="agenda"><li>Travaux de la semaine</li><li>Prévu sur deux semaines</li><li>Actions en cours</li><li>Points ouverts</li><li>Risques à suivre</li><li>Jalons et PV à venir</li><li>Attendus et livrables</li></ol>', "cover"),
       slide("1 · Semaine écoulée", "Travaux de la période", taskTable(x.travaux.slice(0, 8))),
       slide("2 · À venir", "Prévu sur les deux prochaines semaines", taskTable(x.aVenir.slice(0, 8))),
       slide("3 · Suivi", "Actions en cours", actionsTable(x.actions.slice(0, 6))),
       slide("4 · Points", "Points ouverts", pointsTable(x.pointsOuverts.slice(0, 6))),
       slide("5 · Risques", "Risques à suivre", riskTable(x.risquesOuverts.slice(0, 6), true)),
-      slide("6 · Ressources", "Charge des ressources", '<div class="grid" style="grid-template-columns:1.2fr 1fr;gap:36px"><div>' + chargeBars(m) + "</div><div>" + planMensuel(m, 260) + "</div></div>"),
+      slide("6 · Jalons", "Jalons et PV à venir", '<div class="grid" style="grid-template-columns:1fr 1.2fr;gap:36px"><div><h4 style="margin:0 0 8px;font-size:18px">Jalons du planning</h4>' + jalonsList(x.jalons, 5) + '</div><div><h4 style="margin:0 0 8px;font-size:18px">PV contractuels attendus</h4>' + pvTable(pvAVenir, x) + "</div></div>"),
       slide("7 · Attendus", "Attendus du client et livrables à venir", '<div class="grid" style="grid-template-columns:1fr 1fr;gap:36px"><div><h4 style="margin:0 0 8px;font-size:18px">Attendus du client</h4>' +
         (x.attenduClient.length ? '<div class="tablewrap"><table><tbody>' + x.attenduClient.slice(0, 5).map(function (t) { return "<tr><td>" + esc(t.tache) + '<div class="note">' + esc(t.responsable) + " · " + fd(t.fin) + "</div></td><td>" + pill(t.statut) + "</td></tr>"; }).join("") + "</tbody></table></div>" : '<p class="empty">Aucun.</p>') +
         '</div><div><h4 style="margin:0 0 8px;font-size:18px">Livrables attendus sous 30 jours</h4>' +
         (x.produits30.length ? '<div class="tablewrap"><table><tbody>' + x.produits30.map(function (p) { return "<tr><td>" + esc(p.produit) + '<div class="note">' + esc(p.approbateur) + " · " + fd(p.datePrevue) + "</div></td><td>" + pill(p.statut) + "</td></tr>"; }).join("") + "</tbody></table></div>" : '<p class="empty">Aucun.</p>') + "</div></div>")
     ];
   }
+  function deckInterne(m, x) {
+    var mt = METEO[x.meteo], b = m.budget;
+    var derives = b.lignes.filter(function (l) { return (l.ecart || 0) > 0; }).sort(function (a, c) { return c.ecart - a.ecart; });
+    var internes = x.risquesOuverts.filter(function (r) { return r.diffusion === "Interne" || r.categorie === "Financier"; });
+    var sensibles = m.points.filter(function (p) { return p.diffusion === "Interne" || (p.type === "Demande de changement" && p.statut === "Approuvé" && !p.montant); });
+    var ex = m.recits.exception || {}, exc = x.tolerances.some(function (t) { return t.etat !== "Vert"; });
+    var opts = (ex.options || []).filter(function (o) { return o.option; });
+    return [
+      slide("Revue interne · " + fd(x.sit) + " · confidentiel", m.meta.projet, '<ol class="agenda"><li>Météo interne et tolérances</li><li>Marge de l\'affaire</li><li>Charge des ressources</li><li>Facturation et encaissement</li><li>Risques de l\'affaire</li><li>Points sensibles</li><li>Recadrage et décisions</li></ol>', "cover"),
+      slide("1 · Gestion par exception", "Météo interne : " + mt.label.toLowerCase(), '<div class="grid" style="grid-template-columns:auto 1fr;gap:36px;align-items:start"><div style="text-align:center">' + meteoIcon(x.meteo, 120) + '<div class="state" style="font-size:24px;color:var(--' + mt.cls + ')">' + mt.label + '</div></div><div class="grid" style="grid-template-columns:1fr 1fr;gap:0 32px">' + gauges(x.tolerances) + "</div></div>"),
+      slide("2 · Économie de l'affaire", "Marge de l'affaire", '<div class="grid" style="grid-template-columns:1fr 1.2fr;gap:40px"><div>' + margeBlock(m, true) + '</div><div><h4 style="margin:0 0 8px;font-size:18px">Postes en dérive</h4>' +
+        (derives.length ? '<div class="tablewrap"><table><tbody>' + derives.slice(0, 5).map(function (l) { return "<tr><td>" + esc(l.poste) + '<div class="note">' + esc(l.commentaire) + '</div></td><td class="num" style="color:var(--warn)">+' + eur(l.ecart) + "</td></tr>"; }).join("") + "</tbody></table></div>" : '<p class="empty">Aucun poste en dérive.</p>') + "</div></div>"),
+      slide("3 · Ressources", "Charge des ressources", '<div class="grid" style="grid-template-columns:1.2fr 1fr;gap:36px"><div>' + chargeBars(m) + "</div><div>" + planMensuel(m, 260) + "</div></div>"),
+      slide("4 · Trésorerie", "Facturation et encaissement", factuBar(m) + factuTable(m)),
+      slide("5 · Risques", "Risques de l'affaire", riskTable(x.risquesOuverts.slice(0, 6), true) + (internes.length ? '<p class="note" style="font-size:15px;margin:0">Dont ' + internes.length + " risque" + (internes.length > 1 ? "s" : "") + " interne" + (internes.length > 1 ? "s" : "") + " ou financier" + (internes.length > 1 ? "s" : "") + " : " + internes.map(function (r) { return r.id; }).join(", ") + ", non présentés au client.</p>" : "")),
+      slide("6 · Points sensibles", "Points internes et gestes commerciaux", sensibles.length ? pointsTable(sensibles.slice(0, 6)) : '<p class="empty">Aucun point sensible.</p>'),
+      slide("7 · Décisions", exc && opts.length ? "Options de recadrage" : "Décisions internes", exc && opts.length ?
+        '<div class="tablewrap"><table><thead><tr><th>Option</th><th>Description</th><th>Délai</th><th>Coût</th><th>Risque résiduel</th></tr></thead><tbody>' + opts.map(function (o) { return "<tr><td><strong>" + esc(o.option) + "</strong></td><td>" + esc(o.description) + "</td><td>" + esc(o.delai) + "</td><td>" + esc(o.cout) + "</td><td>" + esc(o.risque) + "</td></tr>"; }).join("") + "</tbody></table></div>" +
+        (ex.recommandation ? '<div class="quote" style="font-size:18px"><strong>Recommandation du chef de projet :</strong> ' + esc(ex.recommandation) + "</div>" : "")
+        : '<p style="font-size:22px;margin:0">Aucune tolérance menacée : pas de rapport d\'exception.</p>' + actionsShort(x.actions, 5))
+    ];
+  }
   function renderDeck() {
-    var m = state.model, x = derive(m), slides = state.deck === "copil" ? deckCopil(m, x) : deckCoproj(m, x);
+    var m = state.model, x = derive(m, state.deck === "interne" ? "interne" : "client");
+    var slides = state.deck === "copil" ? deckCopil(m, x) : state.deck === "interne" ? deckInterne(m, x) : deckCoproj(m, x);
     state.slide = Math.max(0, Math.min(state.slide, slides.length - 1));
-    var s = slides[state.slide], name = state.deck === "copil" ? "COPIL" : "COPROJ";
+    var s = slides[state.slide], name = { copil: "COPIL", coproj: "COPROJ", interne: "Revue interne" }[state.deck];
     var html = '<div class="deck" id="deck" role="dialog" aria-label="Présentation ' + name + '"><div class="stage" id="stage"><div class="slide ' + s.cls + '" id="slide">' +
       "<div><div class=\"kick\">" + esc(s.kick) + "</div><h3>" + esc(s.title) + "</h3>" + (s.cls === "cover" ? '<p style="font-size:22px;margin:16px 0 0;opacity:.9">' + esc(m.meta.client) + "</p>" : "") + "</div>" +
       '<div class="body">' + s.body + "</div>" +
-      '<div class="foot"><span>' + esc(m.meta.projet) + " · " + name + " du " + fd(x.sit) + "</span><span>" + esc(m.meta.chefDeProjet ? "Chef de projet : " + m.meta.chefDeProjet : "") + " · " + (state.slide + 1) + " / " + slides.length + "</span></div></div></div>" +
+      '<div class="foot"><span>' + esc(m.meta.projet) + " · " + name + " du " + fd(x.sit) + "</span><span>" + (state.deck === "interne" ? "Confidentiel, usage interne · " : "") + esc(m.meta.chefDeProjet ? "Chef de projet : " + m.meta.chefDeProjet : "") + " · " + (state.slide + 1) + " / " + slides.length + "</span></div></div></div>" +
       '<div class="deckbar"><button type="button" data-deck="prev" aria-label="Diapositive précédente">←</button><span class="count">' + (state.slide + 1) + " / " + slides.length + '</span><button type="button" data-deck="next" aria-label="Diapositive suivante">→</button>' +
       '<button type="button" data-deck="full">Plein écran</button><button type="button" data-deck="exit">Quitter</button></div></div>';
     return html;
@@ -645,14 +726,19 @@ if (typeof module !== "undefined") module.exports = parseWorkbook;
   function render() {
     var m = state.model;
     if (!m) return;
-    var x = derive(m);
-    var nav = VIEWS.map(function (v) { return '<a href="#' + v[0] + '"' + (state.view === v[0] ? ' aria-current="page"' : "") + ">" + v[1] + "</a>"; }).join("");
+    var locked = !!m.clientOnly, aud = locked ? "client" : state.audience;
+    var x = derive(m, aud);
+    if (x.client && state.view === "finances") state.view = "synthese";
+    var nav = VIEWS.filter(function (v) { return !(x.client && v[0] === "finances"); }).map(function (v) { return '<a href="#' + v[0] + '"' + (state.view === v[0] ? ' aria-current="page"' : "") + ">" + v[1] + "</a>"; }).join("");
     var body = { synthese: viewSynthese, planning: viewPlanning, risques: viewRisques, points: viewPoints, finances: viewFinances, gouvernance: viewGouvernance }[state.view](m, x);
     var b = state.banner;
     var banner = b ? '<div class="banner' + (b.err ? " err" : "") + '" role="status"><span>' + esc(b.text) + '</span><span class="actions">' + (b.actions || []).map(function (a) { return '<button type="button" class="' + (a.primary ? "primary" : "") + '" data-banner="' + a.id + '">' + esc(a.label) + "</button>"; }).join("") + "</span></div>" : "";
     app.innerHTML = '<header class="top"><div class="wrap"><div class="brand"><div><div class="eyebrow">Pilotage PRINCE2 · ' + esc(m.meta.client.split("|")[0].trim()) + '</div><h1>' + esc(m.meta.projet) + '</h1><div class="sub">Situation au ' + fd(x.sit) + " · chef de projet " + esc(m.meta.chefDeProjet) + " · fin contractuelle " + fd(m.meta.finContrat) + (state.source === "local" ? ' · <strong>classeur importé (vue personnelle)</strong>' : "") + "</div></div>" +
-      '<div class="actions"><button type="button" class="primary" data-present="copil">Présenter le COPIL</button><button type="button" class="primary" data-present="coproj">Présenter le COPROJ</button><button type="button" data-import="1">Mettre à jour depuis Excel</button></div></div>' +
-      '<nav class="tabs" aria-label="Vues">' + nav + "</nav></div></header><main><div class=\"wrap\">" + banner + body + '<p class="note">Données issues du classeur « Pilotage PRINCE2 PACS, version éditeur ». Projet fictif présenté à titre d\'exemple.</p></div></main>' +
+      '<div class="actions"><button type="button" class="primary" data-present="copil">Présenter le COPIL</button><button type="button" class="primary" data-present="coproj">Présenter le COPROJ</button>' +
+      (x.client ? "" : '<button type="button" class="primary internal" data-present="interne">Revue interne</button>') + '<button type="button" data-import="1">Mettre à jour depuis Excel</button></div></div>' +
+      (locked ? "" : '<div class="filters audience" role="group" aria-label="Public"><button type="button" data-aud="interne" aria-pressed="' + (aud === "interne") + '">Vue interne</button><button type="button" data-aud="client" aria-pressed="' + (aud === "client") + '">Vue client</button>' +
+        '<span class="note" style="align-self:center">' + (aud === "client" ? "Marge, coûts, charge et éléments internes masqués." : "Toutes les données de l'éditeur sont visibles.") + "</span></div>") +
+      '<nav class="tabs" aria-label="Vues">' + nav + "</nav></div></header><main><div class=\"wrap\">" + banner + body + '<p class="note">' + (locked ? "Édition client : les données internes à l'éditeur ne figurent pas dans cette version. " : x.client ? "Vue client : affichage seulement, les données internes restent présentes dans la page. Pour transmettre au client, utilisez l'édition client. " : "") + 'Données issues du classeur « Pilotage PRINCE2 PACS, version éditeur ». Projet fictif présenté à titre d\'exemple.</p></div></main>' +
       (state.deck ? renderDeck() : "");
     if (state.deck) { fitSlide(); var dk = document.getElementById("deck"); if (dk) dk.focus && dk.setAttribute("tabindex", "-1"); }
   }
@@ -660,7 +746,8 @@ if (typeof module !== "undefined") module.exports = parseWorkbook;
   /* ---------- navigation ---------- */
   function fromHash() {
     var h = (location.hash || "").replace("#", "");
-    if (h === "copil" || h === "coproj") { if (state.deck !== h) { state.deck = h; state.slide = 0; } }
+    if (h === "interne" && state.model && state.model.clientOnly) h = "copil";
+    if (h === "copil" || h === "coproj" || h === "interne") { if (state.deck !== h) { state.deck = h; state.slide = 0; } }
     else { state.deck = null; if (VIEWS.some(function (v) { return v[0] === h; })) state.view = h; }
     render();
   }
@@ -684,6 +771,7 @@ if (typeof module !== "undefined") module.exports = parseWorkbook;
       else if (a === "full") { try { var el = document.documentElement; if (document.fullscreenElement) document.exitFullscreen(); else if (el.requestFullscreen) el.requestFullscreen().then(fitSlide, function () {}); } catch (err) {} return; }
       render(); return;
     }
+    if (t.dataset.aud) { state.audience = t.dataset.aud; try { localStorage.setItem("audience", state.audience); } catch (err) {} render(); return; }
     if (t.dataset.seq !== undefined) { state.seqFiltre = t.dataset.seq; render(); return; }
     if (t.dataset.rf) { state.filtreRisques = t.dataset.rf; render(); return; }
     if (t.dataset.pf) { state.filtrePoints = t.dataset.pf; render(); return; }
@@ -728,6 +816,7 @@ if (typeof module !== "undefined") module.exports = parseWorkbook;
     state.banner = { text: "Lecture de « " + f.name + " »…" }; render();
     loadSheetJS().then(function () { return f.arrayBuffer(); }).then(function (buf) {
       var model = parseWorkbook(XLSX.read(buf, { type: "array" }));
+      if (state.model && state.model.clientOnly) model = toClient(model);
       if (!model.meta.situation) throw new Error("La date de situation est vide dans l'onglet Accueil. Ouvrez le classeur dans Excel, enregistrez-le, puis réessayez.");
       pending = model; state.model = model; state.source = "local";
       var canShare = !!(window.claude && window.claude.use);

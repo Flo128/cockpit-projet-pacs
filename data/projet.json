@@ -581,7 +581,7 @@
   {
    "id": "R01",
    "date": "2026-09-24",
-   "description": "Volumétrie et formats propriétaires des archives (85 To) : la migration dépasse la charge vendue et retarde la VSR (20 % du marché).",
+   "description": "Volumétrie et formats propriétaires des archives (85 To) : la migration dure plus longtemps que prévu et retarde la VSR.",
    "categorie": "Technique",
    "probabilite": 4,
    "impact": 4,
@@ -591,7 +591,8 @@
    "reponse": "Réduire",
    "actions": "Migration à blanc dès mars, migration en tâche de fond avant la bascule, engagement de délai du partenaire.",
    "echeance": "2027-03-12",
-   "statut": "En traitement"
+   "statut": "En traitement",
+   "diffusion": "Partagé"
   },
   {
    "id": "R02",
@@ -606,7 +607,8 @@
    "reponse": "Réduire",
    "actions": "Check-list des prérequis envoyée, vérification 3 semaines avant l'installation, frais d'immobilisation prévus au contrat.",
    "echeance": "2026-11-13",
-   "statut": "En traitement"
+   "statut": "En traitement",
+   "diffusion": "Partagé"
   },
   {
    "id": "R03",
@@ -621,7 +623,8 @@
    "reponse": "Réduire",
    "actions": "Plan de rattrapage demandé au distributeur, stockage temporaire en option.",
    "echeance": "2026-11-13",
-   "statut": "En traitement"
+   "statut": "En traitement",
+   "diffusion": "Partagé"
   },
   {
    "id": "R04",
@@ -636,7 +639,8 @@
    "reponse": "Partager",
    "actions": "Créneaux réservés avec le chef de pôle, suivi en comité de projet.",
    "echeance": "2027-01-15",
-   "statut": "Ouvert"
+   "statut": "Ouvert",
+   "diffusion": "Partagé"
   },
   {
    "id": "R05",
@@ -651,7 +655,8 @@
    "reponse": "Transférer",
    "actions": "Commande de l'interface par le client dès la séquence 2, réunion tripartite.",
    "echeance": "2026-12-04",
-   "statut": "Ouvert"
+   "statut": "Ouvert",
+   "diffusion": "Partagé"
   },
   {
    "id": "R06",
@@ -666,7 +671,8 @@
    "reponse": "Réduire",
    "actions": "Renfort d'un troisième ingénieur en janvier (décision de la revue interne).",
    "echeance": "2027-01-04",
-   "statut": "En traitement"
+   "statut": "En traitement",
+   "diffusion": "Interne"
   },
   {
    "id": "R07",
@@ -681,7 +687,8 @@
    "reponse": "Éviter",
    "actions": "Toute demande hors CCTP chiffrée et proposée en avenant ; validation par le directeur de compte.",
    "echeance": null,
-   "statut": "Ouvert"
+   "statut": "Ouvert",
+   "diffusion": "Interne"
   },
   {
    "id": "R08",
@@ -696,7 +703,8 @@
    "reponse": "Réduire",
    "actions": "Suivi hebdomadaire de la tolérance de délai, rapport d'exception anticipé.",
    "echeance": "2027-04-23",
-   "statut": "Ouvert"
+   "statut": "Ouvert",
+   "diffusion": "Interne"
   },
   {
    "id": "R09",
@@ -711,7 +719,8 @@
    "reponse": "Éviter",
    "actions": "RSSI du client intégré au comité technique, validation avant installation.",
    "echeance": "2026-11-13",
-   "statut": "En traitement"
+   "statut": "En traitement",
+   "diffusion": "Partagé"
   },
   {
    "id": "R10",
@@ -726,7 +735,8 @@
    "reponse": "Accepter",
    "actions": "Documentation à jour, binôme sur les interfaces.",
    "echeance": null,
-   "statut": "Ouvert"
+   "statut": "Ouvert",
+   "diffusion": "Interne"
   },
   {
    "id": "R11",
@@ -741,7 +751,8 @@
    "reponse": "Éviter",
    "actions": "Contrôles d'intégrité par lot, ancien PACS conservé en lecture 12 mois.",
    "echeance": "2027-05-28",
-   "statut": "Ouvert"
+   "statut": "Ouvert",
+   "diffusion": "Partagé"
   },
   {
    "id": "R12",
@@ -756,7 +767,8 @@
    "reponse": "Réduire",
    "actions": "Comité de pilotage mensuel, enquête de satisfaction intermédiaire après la VA.",
    "echeance": "2027-05-07",
-   "statut": "Ouvert"
+   "statut": "Ouvert",
+   "diffusion": "Interne"
   }
  ],
  "points": [
@@ -771,7 +783,8 @@
    "impactDelai": 5,
    "montant": 12000,
    "statut": "Approuvé",
-   "decision": "Comité du 16/10/2026 : avenant n°1 signé (12 000 € HT, +5 jours)."
+   "decision": "Comité du 16/10/2026 : avenant n°1 signé (12 000 € HT, +5 jours).",
+   "diffusion": "Partagé"
   },
   {
    "id": "P02",
@@ -784,7 +797,8 @@
    "impactDelai": 9,
    "montant": 0,
    "statut": "En analyse",
-   "decision": "Plan de rattrapage demandé pour le 06/11 ; option de stockage temporaire étudiée."
+   "decision": "Plan de rattrapage demandé pour le 06/11 ; option de stockage temporaire étudiée.",
+   "diffusion": "Partagé"
   },
   {
    "id": "P03",
@@ -797,7 +811,8 @@
    "impactDelai": 0,
    "montant": 4500,
    "statut": "Ouvert",
-   "decision": "Devis de passerelle DICOM envoyé au client."
+   "decision": "Devis de passerelle DICOM envoyé au client.",
+   "diffusion": "Partagé"
   },
   {
    "id": "P04",
@@ -810,7 +825,8 @@
    "impactDelai": 0,
    "montant": 18000,
    "statut": "En analyse",
-   "decision": "Chiffrage en cours : 18 k€ et 12 jours d'ingénieur."
+   "decision": "Chiffrage en cours : 18 k€ et 12 jours d'ingénieur.",
+   "diffusion": "Partagé"
   },
   {
    "id": "P05",
@@ -823,7 +839,8 @@
    "impactDelai": 0,
    "montant": 0,
    "statut": "Ouvert",
-   "decision": "Action du client attendue avant le 20/11 ; risque d'immobilisation des ingénieurs."
+   "decision": "Action du client attendue avant le 20/11 ; risque d'immobilisation des ingénieurs.",
+   "diffusion": "Partagé"
   },
   {
    "id": "P06",
@@ -836,7 +853,8 @@
    "impactDelai": 0,
    "montant": 0,
    "statut": "Clos",
-   "decision": "Arbitrage de la revue interne : retour le 19/10."
+   "decision": "Arbitrage de la revue interne : retour le 19/10.",
+   "diffusion": "Interne"
   }
  ],
  "produits": [
@@ -1728,8 +1746,8 @@
   ]
  },
  "recits": {
-  "commentaire": "Séquence 2 en cours. Le dossier d'architecture v1 a été refusé par le RSSI du client (PRA absent) ; la v2 est attendue le 06/11. Le distributeur annonce deux semaines de retard sur le stockage, ce qui décale le jalon de facturation « livraison » (159 k€). Charge : +6 jours sur les ingénieurs ; marge prévue à 40,9 %.",
-  "decisionsDemandees": "1. Valider le prêt d'un stockage temporaire pour tenir la date d'installation (6 k€ sur la provision pour risques).\n2. Rappeler au client la climatisation de la salle serveur du site secondaire, prérequis à l'installation.",
+  "commentaire": "Séquence 2 en cours. Le dossier d'architecture v1 a été refusé par le RSSI (PRA absent) ; la v2 est attendue le 06/11. Le distributeur annonce deux semaines de retard sur le stockage : un plan de rattrapage est demandé et une installation sur stockage temporaire est à l'étude pour tenir la date d'installation.",
+  "decisionsDemandees": "1. Valider l'installation sur un stockage temporaire si le plan de rattrapage du distributeur est insuffisant.\n2. Climatiser la salle serveur du site secondaire avant le 20/11, prérequis à l'installation (action client).",
   "exception": {
    "cause": "Le distributeur annonce deux semaines de retard sur la livraison des baies de stockage (tension sur les composants). Le dossier d'architecture v1 a en outre été refusé par le RSSI du client car le plan de reprise d'activité n'y figurait pas.",
    "consequences": "Installation décalée de 9 jours ouvrés : jalons « livraison » et « installation » (238,5 k€) repoussés, fin de projet au 08/07/2027 et exposition aux pénalités du CCAP. Ingénieurs immobilisés : la tolérance de charge serait dépassée.",

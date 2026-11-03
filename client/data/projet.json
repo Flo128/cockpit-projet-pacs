@@ -1,0 +1,1272 @@
+{
+ "version": 1,
+ "meta": {
+  "projet": "Déploiement de la solution PACS au CH de Saint-Aubert",
+  "client": "Centre hospitalier de Saint-Aubert (fictif) | 450 lits, 2 sites",
+  "chefDeProjet": "Florian CROSES",
+  "executif": "Directeur des services professionnels",
+  "debut": "2026-09-07",
+  "finContrat": "2027-06-25",
+  "situation": "2026-11-03",
+  "marche": 795000
+ },
+ "tiles": {
+  "reel": 0.167506297229219,
+  "prevu": 0.188916876574307
+ },
+ "sequences": [
+  {
+   "nom": "S0 Élaboration",
+   "debut": "2026-09-07",
+   "fin": "2026-09-18",
+   "reel": 1,
+   "prevu": 1,
+   "statut": "Terminée"
+  },
+  {
+   "nom": "S1 Initialisation",
+   "debut": "2026-09-21",
+   "fin": "2026-10-16",
+   "reel": 1,
+   "prevu": 1,
+   "statut": "Terminée"
+  },
+  {
+   "nom": "S2 Conception & infrastructure",
+   "debut": "2026-10-19",
+   "fin": "2026-12-11",
+   "reel": 0.274647887323944,
+   "prevu": 0.394366197183099,
+   "statut": "En retard"
+  },
+  {
+   "nom": "S3 Paramétrage & intégration",
+   "debut": "2026-12-14",
+   "fin": "2027-02-26",
+   "reel": 0,
+   "prevu": 0,
+   "statut": "À venir"
+  },
+  {
+   "nom": "S4 Migration & recette",
+   "debut": "2027-03-01",
+   "fin": "2027-05-28",
+   "reel": 0,
+   "prevu": 0,
+   "statut": "À venir"
+  },
+  {
+   "nom": "S5 Formation & bascule",
+   "debut": "2027-04-26",
+   "fin": "2027-06-11",
+   "reel": 0,
+   "prevu": 0,
+   "statut": "À venir"
+  },
+  {
+   "nom": "S6 Clôture",
+   "debut": "2027-05-25",
+   "fin": "2027-06-25",
+   "reel": 0,
+   "prevu": 0,
+   "statut": "À venir"
+  }
+ ],
+ "tolerances": [
+  {
+   "dimension": "Délai",
+   "indicateur": "Retard prévu sur la date de fin contractuelle (jours ouvrés)",
+   "tolerance": 10,
+   "actuel": 9,
+   "consommee": 0.9,
+   "etat": "Orange",
+   "action": "Vigilance : signaler dans le rapport de point"
+  },
+  {
+   "dimension": "Périmètre",
+   "indicateur": "Demandes de changement approuvées",
+   "tolerance": 3,
+   "actuel": 1,
+   "consommee": 0.333333333333333,
+   "etat": "Vert",
+   "action": "Aucune : géré par le chef de projet"
+  },
+  {
+   "dimension": "Qualité",
+   "indicateur": "Produits déclarés non conformes",
+   "tolerance": 1,
+   "actuel": 1,
+   "consommee": 1,
+   "etat": "Orange",
+   "action": "Vigilance : signaler dans le rapport de point"
+  },
+  {
+   "dimension": "Risques",
+   "indicateur": "Risques critiques partagés non clos (criticité ≥ 15)",
+   "tolerance": 2,
+   "actuel": 1,
+   "consommee": 0.5,
+   "etat": "Vert",
+   "action": "Aucune : géré par le chef de projet"
+  }
+ ],
+ "finPrevisionnelle": "2027-07-08",
+ "planning": [
+  {
+   "id": "T01",
+   "sequence": "S0 Élaboration",
+   "tache": "Revue de passation avant-vente / projet (contrat, CCTP, engagements)",
+   "responsable": "Chef de projet",
+   "debut": "2026-09-07",
+   "fin": "2026-09-09",
+   "duree": 3,
+   "jalon": false,
+   "reel": 1,
+   "prevu": 1,
+   "statut": "Terminé"
+  },
+  {
+   "id": "T02",
+   "sequence": "S0 Élaboration",
+   "tache": "Lancement interne et affectation des ressources",
+   "responsable": "Exécutif",
+   "debut": "2026-09-09",
+   "fin": "2026-09-11",
+   "duree": 3,
+   "jalon": false,
+   "reel": 1,
+   "prevu": 1,
+   "statut": "Terminé"
+  },
+  {
+   "id": "T03",
+   "sequence": "S0 Élaboration",
+   "tache": "Réunion de lancement avec le client",
+   "responsable": "Chef de projet",
+   "debut": "2026-09-14",
+   "fin": "2026-09-14",
+   "duree": 1,
+   "jalon": true,
+   "reel": 1,
+   "prevu": 1,
+   "statut": "Terminé"
+  },
+  {
+   "id": "T04",
+   "sequence": "S0 Élaboration",
+   "tache": "Décision de lancer l'initialisation (revue interne)",
+   "responsable": "Exécutif",
+   "debut": "2026-09-18",
+   "fin": "2026-09-18",
+   "duree": 1,
+   "jalon": true,
+   "reel": 1,
+   "prevu": 1,
+   "statut": "Terminé"
+  },
+  {
+   "id": "T05",
+   "sequence": "S1 Initialisation",
+   "tache": "Audit des prérequis et de l'existant chez le client",
+   "responsable": "Ingénieur intégration",
+   "debut": "2026-09-21",
+   "fin": "2026-10-02",
+   "duree": 10,
+   "jalon": false,
+   "reel": 1,
+   "prevu": 1,
+   "statut": "Terminé"
+  },
+  {
+   "id": "T06",
+   "sequence": "S1 Initialisation",
+   "tache": "Inventaire des modalités et des flux avec le biomédical",
+   "responsable": "Ingénieur intégration",
+   "debut": "2026-09-21",
+   "fin": "2026-10-02",
+   "duree": 10,
+   "jalon": false,
+   "reel": 1,
+   "prevu": 1,
+   "statut": "Terminé"
+  },
+  {
+   "id": "T07",
+   "sequence": "S1 Initialisation",
+   "tache": "Plan d'assurance qualité (PAQ) et plan projet",
+   "responsable": "Chef de projet",
+   "debut": "2026-09-28",
+   "fin": "2026-10-09",
+   "duree": 10,
+   "jalon": false,
+   "reel": 1,
+   "prevu": 1,
+   "statut": "Terminé"
+  },
+  {
+   "id": "T08",
+   "sequence": "S1 Initialisation",
+   "tache": "Plan de charge et planning des ressources",
+   "responsable": "Chef de projet",
+   "debut": "2026-10-05",
+   "fin": "2026-10-14",
+   "duree": 8,
+   "jalon": false,
+   "reel": 1,
+   "prevu": 1,
+   "statut": "Terminé"
+  },
+  {
+   "id": "T09",
+   "sequence": "S1 Initialisation",
+   "tache": "Validation du PID et du PAQ en comité de pilotage",
+   "responsable": "Comité de pilotage",
+   "debut": "2026-10-16",
+   "fin": "2026-10-16",
+   "duree": 1,
+   "jalon": true,
+   "reel": 1,
+   "prevu": 1,
+   "statut": "Terminé"
+  },
+  {
+   "id": "T10",
+   "sequence": "S2 Conception & infrastructure",
+   "tache": "Dossier d'architecture technique (haute disponibilité, PRA)",
+   "responsable": "Ingénieur intégration",
+   "debut": "2026-10-19",
+   "fin": "2026-11-06",
+   "duree": 15,
+   "jalon": false,
+   "reel": 0.6,
+   "prevu": 0.8,
+   "statut": "En retard"
+  },
+  {
+   "id": "T11",
+   "sequence": "S2 Conception & infrastructure",
+   "tache": "Validation sécurité avec le RSSI du client",
+   "responsable": "Chef de projet",
+   "debut": "2026-10-26",
+   "fin": "2026-11-13",
+   "duree": 15,
+   "jalon": false,
+   "reel": 0.4,
+   "prevu": 0.466666666666667,
+   "statut": "En cours"
+  },
+  {
+   "id": "T12",
+   "sequence": "S2 Conception & infrastructure",
+   "tache": "Vérification des prérequis client (salle serveur, réseau, comptes)",
+   "responsable": "Client (DSI)",
+   "debut": "2026-10-26",
+   "fin": "2026-11-13",
+   "duree": 15,
+   "jalon": false,
+   "reel": 0.3,
+   "prevu": 0.466666666666667,
+   "statut": "En retard"
+  },
+  {
+   "id": "T13",
+   "sequence": "S2 Conception & infrastructure",
+   "tache": "Commande et livraison du matériel (jalon de facturation)",
+   "responsable": "Distributeur / ADV",
+   "debut": "2026-11-02",
+   "fin": "2026-11-20",
+   "duree": 15,
+   "jalon": false,
+   "reel": 0,
+   "prevu": 0.133333333333333,
+   "statut": "En cours"
+  },
+  {
+   "id": "T14",
+   "sequence": "S2 Conception & infrastructure",
+   "tache": "Installation de la plateforme et PV d'installation",
+   "responsable": "Ingénieurs d'installation",
+   "debut": "2026-11-23",
+   "fin": "2026-12-04",
+   "duree": 10,
+   "jalon": false,
+   "reel": null,
+   "prevu": 0,
+   "statut": "À venir"
+  },
+  {
+   "id": "T15",
+   "sequence": "S2 Conception & infrastructure",
+   "tache": "Revue de fin de séquence 2 (comité de pilotage)",
+   "responsable": "Comité de pilotage",
+   "debut": "2026-12-11",
+   "fin": "2026-12-11",
+   "duree": 1,
+   "jalon": true,
+   "reel": null,
+   "prevu": 0,
+   "statut": "À venir"
+  },
+  {
+   "id": "T16",
+   "sequence": "S3 Paramétrage & intégration",
+   "tache": "Interface RIS ↔ PACS avec l'éditeur du RIS (HL7, worklist)",
+   "responsable": "Ingénieur intégration",
+   "debut": "2026-12-14",
+   "fin": "2027-01-22",
+   "duree": 30,
+   "jalon": false,
+   "reel": null,
+   "prevu": 0,
+   "statut": "À venir"
+  },
+  {
+   "id": "T17",
+   "sequence": "S3 Paramétrage & intégration",
+   "tache": "Connexion des modalités (scanner, IRM, radio, écho, mammographie)",
+   "responsable": "Ingénieurs d'installation",
+   "debut": "2027-01-04",
+   "fin": "2027-02-05",
+   "duree": 25,
+   "jalon": false,
+   "reel": null,
+   "prevu": 0,
+   "statut": "À venir"
+  },
+  {
+   "id": "T18",
+   "sequence": "S3 Paramétrage & intégration",
+   "tache": "Intégration au DPI du client",
+   "responsable": "Ingénieur intégration",
+   "debut": "2027-01-11",
+   "fin": "2027-02-12",
+   "duree": 25,
+   "jalon": false,
+   "reel": null,
+   "prevu": 0,
+   "statut": "À venir"
+  },
+  {
+   "id": "T19",
+   "sequence": "S3 Paramétrage & intégration",
+   "tache": "Paramétrage des workflows avec les référents du client",
+   "responsable": "Spécialiste applicatif",
+   "debut": "2027-01-18",
+   "fin": "2027-02-19",
+   "duree": 25,
+   "jalon": false,
+   "reel": null,
+   "prevu": 0,
+   "statut": "À venir"
+  },
+  {
+   "id": "T20",
+   "sequence": "S3 Paramétrage & intégration",
+   "tache": "Revue de fin de séquence 3 (comité de pilotage)",
+   "responsable": "Comité de pilotage",
+   "debut": "2027-02-26",
+   "fin": "2027-02-26",
+   "duree": 1,
+   "jalon": true,
+   "reel": null,
+   "prevu": 0,
+   "statut": "À venir"
+  },
+  {
+   "id": "T21",
+   "sequence": "S4 Migration & recette",
+   "tache": "Migration à blanc d'un échantillon d'archives",
+   "responsable": "Partenaire migration",
+   "debut": "2027-03-01",
+   "fin": "2027-03-12",
+   "duree": 10,
+   "jalon": false,
+   "reel": null,
+   "prevu": 0,
+   "statut": "À venir"
+  },
+  {
+   "id": "T22",
+   "sequence": "S4 Migration & recette",
+   "tache": "Accompagnement de la recette fonctionnelle du client",
+   "responsable": "Spécialiste applicatif",
+   "debut": "2027-03-08",
+   "fin": "2027-04-02",
+   "duree": 20,
+   "jalon": false,
+   "reel": null,
+   "prevu": 0,
+   "statut": "À venir"
+  },
+  {
+   "id": "T23",
+   "sequence": "S4 Migration & recette",
+   "tache": "Tests de bascule HA / PRA",
+   "responsable": "Ingénieurs d'installation",
+   "debut": "2027-03-22",
+   "fin": "2027-04-09",
+   "duree": 15,
+   "jalon": false,
+   "reel": null,
+   "prevu": 0,
+   "statut": "À venir"
+  },
+  {
+   "id": "T24",
+   "sequence": "S4 Migration & recette",
+   "tache": "Migration des archives historiques (85 To)",
+   "responsable": "Partenaire migration",
+   "debut": "2027-03-15",
+   "fin": "2027-05-28",
+   "duree": 55,
+   "jalon": false,
+   "reel": null,
+   "prevu": 0,
+   "statut": "À venir"
+  },
+  {
+   "id": "T25",
+   "sequence": "S4 Migration & recette",
+   "tache": "PV de vérification d'aptitude (VA), jalon de facturation",
+   "responsable": "Comité de pilotage",
+   "debut": "2027-04-23",
+   "fin": "2027-04-23",
+   "duree": 1,
+   "jalon": true,
+   "reel": null,
+   "prevu": 0,
+   "statut": "À venir"
+  },
+  {
+   "id": "T26",
+   "sequence": "S5 Formation & bascule",
+   "tache": "Formation des référents et des administrateurs",
+   "responsable": "Formateur",
+   "debut": "2027-04-26",
+   "fin": "2027-05-07",
+   "duree": 10,
+   "jalon": false,
+   "reel": null,
+   "prevu": 0,
+   "statut": "À venir"
+  },
+  {
+   "id": "T27",
+   "sequence": "S5 Formation & bascule",
+   "tache": "Formation des utilisateurs (radiologues, manipulateurs)",
+   "responsable": "Formateur",
+   "debut": "2027-05-03",
+   "fin": "2027-05-18",
+   "duree": 12,
+   "jalon": false,
+   "reel": null,
+   "prevu": 0,
+   "statut": "À venir"
+  },
+  {
+   "id": "T28",
+   "sequence": "S5 Formation & bascule",
+   "tache": "Comité Go / No-Go de bascule",
+   "responsable": "Comité de pilotage",
+   "debut": "2027-05-19",
+   "fin": "2027-05-19",
+   "duree": 1,
+   "jalon": true,
+   "reel": null,
+   "prevu": 0,
+   "statut": "À venir"
+  },
+  {
+   "id": "T29",
+   "sequence": "S5 Formation & bascule",
+   "tache": "Bascule en production (week-end)",
+   "responsable": "Ingénieurs d'installation",
+   "debut": "2027-05-21",
+   "fin": "2027-05-24",
+   "duree": 2,
+   "jalon": false,
+   "reel": null,
+   "prevu": 0,
+   "statut": "À venir"
+  },
+  {
+   "id": "T30",
+   "sequence": "S5 Formation & bascule",
+   "tache": "Accompagnement post-démarrage",
+   "responsable": "Support / chef de projet",
+   "debut": "2027-05-25",
+   "fin": "2027-06-11",
+   "duree": 14,
+   "jalon": false,
+   "reel": null,
+   "prevu": 0,
+   "statut": "À venir"
+  },
+  {
+   "id": "T31",
+   "sequence": "S6 Clôture",
+   "tache": "PV de vérification de service régulier (VSR), jalon de facturation",
+   "responsable": "Client",
+   "debut": "2027-05-25",
+   "fin": "2027-06-18",
+   "duree": 19,
+   "jalon": false,
+   "reel": null,
+   "prevu": 0,
+   "statut": "À venir"
+  },
+  {
+   "id": "T32",
+   "sequence": "S6 Clôture",
+   "tache": "Passation au support (dossier d'exploitation)",
+   "responsable": "Chef de projet",
+   "debut": "2027-06-14",
+   "fin": "2027-06-18",
+   "duree": 5,
+   "jalon": false,
+   "reel": null,
+   "prevu": 0,
+   "statut": "À venir"
+  },
+  {
+   "id": "T33",
+   "sequence": "S6 Clôture",
+   "tache": "Rapport de fin de projet et retour d'expérience interne",
+   "responsable": "Chef de projet",
+   "debut": "2027-06-14",
+   "fin": "2027-06-23",
+   "duree": 8,
+   "jalon": false,
+   "reel": null,
+   "prevu": 0,
+   "statut": "À venir"
+  },
+  {
+   "id": "T34",
+   "sequence": "S6 Clôture",
+   "tache": "Clôture et enquête de satisfaction client",
+   "responsable": "Comité de pilotage",
+   "debut": "2027-06-25",
+   "fin": "2027-06-25",
+   "duree": 1,
+   "jalon": true,
+   "reel": null,
+   "prevu": 0,
+   "statut": "À venir"
+  }
+ ],
+ "risques": [
+  {
+   "id": "R01",
+   "date": "2026-09-24",
+   "description": "Volumétrie et formats propriétaires des archives (85 To) : la migration dure plus longtemps que prévu et retarde la VSR.",
+   "categorie": "Technique",
+   "probabilite": 4,
+   "impact": 4,
+   "criticite": 16,
+   "niveau": "Critique",
+   "proprietaire": "Chef de projet",
+   "reponse": "Réduire",
+   "actions": "Migration à blanc dès mars, migration en tâche de fond avant la bascule, engagement de délai du partenaire.",
+   "echeance": "2027-03-12",
+   "statut": "En traitement",
+   "diffusion": "Partagé"
+  },
+  {
+   "id": "R02",
+   "date": "2026-09-24",
+   "description": "Prérequis client non prêts (salle serveur, réseau, comptes) : installation décalée, ingénieurs immobilisés.",
+   "categorie": "Organisation",
+   "probabilite": 3,
+   "impact": 4,
+   "criticite": 12,
+   "niveau": "Élevé",
+   "proprietaire": "Chef de projet",
+   "reponse": "Réduire",
+   "actions": "Check-list des prérequis envoyée, vérification 3 semaines avant l'installation, frais d'immobilisation prévus au contrat.",
+   "echeance": "2026-11-13",
+   "statut": "En traitement",
+   "diffusion": "Partagé"
+  },
+  {
+   "id": "R03",
+   "date": "2026-10-20",
+   "description": "Retard de livraison du matériel par le distributeur : jalon de facturation « livraison » décalé.",
+   "categorie": "Fournisseur",
+   "probabilite": 4,
+   "impact": 3,
+   "criticite": 12,
+   "niveau": "Élevé",
+   "proprietaire": "Fournisseur principal",
+   "reponse": "Réduire",
+   "actions": "Plan de rattrapage demandé au distributeur, stockage temporaire en option.",
+   "echeance": "2026-11-13",
+   "statut": "En traitement",
+   "diffusion": "Partagé"
+  },
+  {
+   "id": "R04",
+   "date": "2026-09-30",
+   "description": "Référents radiologie du client peu disponibles : paramétrage et recette retardés, jours non facturables.",
+   "categorie": "Organisation",
+   "probabilite": 3,
+   "impact": 4,
+   "criticite": 12,
+   "niveau": "Élevé",
+   "proprietaire": "Chef de projet",
+   "reponse": "Partager",
+   "actions": "Créneaux réservés avec le chef de pôle, suivi en comité de projet.",
+   "echeance": "2027-01-15",
+   "statut": "Ouvert",
+   "diffusion": "Partagé"
+  },
+  {
+   "id": "R05",
+   "date": "2026-09-30",
+   "description": "Éditeur du RIS du client peu réactif sur l'interface HL7 (hors de notre périmètre) : blocage de la séquence 3.",
+   "categorie": "Fournisseur",
+   "probabilite": 3,
+   "impact": 4,
+   "criticite": 12,
+   "niveau": "Élevé",
+   "proprietaire": "Chef de projet",
+   "reponse": "Transférer",
+   "actions": "Commande de l'interface par le client dès la séquence 2, réunion tripartite.",
+   "echeance": "2026-12-04",
+   "statut": "Ouvert",
+   "diffusion": "Partagé"
+  },
+  {
+   "id": "R09",
+   "date": "2026-10-02",
+   "description": "Exigences de sécurité du client (HDS, PGSSI-S) découvertes tardivement : reprise de l'architecture.",
+   "categorie": "Sécurité / réglementaire",
+   "probabilite": 2,
+   "impact": 4,
+   "criticite": 8,
+   "niveau": "Élevé",
+   "proprietaire": "Chef de projet",
+   "reponse": "Éviter",
+   "actions": "RSSI du client intégré au comité technique, validation avant installation.",
+   "echeance": "2026-11-13",
+   "statut": "En traitement",
+   "diffusion": "Partagé"
+  },
+  {
+   "id": "R11",
+   "date": "2026-09-24",
+   "description": "Perte ou corruption de données lors de la migration.",
+   "categorie": "Technique",
+   "probabilite": 1,
+   "impact": 5,
+   "criticite": 5,
+   "niveau": "Modéré",
+   "proprietaire": "Fournisseur principal",
+   "reponse": "Éviter",
+   "actions": "Contrôles d'intégrité par lot, ancien PACS conservé en lecture 12 mois.",
+   "echeance": "2027-05-28",
+   "statut": "Ouvert",
+   "diffusion": "Partagé"
+  }
+ ],
+ "points": [
+  {
+   "id": "P01",
+   "date": "2026-10-05",
+   "type": "Demande de changement",
+   "description": "Visualisation des images sur tablette pour le service des urgences du client.",
+   "emisPar": "Client (chef de service des urgences)",
+   "priorite": "Moyenne",
+   "niveau": "COPIL",
+   "impactDelai": 5,
+   "montant": 12000,
+   "statut": "Approuvé",
+   "decision": "Comité du 16/10/2026 : avenant n°1 signé (12 000 € HT, +5 jours).",
+   "diffusion": "Partagé"
+  },
+  {
+   "id": "P02",
+   "date": "2026-10-20",
+   "type": "Problème / préoccupation",
+   "description": "Retard annoncé de 2 semaines sur la livraison des baies de stockage par le distributeur.",
+   "emisPar": "ADV",
+   "priorite": "Haute",
+   "niveau": "Chef de projet",
+   "impactDelai": 9,
+   "montant": 0,
+   "statut": "En analyse",
+   "decision": "Plan de rattrapage demandé pour le 06/11 ; option de stockage temporaire étudiée.",
+   "diffusion": "Partagé"
+  },
+  {
+   "id": "P03",
+   "date": "2026-10-22",
+   "type": "Hors spécification",
+   "description": "Le scanner du site secondaire (2012) ne gère pas la worklist DICOM, contrairement au CCTP.",
+   "emisPar": "Ingénieur intégration",
+   "priorite": "Moyenne",
+   "niveau": "Autorité de changement",
+   "impactDelai": 0,
+   "montant": 4500,
+   "statut": "Ouvert",
+   "decision": "Devis de passerelle DICOM envoyé au client.",
+   "diffusion": "Partagé"
+  },
+  {
+   "id": "P04",
+   "date": "2026-10-26",
+   "type": "Demande de changement",
+   "description": "Connexion à la plateforme régionale de partage d'images.",
+   "emisPar": "Client (DSI)",
+   "priorite": "Basse",
+   "niveau": "COPIL",
+   "impactDelai": 0,
+   "montant": 18000,
+   "statut": "En analyse",
+   "decision": "Chiffrage en cours : 18 k€ et 12 jours d'ingénieur.",
+   "diffusion": "Partagé"
+  },
+  {
+   "id": "P05",
+   "date": "2026-10-28",
+   "type": "Problème / préoccupation",
+   "description": "Salle serveur du site secondaire non climatisée (prérequis client).",
+   "emisPar": "Ingénieur intégration",
+   "priorite": "Haute",
+   "niveau": "Chef de projet",
+   "impactDelai": 0,
+   "montant": 0,
+   "statut": "Ouvert",
+   "decision": "Action du client attendue avant le 20/11 ; risque d'immobilisation des ingénieurs.",
+   "diffusion": "Partagé"
+  }
+ ],
+ "produits": [
+  {
+   "id": "L01",
+   "produit": "Fiche de passation avant-vente / projet",
+   "type": "Management",
+   "sequence": "S0 Élaboration",
+   "criteres": "Périmètre, engagements, hypothèses de chiffrage et risques connus",
+   "methode": "Revue",
+   "producteur": "Chef de projet",
+   "approbateur": "Exécutif",
+   "datePrevue": "2026-09-09",
+   "statut": "Approuvé",
+   "approuveLe": "2026-09-09"
+  },
+  {
+   "id": "L02",
+   "produit": "Rapport d'audit des prérequis",
+   "type": "Spécialiste",
+   "sequence": "S1 Initialisation",
+   "criteres": "Volumétrie, inventaire des modalités et des interfaces, écarts aux prérequis",
+   "methode": "Inspection",
+   "producteur": "Ingénieur intégration",
+   "approbateur": "Client (DSI)",
+   "datePrevue": "2026-10-02",
+   "statut": "Approuvé",
+   "approuveLe": "2026-10-05"
+  },
+  {
+   "id": "L03",
+   "produit": "Plan d'assurance qualité (PAQ)",
+   "type": "Management",
+   "sequence": "S1 Initialisation",
+   "criteres": "Conforme au CCTP ; livrables, contrôles et PV identifiés",
+   "methode": "Revue",
+   "producteur": "Chef de projet",
+   "approbateur": "Client (DSI)",
+   "datePrevue": "2026-10-16",
+   "statut": "Approuvé",
+   "approuveLe": "2026-10-16"
+  },
+  {
+   "id": "L04",
+   "produit": "Document d'initialisation du projet (PID)",
+   "type": "Management",
+   "sequence": "S1 Initialisation",
+   "criteres": "Plan, organisation, tolérances et stratégies validés",
+   "methode": "Revue",
+   "producteur": "Chef de projet",
+   "approbateur": "Comité de pilotage",
+   "datePrevue": "2026-10-16",
+   "statut": "Approuvé",
+   "approuveLe": "2026-10-16"
+  },
+  {
+   "id": "L05",
+   "produit": "Dossier d'architecture technique",
+   "type": "Spécialiste",
+   "sequence": "S2 Conception & infrastructure",
+   "criteres": "Haute disponibilité, PRA, sauvegarde, dimensionnement à 10 ans",
+   "methode": "Revue",
+   "producteur": "Ingénieur intégration",
+   "approbateur": "Client (DSI / RSSI)",
+   "datePrevue": "2026-11-06",
+   "statut": "Non conforme",
+   "approuveLe": null
+  },
+  {
+   "id": "L06",
+   "produit": "PV de livraison du matériel",
+   "type": "Spécialiste",
+   "sequence": "S2 Conception & infrastructure",
+   "criteres": "Matériel conforme au bon de commande, sans réserve",
+   "methode": "Inspection",
+   "producteur": "ADV",
+   "approbateur": "Client (DSI)",
+   "datePrevue": "2026-11-20",
+   "statut": "Non démarré",
+   "approuveLe": null
+  },
+  {
+   "id": "L07",
+   "produit": "PV d'installation",
+   "type": "Spécialiste",
+   "sequence": "S2 Conception & infrastructure",
+   "criteres": "Tests d'installation passés, supervision active",
+   "methode": "Test",
+   "producteur": "Ingénieurs d'installation",
+   "approbateur": "Client (DSI)",
+   "datePrevue": "2026-12-04",
+   "statut": "Non démarré",
+   "approuveLe": null
+  },
+  {
+   "id": "L08",
+   "produit": "Spécifications des interfaces (HL7, DICOM)",
+   "type": "Spécialiste",
+   "sequence": "S3 Paramétrage & intégration",
+   "criteres": "Messages et flux validés avec l'éditeur du RIS et le client",
+   "methode": "Revue",
+   "producteur": "Ingénieur intégration",
+   "approbateur": "Client (DSI)",
+   "datePrevue": "2026-12-18",
+   "statut": "Non démarré",
+   "approuveLe": null
+  },
+  {
+   "id": "L09",
+   "produit": "Plan de migration des archives",
+   "type": "Spécialiste",
+   "sequence": "S4 Migration & recette",
+   "criteres": "Ordre de migration, contrôles d'intégrité, plan de retour arrière",
+   "methode": "Revue",
+   "producteur": "Partenaire migration",
+   "approbateur": "Chef de projet",
+   "datePrevue": "2027-03-01",
+   "statut": "Non démarré",
+   "approuveLe": null
+  },
+  {
+   "id": "L10",
+   "produit": "Cahier de recette et PV de VA",
+   "type": "Spécialiste",
+   "sequence": "S4 Migration & recette",
+   "criteres": "100 % des scénarios bloquants passés, réserves levées ou planifiées",
+   "methode": "Test",
+   "producteur": "Spécialiste applicatif",
+   "approbateur": "Comité de pilotage",
+   "datePrevue": "2027-04-23",
+   "statut": "Non démarré",
+   "approuveLe": null
+  },
+  {
+   "id": "L11",
+   "produit": "Supports de formation",
+   "type": "Spécialiste",
+   "sequence": "S5 Formation & bascule",
+   "criteres": "Un support par profil, validé par les référents du client",
+   "methode": "Inspection",
+   "producteur": "Formateur",
+   "approbateur": "Client (cadre imagerie)",
+   "datePrevue": "2027-04-30",
+   "statut": "Non démarré",
+   "approuveLe": null
+  },
+  {
+   "id": "L12",
+   "produit": "Plan de bascule et de retour arrière",
+   "type": "Spécialiste",
+   "sequence": "S5 Formation & bascule",
+   "criteres": "Chronogramme, mode dégradé, critères Go / No-Go",
+   "methode": "Revue",
+   "producteur": "Chef de projet",
+   "approbateur": "Comité de pilotage",
+   "datePrevue": "2027-05-19",
+   "statut": "Non démarré",
+   "approuveLe": null
+  },
+  {
+   "id": "L13",
+   "produit": "PV de vérification de service régulier (VSR)",
+   "type": "Spécialiste",
+   "sequence": "S6 Clôture",
+   "criteres": "Disponibilité ≥ 99,9 % sur la période de VSR",
+   "methode": "Inspection",
+   "producteur": "Chef de projet",
+   "approbateur": "Client (DSI)",
+   "datePrevue": "2027-06-18",
+   "statut": "Non démarré",
+   "approuveLe": null
+  },
+  {
+   "id": "L14",
+   "produit": "Dossier de passation au support",
+   "type": "Spécialiste",
+   "sequence": "S6 Clôture",
+   "criteres": "Architecture, paramétrage, contacts, points ouverts transmis",
+   "methode": "Revue",
+   "producteur": "Chef de projet",
+   "approbateur": "Responsable support",
+   "datePrevue": "2027-06-18",
+   "statut": "Non démarré",
+   "approuveLe": null
+  },
+  {
+   "id": "L15",
+   "produit": "Rapport de fin de projet et retour d'expérience",
+   "type": "Management",
+   "sequence": "S6 Clôture",
+   "criteres": "Bilan délai, marge, charge, satisfaction ; leçons consignées",
+   "methode": "Revue",
+   "producteur": "Chef de projet",
+   "approbateur": "Exécutif",
+   "datePrevue": "2027-06-25",
+   "statut": "Non démarré",
+   "approuveLe": null
+  }
+ ],
+ "facturation": {
+  "jalons": [
+   {
+    "id": "F01",
+    "jalon": "Avance à la notification du marché",
+    "declencheur": "Acte d'engagement notifié",
+    "sequence": "S0 Élaboration",
+    "datePrevue": "2026-09-07",
+    "datePV": "2026-09-07",
+    "statut": "Payé"
+   },
+   {
+    "id": "F02",
+    "jalon": "Livraison du matériel",
+    "declencheur": "PV de livraison",
+    "sequence": "S2 Conception & infrastructure",
+    "datePrevue": "2026-11-20",
+    "datePV": null,
+    "statut": "Prévu"
+   },
+   {
+    "id": "F03",
+    "jalon": "Installation de la plateforme",
+    "declencheur": "PV d'installation",
+    "sequence": "S2 Conception & infrastructure",
+    "datePrevue": "2026-12-04",
+    "datePV": null,
+    "statut": "Prévu"
+   },
+   {
+    "id": "F04",
+    "jalon": "Avenant n°1 : tablettes pour les urgences",
+    "declencheur": "PV de recette de l'avenant",
+    "sequence": "S4 Migration & recette",
+    "datePrevue": "2027-04-23",
+    "datePV": null,
+    "statut": "Prévu"
+   },
+   {
+    "id": "F05",
+    "jalon": "Vérification d'aptitude (VA)",
+    "declencheur": "PV de VA",
+    "sequence": "S4 Migration & recette",
+    "datePrevue": "2027-04-23",
+    "datePV": null,
+    "statut": "Prévu"
+   },
+   {
+    "id": "F06",
+    "jalon": "Vérification de service régulier (VSR)",
+    "declencheur": "PV de VSR",
+    "sequence": "S6 Clôture",
+    "datePrevue": "2027-06-18",
+    "datePV": null,
+    "statut": "Prévu"
+   },
+   {
+    "id": "F07",
+    "jalon": "Levée des réserves et clôture",
+    "declencheur": "PV de clôture",
+    "sequence": "S6 Clôture",
+    "datePrevue": "2027-06-25",
+    "datePV": null,
+    "statut": "Prévu"
+   }
+  ]
+ },
+ "decisions": [
+  {
+   "id": "D02",
+   "date": "2026-10-16",
+   "instance": "COPIL",
+   "sequence": "S1 Initialisation",
+   "texte": "Décision : PID et PAQ validés par le client ; tolérances fixées (délai 10 j, marge 3 points, charge 10 j).",
+   "responsable": "Exécutif",
+   "echeance": null,
+   "statut": "Fait"
+  },
+  {
+   "id": "D03",
+   "date": "2026-10-16",
+   "instance": "COPIL",
+   "sequence": "S1 Initialisation",
+   "texte": "Décision : demande P01 acceptée par l'avenant n°1 (12 000 € HT, +5 jours).",
+   "responsable": "Directeur de compte",
+   "echeance": null,
+   "statut": "Fait"
+  },
+  {
+   "id": "D04",
+   "date": "2026-10-16",
+   "instance": "COPIL",
+   "sequence": "S1 Initialisation",
+   "texte": "Décision : séquence 2 autorisée, commande du matériel lancée.",
+   "responsable": "Exécutif",
+   "echeance": null,
+   "statut": "Fait"
+  },
+  {
+   "id": "D05",
+   "date": "2026-10-30",
+   "instance": "Comité technique",
+   "sequence": "S2 Conception & infrastructure",
+   "texte": "Action : intégrer le PRA au dossier d'architecture (v2) après le refus du RSSI du client.",
+   "responsable": "Ingénieur intégration",
+   "echeance": "2026-11-06",
+   "statut": "En cours"
+  },
+  {
+   "id": "D06",
+   "date": "2026-10-30",
+   "instance": "Comité projet",
+   "sequence": "S2 Conception & infrastructure",
+   "texte": "Action : obtenir du distributeur une date de livraison ferme et un plan de rattrapage.",
+   "responsable": "Chef de projet",
+   "echeance": "2026-11-06",
+   "statut": "En cours"
+  },
+  {
+   "id": "D07",
+   "date": "2026-10-30",
+   "instance": "Comité projet",
+   "sequence": "S2 Conception & infrastructure",
+   "texte": "Action (client) : climatiser la salle serveur du site secondaire.",
+   "responsable": "Client (DSI)",
+   "echeance": "2026-11-20",
+   "statut": "À faire"
+  }
+ ],
+ "organisation": {
+  "roles": [
+   {
+    "role": "Exécutif",
+    "instance": "Comité de pilotage (éditeur)",
+    "titulaire": "Directeur des services professionnels",
+    "responsabilites": "Porte le business case de l'affaire (marge, satisfaction, référence), arbitre les ressources, décide en cas d'exception."
+   },
+   {
+    "role": "Utilisateur principal",
+    "instance": "Comité de pilotage (client)",
+    "titulaire": "DSI et chef de pôle imagerie du client",
+    "responsabilites": "Expriment les besoins, valident la recette et signent les PV contractuels (installation, VA, VSR)."
+   },
+   {
+    "role": "Fournisseur principal",
+    "instance": "Comité de pilotage (éditeur)",
+    "titulaire": "Responsable delivery (équipes techniques)",
+    "responsabilites": "Engage les ingénieurs et le partenaire de migration, garantit la qualité technique."
+   },
+   {
+    "role": "Assurance projet",
+    "instance": "Indépendante du chef de projet",
+    "titulaire": "PMO et contrôle de gestion ; RSSI du client",
+    "responsabilites": "Contrôle indépendant : respect du contrat, marge, conformité sécurité."
+   },
+   {
+    "role": "Autorité de changement",
+    "instance": "Déléguée par le comité de pilotage",
+    "titulaire": "Chef de projet et directeur de compte",
+    "responsabilites": "Évalue les demandes, propose un avenant ou un geste commercial dans la limite fixée."
+   },
+   {
+    "role": "Chef de projet",
+    "instance": "Comité de projet",
+    "titulaire": "Chef de projet PACS (Florian CROSES)",
+    "responsabilites": "Pilote dans les tolérances : planning, charge, marge, facturation, risques, relation client."
+   },
+   {
+    "role": "Chef d'équipe",
+    "instance": "Équipes",
+    "titulaire": "Lead ingénieur intégration, partenaire migration, formateur",
+    "responsabilites": "Réalisent les lots de travaux, rendent compte de l'avancement et des jours consommés."
+   },
+   {
+    "role": "Support projet",
+    "instance": "PMO / ADV",
+    "titulaire": "PMO et administration des ventes",
+    "responsabilites": "Tient les registres, prépare les comités, émet les factures sur PV signé."
+   }
+  ],
+  "instances": [
+   {
+    "instance": "Comité de pilotage",
+    "membres": "Exécutif, directeur de compte, DSI et chef de pôle imagerie du client",
+    "frequence": "Fin de séquence et mensuel",
+    "role": "Valide le PID, les PV et les avenants, autorise les séquences."
+   },
+   {
+    "instance": "Comité de projet",
+    "membres": "Chefs de projet éditeur et client, chefs d'équipe",
+    "frequence": "Hebdomadaire",
+    "role": "Avancement, prérequis client, risques, points."
+   },
+   {
+    "instance": "Comité technique",
+    "membres": "Ingénieurs, DSI et RSSI du client, éditeur du RIS",
+    "frequence": "Toutes les 2 semaines",
+    "role": "Architecture, interfaces, sécurité, migration."
+   },
+   {
+    "instance": "Revue interne",
+    "membres": "Direction des services, contrôle de gestion, chef de projet",
+    "frequence": "Mensuelle",
+    "role": "Marge, plan de charge, facturation, risques de l'affaire."
+   },
+   {
+    "instance": "Rapport d'exception",
+    "membres": "Chef de projet → exécutif",
+    "frequence": "Dès qu'une tolérance passe au rouge",
+    "role": "Cause, impacts, options et recommandation."
+   }
+  ],
+  "raci": {
+   "roles": [
+    "Exécutif",
+    "Utilisateur principal",
+    "Fournisseur principal",
+    "Chef de projet",
+    "Assurance projet",
+    "Autorité de changement",
+    "Support projet"
+   ],
+   "activites": [
+    {
+     "activite": "Valider le business case de l'affaire",
+     "valeurs": [
+      "A",
+      "I",
+      "C",
+      "R",
+      "C",
+      "",
+      "I"
+     ]
+    },
+    {
+     "activite": "Valider le PID et les tolérances",
+     "valeurs": [
+      "A",
+      "C",
+      "C",
+      "R",
+      "C",
+      "",
+      "I"
+     ]
+    },
+    {
+     "activite": "Autoriser une séquence",
+     "valeurs": [
+      "A",
+      "C",
+      "C",
+      "R",
+      "I",
+      "",
+      "I"
+     ]
+    },
+    {
+     "activite": "Gérer risques, charge et facturation",
+     "valeurs": [
+      "I",
+      "C",
+      "C",
+      "A",
+      "C",
+      "",
+      "R"
+     ]
+    },
+    {
+     "activite": "Décider d'un avenant",
+     "valeurs": [
+      "A",
+      "C",
+      "C",
+      "R",
+      "C",
+      "R",
+      "I"
+     ]
+    },
+    {
+     "activite": "Recette et PV de VA",
+     "valeurs": [
+      "I",
+      "A",
+      "R",
+      "R",
+      "C",
+      "",
+      "I"
+     ]
+    },
+    {
+     "activite": "Go / No-Go de bascule",
+     "valeurs": [
+      "A",
+      "C",
+      "C",
+      "R",
+      "C",
+      "",
+      "I"
+     ]
+    },
+    {
+     "activite": "Clôturer et passer au support",
+     "valeurs": [
+      "A",
+      "C",
+      "C",
+      "R",
+      "C",
+      "",
+      "R"
+     ]
+    }
+   ]
+  }
+ },
+ "recits": {
+  "commentaire": "Séquence 2 en cours. Le dossier d'architecture v1 a été refusé par le RSSI (PRA absent) ; la v2 est attendue le 06/11. Le distributeur annonce deux semaines de retard sur le stockage : un plan de rattrapage est demandé et une installation sur stockage temporaire est à l'étude pour tenir la date d'installation.",
+  "decisionsDemandees": "1. Valider l'installation sur un stockage temporaire si le plan de rattrapage du distributeur est insuffisant.\n2. Climatiser la salle serveur du site secondaire avant le 20/11, prérequis à l'installation (action client).",
+  "prochainComite": {
+   "date": "2026-12-11",
+   "objet": "Revue de fin de séquence 2 et PV d'installation"
+  }
+ },
+ "clientOnly": true
+}
