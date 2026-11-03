@@ -1,0 +1,715 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Cockpit projet PACS</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Mise en page : bandeau projet, onglets de vues, panneaux ; mode présentation en surimpression 16:9. */
+:root {
+  --bg: #F3F5F8; --surface: #FFFFFF; --sunk: #EAEEF3; --line: #D9DFE7; --fg: #15212E; --muted: #5B6878;
+  --accent: #1F5F8B; --accent-soft: #CFE0EE; --accent-ink: #FFFFFF; --plan: #9FBBD3;
+  --ok: #2F7D53; --ok-soft: #DCEFE3; --warn: #B8700F; --warn-soft: #FBEBD2; --crit: #B93A33; --crit-soft: #F7DCDA;
+  --mile: #C9741B; --today: #D2453C;
+  --font-ui: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --radius: 8px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0E151D; --surface: #151F2A; --sunk: #1B2734; --line: #283646; --fg: #E4EAF1; --muted: #93A2B2;
+  --accent: #6BA6D6; --accent-soft: #23415B; --accent-ink: #0E151D; --plan: #3C5A75;
+  --ok: #5FBF8A; --ok-soft: #1D3A2B; --warn: #E3A447; --warn-soft: #43321A; --crit: #EE7A71; --crit-soft: #4A2523;
+  --mile: #E39A4E; --today: #F07A70; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0E151D; --surface: #151F2A; --sunk: #1B2734; --line: #283646; --fg: #E4EAF1; --muted: #93A2B2;
+  --accent: #6BA6D6; --accent-soft: #23415B; --accent-ink: #0E151D; --plan: #3C5A75;
+  --ok: #5FBF8A; --ok-soft: #1D3A2B; --warn: #E3A447; --warn-soft: #43321A; --crit: #EE7A71; --crit-soft: #4A2523;
+  --mile: #E39A4E; --today: #F07A70; color-scheme: dark }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-ui); font-size: 14px; line-height: 1.45; }
+.wrap { max-width: 1240px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+header.top { background: var(--surface); border-bottom: 1px solid var(--line); }
+header.top .wrap { padding-block: 18px 0; display: grid; gap: 14px; }
+.brand { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: flex-end; justify-content: space-between; }
+.brand h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
+.eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.sub { color: var(--muted); margin-top: 2px; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+button, .btn { font: inherit; font-weight: 600; border-radius: 6px; padding: 8px 14px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; }
+button:hover { border-color: var(--accent); }
+button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+nav.tabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
+nav.tabs a { padding: 10px 14px; color: var(--muted); text-decoration: none; font-weight: 600; border-bottom: 2px solid transparent; white-space: nowrap; }
+nav.tabs a[aria-current="page"] { color: var(--fg); border-bottom-color: var(--accent); }
+main .wrap { padding-block: 24px 48px; display: grid; gap: 20px; }
+.banner { border: 1px solid var(--accent); background: var(--accent-soft); border-radius: var(--radius); padding: 12px 16px; display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; }
+.banner.err { border-color: var(--crit); background: var(--crit-soft); }
+.grid { display: grid; gap: 16px; }
+.g2 { grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+.g3 { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; min-width: 0; }
+.panel h2 { margin: 0 0 14px; font-size: 15px; font-weight: 700; display: flex; justify-content: space-between; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.panel h2 small { font-weight: 500; color: var(--muted); font-size: 12px; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.kpi { background: var(--surface); padding: 14px 16px; display: grid; gap: 4px; align-content: start; }
+.kpi .v { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.kpi .l { font-size: 12px; color: var(--muted); }
+.weather { display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: center; }
+.weather svg { width: 64px; height: 64px; }
+.weather .state { font-size: 20px; font-weight: 700; }
+.mono, .id { font-family: var(--font-data); font-size: 12px; }
+.id { color: var(--muted); }
+.pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; background: var(--sunk); color: var(--fg); }
+.pill.ok { background: var(--ok-soft); color: var(--ok); } .pill.warn { background: var(--warn-soft); color: var(--warn); } .pill.crit { background: var(--crit-soft); color: var(--crit); } .pill.info { background: var(--accent-soft); color: var(--accent); }
+.tablewrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th { text-align: left; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+td.num, th.num { text-align: right; white-space: nowrap; }
+tr:last-child td { border-bottom: none; }
+.bar { position: relative; height: 10px; background: var(--sunk); border-radius: 5px; overflow: hidden; }
+.bar i { position: absolute; inset: 0 auto 0 0; background: var(--accent); border-radius: 5px; }
+.bar i.plan { background: var(--plan); }
+.seqrow { display: grid; grid-template-columns: minmax(150px, 1.3fr) 2fr auto; gap: 12px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.seqrow:last-child { border-bottom: none; }
+.seqrow .bars { display: grid; gap: 4px; }
+.seqrow .dates { font-size: 12px; color: var(--muted); }
+.gauge { display: grid; gap: 6px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.gauge:last-child { border-bottom: none; }
+.gauge .head { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.gauge .track { position: relative; height: 12px; background: var(--sunk); border-radius: 6px; }
+.gauge .fill { position: absolute; inset: 0 auto 0 0; border-radius: 6px; }
+.gauge .mark { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--fg); opacity: .5; }
+.gauge .meta { font-size: 12px; color: var(--muted); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--muted); }
+.legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; background: var(--c); }
+.matrix { display: grid; grid-template-columns: 28px repeat(5, minmax(0, 1fr)); gap: 3px; font-size: 12px; }
+.matrix .cell { min-height: 54px; border-radius: 4px; padding: 4px; display: flex; flex-wrap: wrap; gap: 3px; align-content: flex-start; }
+.matrix .ax { color: var(--muted); display: grid; place-items: center; font-family: var(--font-data); }
+.chip { font-family: var(--font-data); font-size: 11px; background: var(--surface); color: var(--fg); border-radius: 3px; padding: 1px 4px; border: 1px solid var(--line); }
+.c-low { background: var(--ok-soft); } .c-mod { background: color-mix(in srgb, var(--warn-soft) 55%, var(--ok-soft)); } .c-high { background: var(--warn-soft); } .c-crit { background: var(--crit-soft); }
+.filters { display: flex; flex-wrap: wrap; gap: 6px; }
+.filters button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.note { color: var(--muted); font-size: 12px; }
+.quote { border-left: 3px solid var(--accent); padding: 4px 0 4px 14px; white-space: pre-line; }
+.gantt svg text { font-family: var(--font-ui); }
+.ms { color: var(--mile); }
+.empty { color: var(--muted); padding: 24px 0; text-align: center; }
+/* Mode présentation */
+.deck { position: fixed; inset: 0; z-index: 50; background: var(--bg); display: grid; grid-template-rows: 1fr auto; padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); }
+.stage { position: relative; overflow: hidden; display: grid; place-items: center; }
+.slide { width: 1280px; height: 720px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 56px 64px 72px; position: absolute; left: 50%; top: 50%; transform-origin: center center; display: grid; grid-template-rows: auto 1fr; gap: 28px; overflow: hidden; font-size: 20px; }
+.slide h3 { margin: 0; font-size: 38px; font-weight: 700; letter-spacing: -0.015em; text-wrap: balance; }
+.slide .kick { font-size: 15px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+.slide .body { min-height: 0; display: grid; gap: 24px; align-content: start; }
+.slide table td, .slide table th { padding: 10px 12px; }
+.slide table th { font-size: 13px; }
+.slide table { font-size: 17px; }
+.slide .foot { position: absolute; left: 64px; right: 64px; bottom: 24px; display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 10px; }
+.slide .kpis .v { font-size: 40px; } .slide .kpi .l { font-size: 15px; } .slide .kpi { padding: 20px 22px; }
+.slide.cover { grid-template-rows: 1fr auto; background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.slide.cover h3 { font-size: 56px; max-width: 18ch; }
+.slide.cover .kick, .slide.cover .foot, .slide.cover .agenda { color: var(--accent-ink); }
+.slide.cover .foot { border-top-color: color-mix(in srgb, var(--accent-ink) 35%, transparent); }
+.agenda { columns: 2; font-size: 19px; margin: 0; padding-left: 24px; opacity: .92; }
+.deckbar { display: flex; gap: 10px; align-items: center; justify-content: center; padding: 10px max(16px, env(safe-area-inset-left, 0px)); border-top: 1px solid var(--line); background: var(--surface); flex-wrap: wrap; }
+.deckbar .count { font-variant-numeric: tabular-nums; color: var(--muted); min-width: 64px; text-align: center; }
+@media (max-width: 640px) { .brand h1 { font-size: 19px; } .seqrow { grid-template-columns: 1fr; } .kpi .v { font-size: 22px; } }
+@media (prefers-reduced-motion: no-preference) { .slide { transition: opacity .18s ease; } }
+</style>
+
+<div id="app"><div class="wrap" style="padding-block:40px"><p class="note">Chargement des données du projet…</p></div></div>
+<input type="file" id="xlsx-input" accept=".xlsx" hidden>
+
+<script>
+/* Lit le classeur « Pilotage PRINCE2 PACS — version éditeur » et produit le modèle du projet.
+   Utilisé tel quel dans le navigateur (import d'un classeur) et dans Node (génération des données). */
+function parseWorkbook(wb) {
+  var need = ["Accueil", "Tableau de bord", "Planning", "Risques", "Points", "Budget", "Ressources", "Facturation", "Tolérances"];
+  need.forEach(function (n) {
+    if (!wb.Sheets[n]) throw new Error("Onglet « " + n + " » introuvable : ce classeur n'est pas la version éditeur du pilotage PRINCE2.");
+  });
+  function S(n) { return wb.Sheets[n] || {}; }
+  function raw(sh, a) { var c = S(sh)[a]; return c ? c.v : null; }
+  function txt(sh, a) { var v = raw(sh, a); return v === null || v === undefined ? "" : String(v).trim(); }
+  function num(sh, a) { var v = raw(sh, a); return typeof v === "number" ? v : null; }
+  function dt(sh, a) {
+    var v = raw(sh, a);
+    if (typeof v !== "number" || v < 20000) return null;
+    var d = new Date(Date.UTC(1899, 11, 30) + Math.round(v) * 86400000);
+    return d.toISOString().slice(0, 10);
+  }
+  function rows(sh, r1, r2, key, fn) {
+    var out = [];
+    for (var r = r1; r <= r2; r++) { if (txt(sh, key + r) !== "") out.push(fn(r)); }
+    return out;
+  }
+  var A = "Accueil", T = "Tableau de bord";
+  var m = {
+    version: 1,
+    meta: {
+      projet: txt(A, "C5"), client: txt(A, "C6"), chefDeProjet: txt(A, "C7"), executif: txt(A, "C8"),
+      debut: dt(A, "C9"), finContrat: dt(A, "C10"), situation: dt(A, "C11"), marche: num(A, "C12")
+    },
+    tiles: { reel: num(T, "B6"), prevu: num(T, "C6"), marge: num(T, "E6"), tolRouge: num(T, "G6"), risquesCritiques: num(T, "I6"), pointsOuverts: num(T, "K6") },
+    sequences: [], tolerances: [], finPrevisionnelle: dt("Tolérances", "E4")
+  };
+  for (var i = 0; i < 7; i++) {
+    var r = 10 + i;
+    m.sequences.push({ nom: txt(T, "B" + r), debut: dt(T, "C" + r), fin: dt(T, "D" + r), reel: num(T, "E" + r), prevu: num(T, "F" + r), statut: txt(T, "G" + r) });
+  }
+  for (i = 0; i < 6; i++) {
+    r = 7 + i; var TO = "Tolérances";
+    m.tolerances.push({ dimension: txt(TO, "A" + r), indicateur: txt(TO, "B" + r), tolerance: num(TO, "C" + r), actuel: num(TO, "D" + r), consommee: num(TO, "E" + r), etat: txt(TO, "F" + r), action: txt(TO, "G" + r) });
+  }
+  m.planning = rows("Planning", 6, 85, "C", function (r) {
+    var P = "Planning";
+    return { id: txt(P, "A" + r), sequence: txt(P, "B" + r), tache: txt(P, "C" + r), responsable: txt(P, "D" + r), debut: dt(P, "E" + r), fin: dt(P, "F" + r),
+      duree: num(P, "G" + r), jalon: txt(P, "H" + r) === "Oui", reel: num(P, "I" + r), prevu: num(P, "J" + r), statut: txt(P, "L" + r) };
+  });
+  m.risques = rows("Risques", 6, 65, "C", function (r) {
+    var R = "Risques";
+    return { id: txt(R, "A" + r), date: dt(R, "B" + r), description: txt(R, "C" + r), categorie: txt(R, "D" + r), probabilite: num(R, "E" + r), impact: num(R, "F" + r),
+      criticite: num(R, "G" + r), niveau: txt(R, "H" + r), proprietaire: txt(R, "I" + r), reponse: txt(R, "J" + r), actions: txt(R, "K" + r), echeance: dt(R, "L" + r), statut: txt(R, "M" + r) };
+  });
+  m.points = rows("Points", 6, 65, "D", function (r) {
+    var P = "Points";
+    return { id: txt(P, "A" + r), date: dt(P, "B" + r), type: txt(P, "C" + r), description: txt(P, "D" + r), emisPar: txt(P, "E" + r), priorite: txt(P, "F" + r),
+      niveau: txt(P, "G" + r), impactDelai: num(P, "H" + r), montant: num(P, "I" + r), statut: txt(P, "J" + r), decision: txt(P, "K" + r) };
+  });
+  if (wb.Sheets["Produits"]) m.produits = rows("Produits", 6, 45, "B", function (r) {
+    var P = "Produits";
+    return { id: txt(P, "A" + r), produit: txt(P, "B" + r), type: txt(P, "C" + r), sequence: txt(P, "D" + r), criteres: txt(P, "E" + r), methode: txt(P, "F" + r),
+      producteur: txt(P, "G" + r), approbateur: txt(P, "H" + r), datePrevue: dt(P, "I" + r), statut: txt(P, "J" + r), approuveLe: dt(P, "K" + r) };
+  });
+  var B = "Budget";
+  m.budget = {
+    lignes: rows(B, 6, 30, "A", function (r) {
+      return { poste: txt(B, "A" + r), categorie: txt(B, "B" + r), sequence: txt(B, "C" + r), initial: num(B, "D" + r), prevision: num(B, "E" + r),
+        engage: num(B, "F" + r), realise: num(B, "G" + r), ecart: num(B, "H" + r), commentaire: txt(B, "K" + r) };
+    }),
+    total: { initial: num(B, "D31"), prevision: num(B, "E31"), engage: num(B, "F31"), realise: num(B, "G31"), ecart: num(B, "H31") },
+    marge: { ca: num(B, "D34"), marche: num(B, "D35"), coutInitial: num(B, "D36"), coutPrevu: num(B, "D37"), initiale: num(B, "D38"), prevue: num(B, "D39"), ecart: num(B, "D40"), cible: num(B, "D41") }
+  };
+  var RS = "Ressources", cols = "LMNOPQRS".split("");
+  m.ressources = {
+    mois: cols.map(function (c) { return dt(RS, c + "5"); }),
+    lignes: rows(RS, 6, 25, "A", function (r) {
+      return { ressource: txt(RS, "A" + r), profil: txt(RS, "B" + r), cout: num(RS, "C" + r), vendus: num(RS, "D" + r), consommes: num(RS, "E" + r), reste: num(RS, "F" + r),
+        prevision: num(RS, "G" + r), ecart: num(RS, "H" + r), plan: cols.map(function (c) { return num(RS, c + r) || 0; }) };
+    }),
+    total: { vendus: num(RS, "D26"), consommes: num(RS, "E26"), reste: num(RS, "F26"), prevision: num(RS, "G26"), ecart: num(RS, "H26"), coutInitial: num(RS, "I26"), coutPrevu: num(RS, "J26") }
+  };
+  var F = "Facturation";
+  m.facturation = {
+    marche: num(F, "C3"),
+    jalons: rows(F, 6, 25, "B", function (r) {
+      return { id: txt(F, "A" + r), jalon: txt(F, "B" + r), declencheur: txt(F, "C" + r), sequence: txt(F, "D" + r), montant: num(F, "E" + r), part: num(F, "F" + r),
+        datePrevue: dt(F, "G" + r), datePV: dt(F, "H" + r), statut: txt(F, "I" + r), factureLe: dt(F, "J" + r), payeLe: dt(F, "K" + r), retard: num(F, "L" + r) };
+    }),
+    total: num(F, "E26"), facture: num(F, "E27"), encaisse: num(F, "E28"), reste: num(F, "E29")
+  };
+  if (wb.Sheets["Décisions"]) m.decisions = rows("Décisions", 6, 55, "E", function (r) {
+    var D = "Décisions";
+    return { id: txt(D, "A" + r), date: dt(D, "B" + r), instance: txt(D, "C" + r), sequence: txt(D, "D" + r), texte: txt(D, "E" + r), responsable: txt(D, "F" + r), echeance: dt(D, "G" + r), statut: txt(D, "H" + r) };
+  });
+  if (wb.Sheets["Leçons"]) m.lecons = rows("Leçons", 6, 45, "E", function (r) {
+    var L = "Leçons";
+    return { id: txt(L, "A" + r), date: dt(L, "B" + r), source: txt(L, "C" + r), sequence: txt(L, "D" + r), constat: txt(L, "E" + r), recommandation: txt(L, "F" + r) };
+  });
+  if (wb.Sheets["Organisation"]) {
+    var O = "Organisation", raciRoles = "GHIJKLM".split("");
+    m.organisation = {
+      roles: rows(O, 6, 13, "A", function (r) { return { role: txt(O, "A" + r), instance: txt(O, "B" + r), titulaire: txt(O, "C" + r), responsabilites: txt(O, "D" + r) }; }),
+      instances: rows(O, 17, 21, "A", function (r) { return { instance: txt(O, "A" + r), membres: txt(O, "B" + r), frequence: txt(O, "C" + r), role: txt(O, "D" + r) }; }),
+      raci: {
+        roles: raciRoles.map(function (c) { return txt(O, c + "5"); }),
+        activites: rows(O, 6, 13, "F", function (r) { return { activite: txt(O, "F" + r), valeurs: raciRoles.map(function (c) { return txt(O, c + r); }) }; })
+      }
+    };
+  }
+  if (wb.Sheets["Business case"]) {
+    var BC = "Business case";
+    m.businessCase = {
+      raisons: txt(BC, "B5"),
+      benefices: rows(BC, 17, 25, "B", function (r) { return { benefice: txt(BC, "B" + r), indicateur: txt(BC, "C" + r), reference: txt(BC, "D" + r), cible: txt(BC, "E" + r), echeance: dt(BC, "F" + r), atteinte: num(BC, "G" + r), proprietaire: txt(BC, "H" + r) }; }),
+      revues: rows(BC, 35, 44, "D", function (r) { return { date: dt(BC, "B" + r), instance: txt(BC, "C" + r), sequence: txt(BC, "D" + r), justifie: txt(BC, "E" + r), commentaire: txt(BC, "F" + r) }; })
+    };
+  }
+  var RP = "Doc Rapport de point", EX = "Doc Exception", CR = "Doc Compte rendu";
+  m.recits = {
+    commentaire: txt(RP, "B14"),
+    decisionsDemandees: txt(RP, "B88"),
+    exception: {
+      cause: txt(EX, "B19"), consequences: txt(EX, "B24"), recommandation: txt(EX, "B35"),
+      options: [30, 31, 32].map(function (r) { return { option: txt(EX, "B" + r), description: txt(EX, "C" + r), delai: txt(EX, "G" + r), cout: txt(EX, "H" + r), risque: txt(EX, "I" + r) }; })
+        .filter(function (o) { return o.option !== ""; })
+    },
+    prochainComite: { date: dt(CR, "C46"), objet: txt(CR, "E46") }
+  };
+  return m;
+}
+if (typeof module !== "undefined") module.exports = parseWorkbook;
+
+</script>
+<script>
+(function () {
+  "use strict";
+  var state = { model: null, view: "synthese", deck: null, slide: 0, filtreRisques: "ouverts", filtrePoints: "ouverts", seqFiltre: "", source: "publie", banner: null };
+  var VIEWS = [["synthese", "Synthèse"], ["planning", "Planning"], ["risques", "Risques"], ["points", "Points et décisions"], ["finances", "Marge et facturation"], ["gouvernance", "Gouvernance"]];
+  var app = document.getElementById("app");
+
+  /* ---------- outils ---------- */
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function D(iso) { return iso ? new Date(iso + "T00:00:00Z") : null; }
+  function fd(iso) { if (!iso) return "–"; var p = iso.split("-"); return p[2] + "/" + p[1] + "/" + p[0]; }
+  function fds(iso) { if (!iso) return "–"; var p = iso.split("-"); return p[2] + "/" + p[1]; }
+  var EURF = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
+  function eur(v) { return v == null ? "–" : EURF.format(v); }
+  function keur(v) { return v == null ? "–" : (Math.round(v / 100) / 10).toLocaleString("fr-FR") + " k€"; }
+  function pct(v, d) { return v == null ? "–" : (v * 100).toLocaleString("fr-FR", { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }) + " %"; }
+  function addDays(iso, n) { var d = D(iso); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
+  function seqCode(s) { return (s || "").split(" ")[0]; }
+  function etatClass(e) { return e === "Rouge" ? "crit" : e === "Orange" ? "warn" : e === "Vert" ? "ok" : ""; }
+  function statutClass(s) {
+    return ({ "Terminé": "ok", "Terminée": "ok", "Approuvé": "ok", "Payé": "ok", "Fait": "ok", "Clos": "", "En cours": "info", "Facturé": "info", "En analyse": "info", "En traitement": "info",
+      "En retard": "crit", "Non conforme": "crit", "Ouvert": "warn", "À faire": "warn", "En revue": "warn", "PV signé": "warn" })[s] || "";
+  }
+  function pill(s, cls) { return s ? '<span class="pill ' + (cls == null ? statutClass(s) : cls) + '">' + esc(s) + "</span>" : ""; }
+  function niveauClass(n) { return n === "Critique" ? "crit" : n === "Élevé" ? "warn" : n === "Modéré" ? "info" : "ok"; }
+
+  /* ---------- données dérivées ---------- */
+  function derive(m) {
+    var sit = m.meta.situation;
+    var etats = m.tolerances.map(function (t) { return t.etat; });
+    var meteo = etats.indexOf("Rouge") >= 0 ? "orage" : etats.indexOf("Orange") >= 0 ? "nuage" : "soleil";
+    var risquesOuverts = m.risques.filter(function (r) { return r.statut !== "Clos"; }).sort(function (a, b) { return (b.criticite || 0) - (a.criticite || 0); });
+    var pointsOuverts = m.points.filter(function (p) { return ["Clos", "Refusé", "Approuvé"].indexOf(p.statut) < 0; });
+    var jalons = m.planning.filter(function (t) { return t.jalon && t.fin >= sit && (t.reel || 0) < 1; }).sort(function (a, b) { return a.fin < b.fin ? -1 : 1; });
+    var debutPeriode = addDays(sit, -7);
+    var travaux = m.planning.filter(function (t) { return t.debut && t.debut <= sit && t.fin >= debutPeriode; });
+    var aVenir = m.planning.filter(function (t) { return t.debut && t.debut <= addDays(sit, 14) && t.fin > sit && (t.reel || 0) < 1; });
+    var actions = (m.decisions || []).filter(function (d) { return d.statut && d.statut !== "Fait"; });
+    var produits30 = (m.produits || []).filter(function (p) { return p.datePrevue && p.datePrevue >= debutPeriode && p.datePrevue <= addDays(sit, 30); });
+    var attenduClient = m.planning.filter(function (t) { return /^client/i.test(t.responsable) && (t.reel || 0) < 1; });
+    var enCours = m.sequences.filter(function (s) { return s.debut && s.statut !== "Terminée" && s.debut <= sit; })[0] || null;
+    return { sit: sit, meteo: meteo, risquesOuverts: risquesOuverts, pointsOuverts: pointsOuverts, jalons: jalons, travaux: travaux, aVenir: aVenir,
+      actions: actions, produits30: produits30, attenduClient: attenduClient, sequenceEnCours: enCours, debutPeriode: debutPeriode };
+  }
+
+  /* ---------- briques ---------- */
+  var METEO = {
+    soleil: { label: "Ensoleillé", note: "Toutes les tolérances sont respectées.", cls: "ok" },
+    nuage: { label: "Nuageux", note: "Au moins une tolérance est presque consommée : vigilance.", cls: "warn" },
+    orage: { label: "Orageux", note: "Une tolérance est dépassée : rapport d'exception requis.", cls: "crit" }
+  };
+  function meteoIcon(k, size) {
+    size = size || 64;
+    var sun = '<circle cx="26" cy="26" r="11" fill="var(--warn)"/>' + [0, 45, 90, 135, 180, 225, 270, 315].map(function (a) {
+      var r = a * Math.PI / 180; return '<line x1="' + (26 + Math.cos(r) * 15) + '" y1="' + (26 + Math.sin(r) * 15) + '" x2="' + (26 + Math.cos(r) * 20) + '" y2="' + (26 + Math.sin(r) * 20) + '" stroke="var(--warn)" stroke-width="3" stroke-linecap="round"/>';
+    }).join("");
+    var cloud = '<path d="M20 50 h30 a10 10 0 0 0 0-20 a14 14 0 0 0-27-3 a9 9 0 0 0-3 23z" fill="var(--sunk)" stroke="var(--muted)" stroke-width="2.5"/>';
+    var bolt = '<path d="M36 50 l-6 10 h6 l-4 9 l11-13 h-6 l4-6z" fill="var(--crit)"/>';
+    var inner = k === "soleil" ? sun : k === "nuage" ? '<g transform="translate(-4,-6) scale(.8)">' + sun + "</g>" + cloud : cloud.replace("var(--sunk)", "var(--line)") + bolt;
+    return '<svg viewBox="0 0 64 72" width="' + size + '" height="' + size + '" role="img" aria-label="Météo : ' + METEO[k].label + '">' + inner + "</svg>";
+  }
+  function kpiBlock(m, x) {
+    var t = m.tiles, f = m.facturation, r = m.ressources.total;
+    var items = [
+      [pct(t.reel), "Avancement réalisé (prévu " + pct(t.prevu) + ")"],
+      [pct(t.marge, 1), "Marge prévue (offre " + pct(m.budget.marge.initiale, 1) + ")"],
+      [keur(f.facture), "Facturé sur " + keur(f.total)],
+      [(r.prevision || 0) + " j", "Charge prévue (vendu " + (r.vendus || 0) + " j)"],
+      [String(t.risquesCritiques || 0), "Risque" + ((t.risquesCritiques || 0) > 1 ? "s" : "") + " critique" + ((t.risquesCritiques || 0) > 1 ? "s" : "") + " ouvert" + ((t.risquesCritiques || 0) > 1 ? "s" : "")],
+      [String(x.pointsOuverts.length), "Points ouverts"]
+    ];
+    return '<div class="kpis">' + items.map(function (i) { return '<div class="kpi"><div class="v">' + esc(i[0]) + '</div><div class="l">' + esc(i[1]) + "</div></div>"; }).join("") + "</div>";
+  }
+  function seqRows(m) {
+    return m.sequences.filter(function (s) { return s.nom; }).map(function (s) {
+      var st = s.statut === "En cours" && s.reel != null && s.prevu != null && s.reel - s.prevu < -0.1 ? "En retard" : s.statut;
+      return '<div class="seqrow"><div><strong>' + esc(s.nom) + '</strong><div class="dates mono">' + fds(s.debut) + " → " + fds(s.fin) + '</div></div>' +
+        '<div class="bars"><div class="bar" title="Réalisé ' + pct(s.reel) + '"><i style="width:' + Math.round((s.reel || 0) * 100) + '%"></i></div>' +
+        '<div class="bar" title="Prévu ' + pct(s.prevu) + '"><i class="plan" style="width:' + Math.round((s.prevu || 0) * 100) + '%"></i></div></div>' +
+        "<div>" + pill(st || "À venir", st ? null : "") + "</div></div>";
+    }).join("");
+  }
+  function fmtTol(t, v) {
+    if (v == null) return "–";
+    if (t.dimension === "Marge") return (v * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 }) + " pt";
+    if (t.dimension === "Délai" || t.dimension === "Charge") return v + " j";
+    return String(v);
+  }
+  function gauges(m) {
+    return m.tolerances.map(function (t) {
+      var c = Math.min(1.2, t.consommee || 0), col = t.etat === "Rouge" ? "var(--crit)" : t.etat === "Orange" ? "var(--warn)" : "var(--ok)";
+      return '<div class="gauge"><div class="head"><strong>' + esc(t.dimension) + "</strong>" + pill(t.etat, etatClass(t.etat)) + "</div>" +
+        '<div class="track" role="img" aria-label="' + esc(t.dimension) + " : " + pct(t.consommee) + ' de la tolérance consommée"><div class="fill" style="width:' + (c / 1.2 * 100).toFixed(1) + "%;background:" + col + '"></div>' +
+        '<div class="mark" style="left:' + (0.8 / 1.2 * 100).toFixed(1) + '%"></div><div class="mark" style="left:' + (1 / 1.2 * 100).toFixed(1) + '%;opacity:.9"></div></div>' +
+        '<div class="meta">' + esc(t.indicateur) + " : " + esc(fmtTol(t, t.actuel)) + " pour " + esc(fmtTol(t, t.tolerance)) + " tolérés (" + pct(t.consommee) + ")</div></div>";
+    }).join("");
+  }
+  function riskTable(list, compact) {
+    if (!list.length) return '<p class="empty">Aucun risque ouvert.</p>';
+    return '<div class="tablewrap"><table><thead><tr><th>ID</th><th>Risque</th><th class="num">P × I</th><th>Niveau</th><th>Propriétaire</th>' + (compact ? "" : "<th>Réponse et actions</th><th>Statut</th>") + "</tr></thead><tbody>" +
+      list.map(function (r) {
+        return '<tr><td class="id">' + esc(r.id) + "</td><td>" + esc(r.description) + '</td><td class="num mono">' + (r.probabilite || "–") + " × " + (r.impact || "–") + " = <strong>" + (r.criticite || "–") + "</strong></td><td>" + pill(r.niveau, niveauClass(r.niveau)) + "</td><td>" + esc(r.proprietaire) + "</td>" +
+          (compact ? "" : "<td><strong>" + esc(r.reponse) + "</strong> · " + esc(r.actions) + (r.echeance ? ' <span class="note">(échéance ' + fd(r.echeance) + ")</span>" : "") + "</td><td>" + pill(r.statut) + "</td>") + "</tr>";
+      }).join("") + "</tbody></table></div>";
+  }
+  function matrix(list) {
+    var h = '<div class="matrix" role="img" aria-label="Matrice probabilité par impact des risques ouverts">';
+    for (var i = 5; i >= 1; i--) {
+      h += '<div class="ax">' + i + "</div>";
+      for (var p = 1; p <= 5; p++) {
+        var s = p * i, cls = s >= 15 ? "c-crit" : s >= 8 ? "c-high" : s >= 4 ? "c-mod" : "c-low";
+        var ids = list.filter(function (r) { return r.probabilite === p && r.impact === i; }).map(function (r) { return '<span class="chip">' + esc(r.id) + "</span>"; }).join("");
+        h += '<div class="cell ' + cls + '">' + ids + "</div>";
+      }
+    }
+    h += '<div></div>' + [1, 2, 3, 4, 5].map(function (p) { return '<div class="ax">' + p + "</div>"; }).join("") + "</div>";
+    return h + '<p class="note">Lignes : impact (1 à 5). Colonnes : probabilité (1 à 5).</p>';
+  }
+  function taskTable(list, cols) {
+    if (!list.length) return '<p class="empty">Aucune tâche sur cette période.</p>';
+    return '<div class="tablewrap"><table><thead><tr><th>Tâche</th><th>Responsable</th><th>Début</th><th>Fin</th><th class="num">Réalisé</th><th>Statut</th></tr></thead><tbody>' +
+      list.map(function (t) {
+        return "<tr><td>" + (t.jalon ? '<span class="ms" aria-label="Jalon">◆</span> ' : "") + esc(t.tache) + '<div class="note">' + esc(seqCode(t.sequence)) + "</div></td><td>" + esc(t.responsable) + '</td><td class="mono">' + fds(t.debut) + '</td><td class="mono">' + fds(t.fin) + '</td><td class="num">' + (t.reel == null ? "–" : pct(t.reel)) + "</td><td>" + pill(t.statut) + "</td></tr>";
+      }).join("") + "</tbody></table></div>";
+  }
+  function pointsTable(list) {
+    if (!list.length) return '<p class="empty">Aucun point.</p>';
+    return '<div class="tablewrap"><table><thead><tr><th>ID</th><th>Type</th><th>Description</th><th>Décision</th><th class="num">Délai</th><th class="num">Montant</th><th>Statut</th></tr></thead><tbody>' +
+      list.map(function (p) {
+        return '<tr><td class="id">' + esc(p.id) + "</td><td>" + esc(p.type) + "</td><td>" + esc(p.description) + (p.decision ? '<div class="note">' + esc(p.decision) + "</div>" : "") + "</td><td>" + esc(p.niveau) + '</td><td class="num">' + (p.impactDelai ? "+" + p.impactDelai + " j" : "–") + '</td><td class="num">' + (p.montant ? eur(p.montant) : "–") + "</td><td>" + pill(p.statut) + "</td></tr>";
+      }).join("") + "</tbody></table></div>";
+  }
+  function actionsTable(list) {
+    if (!list.length) return '<p class="empty">Aucune action en cours.</p>';
+    return '<div class="tablewrap"><table><thead><tr><th>ID</th><th>Décision ou action</th><th>Instance</th><th>Responsable</th><th>Échéance</th><th>Statut</th></tr></thead><tbody>' +
+      list.map(function (d) {
+        return '<tr><td class="id">' + esc(d.id) + "</td><td>" + esc(d.texte) + '<div class="note">' + fd(d.date) + "</div></td><td>" + esc(d.instance) + "</td><td>" + esc(d.responsable) + '</td><td class="mono">' + fd(d.echeance) + "</td><td>" + pill(d.statut) + "</td></tr>";
+      }).join("") + "</tbody></table></div>";
+  }
+  function jalonsList(list, n) {
+    if (!list.length) return '<p class="empty">Aucun jalon à venir.</p>';
+    return '<div class="tablewrap"><table><tbody>' + list.slice(0, n || 6).map(function (t) {
+      return '<tr><td class="mono" style="width:96px">' + fd(t.fin) + '</td><td><span class="ms">◆</span> ' + esc(t.tache) + '</td><td class="note">' + esc(seqCode(t.sequence)) + "</td></tr>";
+    }).join("") + "</tbody></table></div>";
+  }
+  function chargeBars(m) {
+    var max = Math.max.apply(null, m.ressources.lignes.map(function (r) { return Math.max(r.vendus || 0, r.prevision || 0); }).concat([1]));
+    return m.ressources.lignes.map(function (r) {
+      var w = function (v) { return ((v || 0) / max * 100).toFixed(1) + "%"; };
+      return '<div class="gauge"><div class="head"><strong>' + esc(r.ressource) + '</strong><span class="mono">' + (r.consommes || 0) + " + " + (r.reste || 0) + " = " + (r.prevision || 0) + " j / " + (r.vendus || 0) + " j vendus</span></div>" +
+        '<div class="track" role="img" aria-label="' + esc(r.ressource) + '"><div class="fill" style="width:' + w(r.prevision) + ';background:var(--plan)"></div><div class="fill" style="width:' + w(r.consommes) + ';background:var(--accent)"></div>' +
+        '<div class="mark" style="left:' + w(r.vendus) + ';opacity:.9"></div></div>' + ((r.ecart || 0) > 0 ? '<div class="meta" style="color:var(--warn)">+' + r.ecart + " j au-delà du vendu</div>" : "") + "</div>";
+    }).join("") + '<div class="legend" style="margin-top:10px"><span style="--c:var(--accent)">Consommé</span><span style="--c:var(--plan)">Reste à faire</span><span style="--c:var(--fg)">Trait : jours vendus</span></div>';
+  }
+  function planMensuel(m, height) {
+    var mois = m.ressources.mois, tot = mois.map(function (_, i) { return m.ressources.lignes.reduce(function (s, r) { return s + (r.plan[i] || 0); }, 0); });
+    var max = Math.max.apply(null, tot.concat([1])), H = height || 160, W = 560, pad = 28, bw = (W - pad) / mois.length;
+    var nice = Math.ceil(max / 10) * 10;
+    var bars = tot.map(function (v, i) {
+      var h = v / nice * (H - 30), x = pad + i * bw + 6, y = H - 20 - h;
+      return '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + (bw - 12).toFixed(1) + '" height="' + h.toFixed(1) + '" rx="3" fill="var(--accent)"/>' +
+        '<text x="' + (x + (bw - 12) / 2).toFixed(1) + '" y="' + (y - 5).toFixed(1) + '" text-anchor="middle" font-size="11" fill="var(--fg)">' + v + "</text>" +
+        '<text x="' + (x + (bw - 12) / 2).toFixed(1) + '" y="' + (H - 5) + '" text-anchor="middle" font-size="11" fill="var(--muted)">' + (mois[i] ? mois[i].slice(5, 7) + "/" + mois[i].slice(2, 4) : "") + "</text>";
+    }).join("");
+    var grid = [0, 0.5, 1].map(function (f) { var y = H - 20 - f * (H - 30); return '<line x1="' + pad + '" x2="' + W + '" y1="' + y + '" y2="' + y + '" stroke="var(--line)"/><text x="' + (pad - 6) + '" y="' + (y + 4) + '" text-anchor="end" font-size="10" fill="var(--muted)">' + Math.round(nice * f) + "</text>"; }).join("");
+    return '<svg viewBox="0 0 ' + W + " " + H + '" width="100%" role="img" aria-label="Jours planifiés par mois">' + grid + bars + "</svg>";
+  }
+  function factuTable(m) {
+    return '<div class="tablewrap"><table><thead><tr><th>Jalon de facturation</th><th>Déclencheur</th><th class="num">Montant</th><th>Prévu</th><th>Statut</th></tr></thead><tbody>' +
+      m.facturation.jalons.map(function (j) {
+        return "<tr><td>" + esc(j.jalon) + '<div class="note">' + esc(seqCode(j.sequence)) + "</div></td><td>" + esc(j.declencheur) + '</td><td class="num">' + eur(j.montant) + '<div class="note">' + pct(j.part, 1) + '</div></td><td class="mono">' + fd(j.datePrevue) + (j.retard ? '<div style="color:var(--crit)">+' + j.retard + " j</div>" : "") + "</td><td>" + pill(j.statut) + "</td></tr>";
+      }).join("") + "</tbody></table></div>";
+  }
+  function factuBar(m) {
+    var f = m.facturation, t = f.total || 1;
+    return '<div class="bar" style="height:16px" role="img" aria-label="Encaissé ' + keur(f.encaisse) + ", facturé " + keur(f.facture) + " sur " + keur(f.total) + '"><i class="plan" style="width:' + (f.facture / t * 100).toFixed(1) + '%"></i><i style="width:' + (f.encaisse / t * 100).toFixed(1) + '%;background:var(--ok)"></i></div>' +
+      '<div class="legend" style="margin-top:8px"><span style="--c:var(--ok)">Encaissé ' + keur(f.encaisse) + '</span><span style="--c:var(--plan)">Facturé ' + keur(f.facture) + '</span><span style="--c:var(--sunk)">Reste à facturer ' + keur(f.reste) + "</span></div>";
+  }
+  function margeBlock(m, big) {
+    var g = m.budget.marge, max = Math.max(g.initiale || 0, g.prevue || 0, g.cible || 0) * 1.15 || 1;
+    var row = function (lab, v, col) { return '<div class="gauge"><div class="head"><span>' + lab + '</span><strong class="mono" style="font-size:' + (big ? 22 : 15) + 'px">' + pct(v, 1) + '</strong></div><div class="track"><div class="fill" style="width:' + ((v || 0) / max * 100).toFixed(1) + "%;background:" + col + '"></div>' + (g.cible ? '<div class="mark" style="left:' + (g.cible / max * 100).toFixed(1) + '%;opacity:.9"></div>' : "") + "</div></div>"; };
+    return row("Marge de l'offre", g.initiale, "var(--plan)") + row("Marge prévue à terminaison", g.prevue, (g.cible && g.prevue < g.cible) ? "var(--crit)" : "var(--accent)") +
+      '<p class="note">Trait : marge cible ' + pct(g.cible, 1) + ". Chiffre d'affaires " + keur(g.ca) + " (marché " + keur(g.marche) + " et avenants), coût prévu " + keur(g.coutPrevu) + ".</p>";
+  }
+
+  /* ---------- Gantt ---------- */
+  function gantt(m, filtre) {
+    var tasks = m.planning.filter(function (t) { return t.debut && t.fin && (!filtre || t.sequence === filtre); });
+    if (!tasks.length) return '<p class="empty">Aucune tâche.</p>';
+    var start = tasks.reduce(function (a, t) { return t.debut < a ? t.debut : a; }, tasks[0].debut);
+    var end = tasks.reduce(function (a, t) { return t.fin > a ? t.fin : a; }, tasks[0].fin);
+    var s0 = D(start); s0.setUTCDate(s0.getUTCDate() - ((s0.getUTCDay() + 6) % 7));
+    var days = Math.round((D(end) - s0) / 864e5) + 10, dw = filtre ? 9 : Math.max(2.2, Math.min(4, 860 / days)), LW = 330, RH = 24, top = 40;
+    var rows = [], lastSeq = null;
+    tasks.forEach(function (t) { if (t.sequence !== lastSeq) { rows.push({ seq: t.sequence }); lastSeq = t.sequence; } rows.push(t); });
+    var W = LW + days * dw + 10, H = top + rows.length * RH + 10;
+    var x = function (iso) { return LW + (D(iso) - s0) / 864e5 * dw; };
+    var g = "";
+    for (var d = 0; d <= days; d += 7) {
+      var dd = new Date(s0.getTime() + d * 864e5), xx = LW + d * dw;
+      g += '<line x1="' + xx + '" x2="' + xx + '" y1="' + (top - 6) + '" y2="' + H + '" stroke="var(--line)" stroke-width="' + (dd.getUTCDate() <= 7 ? 1 : 0.4) + '"/>';
+      if (dd.getUTCDate() <= 7) g += '<text x="' + (xx + 3) + '" y="' + (top - 22) + '" font-size="11" font-weight="600" fill="var(--fg)">' + ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."][dd.getUTCMonth()] + " " + String(dd.getUTCFullYear()).slice(2) + "</text>";
+      if (filtre) g += '<text x="' + (xx + 2) + '" y="' + (top - 8) + '" font-size="9" fill="var(--muted)">' + dd.getUTCDate() + "</text>";
+    }
+    rows.forEach(function (r, i) {
+      var y = top + i * RH;
+      if (r.seq !== undefined) {
+        g += '<rect x="0" y="' + y + '" width="' + W + '" height="' + RH + '" fill="var(--sunk)"/><text x="8" y="' + (y + 16) + '" font-size="12" font-weight="700" fill="var(--fg)">' + esc(r.seq) + "</text>";
+        return;
+      }
+      var label = r.tache.length > 46 ? r.tache.slice(0, 45) + "…" : r.tache;
+      g += '<text x="8" y="' + (y + 16) + '" font-size="12" fill="var(--fg)"><title>' + esc(r.tache + " (" + r.responsable + ")") + "</title>" + esc(label) + "</text>";
+      var x1 = x(r.debut), x2 = x(r.fin) + dw;
+      if (r.jalon) {
+        var cx = x(r.fin) + dw / 2, cy = y + RH / 2;
+        g += '<path d="M' + cx + " " + (cy - 7) + " L" + (cx + 7) + " " + cy + " L" + cx + " " + (cy + 7) + " L" + (cx - 7) + " " + cy + 'Z" fill="' + ((r.reel || 0) >= 1 ? "var(--plan)" : "var(--mile)") + '"><title>' + esc(r.tache + " : " + fd(r.fin)) + "</title></path>";
+      } else {
+        var col = r.statut === "En retard" ? "var(--crit)" : r.statut === "Terminé" ? "var(--plan)" : "var(--accent)";
+        g += '<rect x="' + x1.toFixed(1) + '" y="' + (y + 6) + '" width="' + Math.max(3, x2 - x1).toFixed(1) + '" height="' + (RH - 12) + '" rx="3" fill="' + col + '" opacity="' + (r.statut === "À venir" ? 0.45 : 1) + '"><title>' + esc(r.tache + " : " + fd(r.debut) + " → " + fd(r.fin) + " · " + (r.statut || "")) + "</title></rect>";
+        if (r.reel > 0 && r.reel < 1) g += '<rect x="' + x1.toFixed(1) + '" y="' + (y + RH - 8) + '" width="' + ((x2 - x1) * r.reel).toFixed(1) + '" height="3" fill="var(--fg)" opacity=".55"/>';
+      }
+    });
+    var tx = x(m.meta.situation) + dw / 2;
+    g += '<line x1="' + tx + '" x2="' + tx + '" y1="' + (top - 10) + '" y2="' + H + '" stroke="var(--today)" stroke-width="2"/><text x="' + (tx + 4) + '" y="' + (top - 10) + '" font-size="10" font-weight="600" fill="var(--today)">' + fds(m.meta.situation) + "</text>";
+    return '<div class="tablewrap gantt"><svg width="' + W.toFixed(0) + '" height="' + H + '" viewBox="0 0 ' + W.toFixed(0) + " " + H + '" role="img" aria-label="Diagramme de Gantt du projet">' + g + "</svg></div>";
+  }
+
+  /* ---------- vues ---------- */
+  function viewSynthese(m, x) {
+    var mt = METEO[x.meteo];
+    return '<div class="grid g2"><section class="panel"><h2>Météo du projet <small>situation au ' + fd(x.sit) + '</small></h2><div class="weather">' + meteoIcon(x.meteo) +
+      '<div><div class="state" style="color:var(--' + mt.cls + ')">' + mt.label + "</div><div>" + esc(mt.note) + "</div>" + (x.sequenceEnCours ? '<div class="note" style="margin-top:4px">Séquence en cours : ' + esc(x.sequenceEnCours.nom) + "</div>" : "") + "</div></div>" +
+      (m.recits.commentaire ? '<div class="quote" style="margin-top:16px">' + esc(m.recits.commentaire) + '</div><p class="note" style="margin-top:6px">Commentaire du chef de projet (rapport de point).</p>' : "") + "</section>" +
+      '<section class="panel"><h2>Tolérances <small>gestion par exception</small></h2>' + gauges(m) + '<div class="legend"><span style="--c:var(--fg)">Traits : 80 % (vigilance) et 100 % (exception)</span></div></section></div>' +
+      kpiBlock(m, x) +
+      '<div class="grid g2"><section class="panel"><h2>Avancement par séquence <small>barre pleine : réalisé · barre claire : prévu</small></h2>' + seqRows(m) + "</section>" +
+      '<section class="panel"><h2>Prochains jalons</h2>' + jalonsList(x.jalons, 6) + '<h2 style="margin-top:18px">Risques à surveiller <small>' + x.risquesOuverts.length + " ouverts</small></h2>" + riskTable(x.risquesOuverts.slice(0, 3), true) + "</section></div>";
+  }
+  function viewPlanning(m) {
+    var opts = ['<button type="button" data-seq="" aria-pressed="' + (state.seqFiltre === "") + '">Tout le projet</button>'].concat(m.sequences.filter(function (s) { return s.nom; }).map(function (s) {
+      return '<button type="button" data-seq="' + esc(s.nom) + '" aria-pressed="' + (state.seqFiltre === s.nom) + '">' + esc(seqCode(s.nom)) + "</button>";
+    }));
+    var list = m.planning.filter(function (t) { return !state.seqFiltre || t.sequence === state.seqFiltre; });
+    return '<section class="panel"><h2>Planning <small>trait rouge : date de situation</small></h2><div class="filters" style="margin-bottom:14px">' + opts.join("") + "</div>" + gantt(m, state.seqFiltre) +
+      '<div class="legend" style="margin-top:10px"><span style="--c:var(--accent)">En cours ou à venir</span><span style="--c:var(--plan)">Terminé</span><span style="--c:var(--crit)">En retard</span><span style="--c:var(--mile)">Jalon</span></div></section>' +
+      '<section class="panel"><h2>Tâches <small>' + list.length + "</small></h2>" + taskTable(list) + "</section>";
+  }
+  function viewRisques(m, x) {
+    var list = state.filtreRisques === "ouverts" ? x.risquesOuverts : m.risques.slice().sort(function (a, b) { return (b.criticite || 0) - (a.criticite || 0); });
+    var counts = ["Critique", "Élevé", "Modéré", "Faible"].map(function (n) { return [n, x.risquesOuverts.filter(function (r) { return r.niveau === n; }).length]; });
+    return '<div class="grid g2"><section class="panel"><h2>Matrice des risques ouverts</h2>' + matrix(x.risquesOuverts) + "</section>" +
+      '<section class="panel"><h2>Répartition</h2><div class="kpis">' + counts.map(function (c) { return '<div class="kpi"><div class="v" style="color:var(--' + niveauClass(c[0]) + ')">' + c[1] + '</div><div class="l">' + c[0] + "</div></div>"; }).join("") + "</div>" +
+      '<p class="note" style="margin-top:12px">Criticité = probabilité × impact. Critique à partir de 15, élevé à partir de 8, modéré à partir de 4.</p></section></div>' +
+      '<section class="panel"><h2>Registre des risques</h2><div class="filters" style="margin-bottom:12px"><button type="button" data-rf="ouverts" aria-pressed="' + (state.filtreRisques === "ouverts") + '">Ouverts</button><button type="button" data-rf="tous" aria-pressed="' + (state.filtreRisques === "tous") + '">Tous</button></div>' + riskTable(list) + "</section>";
+  }
+  function viewPoints(m, x) {
+    var list = state.filtrePoints === "ouverts" ? x.pointsOuverts : m.points;
+    var av = m.points.filter(function (p) { return p.type === "Demande de changement" && p.statut === "Approuvé"; });
+    return '<section class="panel"><h2>Registre des points <small>demandes de changement, hors spécification, problèmes</small></h2><div class="filters" style="margin-bottom:12px"><button type="button" data-pf="ouverts" aria-pressed="' + (state.filtrePoints === "ouverts") + '">Ouverts</button><button type="button" data-pf="tous" aria-pressed="' + (state.filtrePoints === "tous") + '">Tous</button></div>' + pointsTable(list) +
+      (av.length ? '<p class="note" style="margin-top:10px">Avenants signés : ' + av.map(function (p) { return esc(p.id) + " (" + eur(p.montant) + ")"; }).join(", ") + ".</p>" : "") + "</section>" +
+      '<section class="panel"><h2>Actions en cours <small>issues des comités</small></h2>' + actionsTable(x.actions) + "</section>" +
+      '<section class="panel"><h2>Journal des décisions</h2>' + actionsTable((m.decisions || []).filter(function (d) { return d.statut === "Fait"; })) + "</section>";
+  }
+  function viewFinances(m) {
+    var b = m.budget;
+    return '<div class="grid g2"><section class="panel"><h2>Marge de l\'affaire</h2>' + margeBlock(m) + "</section>" +
+      '<section class="panel"><h2>Facturation <small>' + keur(m.facturation.total) + " (marché + avenants)</small></h2>" + factuBar(m) + '<div style="margin-top:14px">' + factuTable(m) + "</div></section></div>" +
+      '<div class="grid g2"><section class="panel"><h2>Charge des ressources <small>' + (m.ressources.total.prevision || 0) + " j prévus pour " + (m.ressources.total.vendus || 0) + " j vendus</small></h2>" + chargeBars(m) + "</section>" +
+      '<section class="panel"><h2>Plan mensuel du reste à faire <small>jours</small></h2>' + planMensuel(m) + "</section></div>" +
+      '<section class="panel"><h2>Coûts de l\'affaire</h2><div class="tablewrap"><table><thead><tr><th>Poste</th><th>Catégorie</th><th class="num">Initial</th><th class="num">Prévu</th><th class="num">Engagé</th><th class="num">Écart</th><th>Commentaire</th></tr></thead><tbody>' +
+      b.lignes.map(function (l) { return "<tr><td>" + esc(l.poste) + "</td><td>" + esc(l.categorie) + '</td><td class="num">' + eur(l.initial) + '</td><td class="num">' + eur(l.prevision) + '</td><td class="num">' + eur(l.engage) + '</td><td class="num" style="color:' + ((l.ecart || 0) > 0 ? "var(--warn)" : "inherit") + '">' + ((l.ecart || 0) > 0 ? "+" : "") + eur(l.ecart) + '</td><td class="note">' + esc(l.commentaire) + "</td></tr>"; }).join("") +
+      '<tr><td><strong>Total</strong></td><td></td><td class="num"><strong>' + eur(b.total.initial) + '</strong></td><td class="num"><strong>' + eur(b.total.prevision) + '</strong></td><td class="num"><strong>' + eur(b.total.engage) + '</strong></td><td class="num"><strong>+' + eur(b.total.ecart) + "</strong></td><td></td></tr></tbody></table></div></section>";
+  }
+  function viewGouvernance(m) {
+    var o = m.organisation || { roles: [], instances: [], raci: { roles: [], activites: [] } };
+    var raciCls = { A: "crit", R: "info", C: "warn", I: "" };
+    return '<div class="grid g2"><section class="panel"><h2>Rôles PRINCE2</h2><div class="tablewrap"><table><tbody>' + o.roles.map(function (r) { return "<tr><td><strong>" + esc(r.role) + '</strong><div class="note">' + esc(r.instance) + "</div></td><td>" + esc(r.titulaire) + '<div class="note">' + esc(r.responsabilites) + "</div></td></tr>"; }).join("") + "</tbody></table></div></section>" +
+      '<section class="panel"><h2>Instances de gouvernance</h2><div class="tablewrap"><table><tbody>' + o.instances.map(function (r) { return "<tr><td><strong>" + esc(r.instance) + '</strong><div class="note">' + esc(r.frequence) + "</div></td><td>" + esc(r.membres) + '<div class="note">' + esc(r.role) + "</div></td></tr>"; }).join("") + "</tbody></table></div>" +
+      (m.recits.prochainComite.date ? '<p style="margin-top:12px"><strong>Prochain comité :</strong> ' + fd(m.recits.prochainComite.date) + " · " + esc(m.recits.prochainComite.objet) + "</p>" : "") + "</section></div>" +
+      '<section class="panel"><h2>Matrice RACI <small>R réalise · A approuve · C consulté · I informé</small></h2><div class="tablewrap"><table><thead><tr><th>Activité</th>' + o.raci.roles.map(function (r) { return '<th style="text-align:center;white-space:normal">' + esc(r) + "</th>"; }).join("") + "</tr></thead><tbody>" +
+      o.raci.activites.map(function (a) { return "<tr><td>" + esc(a.activite) + "</td>" + a.valeurs.map(function (v) { return '<td style="text-align:center">' + (v ? pill(v, raciCls[v]) : "") + "</td>"; }).join("") + "</tr>"; }).join("") + "</tbody></table></div></section>" +
+      '<section class="panel"><h2>Produits contractuels <small>principe 6 : orientation produit</small></h2><div class="tablewrap"><table><thead><tr><th>ID</th><th>Produit</th><th>Critères de qualité</th><th>Approbateur</th><th>Date prévue</th><th>Statut</th></tr></thead><tbody>' +
+      (m.produits || []).map(function (p) { return '<tr><td class="id">' + esc(p.id) + "</td><td>" + esc(p.produit) + '<div class="note">' + esc(seqCode(p.sequence)) + "</div></td><td>" + esc(p.criteres) + "</td><td>" + esc(p.approbateur) + '</td><td class="mono">' + fd(p.datePrevue) + "</td><td>" + pill(p.statut) + "</td></tr>"; }).join("") + "</tbody></table></div></section>" +
+      (m.lecons && m.lecons.length ? '<section class="panel"><h2>Leçons</h2><div class="tablewrap"><table><thead><tr><th>Source</th><th>Constat</th><th>Recommandation</th></tr></thead><tbody>' + m.lecons.map(function (l) { return "<tr><td>" + esc(l.source) + '<div class="note">' + esc(seqCode(l.sequence)) + "</div></td><td>" + esc(l.constat) + "</td><td>" + esc(l.recommandation) + "</td></tr>"; }).join("") + "</tbody></table></div></section>" : "");
+  }
+
+  /* ---------- présentations ---------- */
+  function slide(kick, title, body, cls) { return { kick: kick, title: title, body: body, cls: cls || "" }; }
+  function deckCopil(m, x) {
+    var mt = METEO[x.meteo];
+    var dem = (m.recits.decisionsDemandees || "").split(/\n+/).filter(Boolean);
+    var copilPoints = x.pointsOuverts.filter(function (p) { return p.niveau === "COPIL"; });
+    var exc = m.tolerances.some(function (t) { return t.etat !== "Vert"; }) && m.recits.exception.recommandation;
+    return [
+      slide("Comité de pilotage · " + fd(x.sit), m.meta.projet, '<ol class="agenda"><li>Météo et synthèse</li><li>Avancement et jalons</li><li>Tolérances</li><li>Risques majeurs</li><li>Économie de l\'affaire</li><li>Décisions attendues</li><li>Prochaines étapes</li></ol>', "cover"),
+      slide("1 · Météo et synthèse", "Météo : " + mt.label.toLowerCase(), '<div class="weather">' + meteoIcon(x.meteo, 96) + '<div><div class="state" style="font-size:28px;color:var(--' + mt.cls + ')">' + mt.label + '</div><div style="font-size:20px">' + esc(mt.note) + "</div></div></div>" + kpiBlock(m, x).replace('class="kpis"', 'class="kpis" style="grid-template-columns:repeat(3,1fr)"') + (m.recits.commentaire ? '<div class="quote" style="font-size:18px">' + esc(m.recits.commentaire) + "</div>" : "")),
+      slide("2 · Avancement", "Avancement par séquence et jalons", '<div class="grid" style="grid-template-columns:1.4fr 1fr;gap:32px"><div>' + seqRows(m) + "</div><div><h4 style=\"margin:0 0 8px;font-size:18px\">Prochains jalons</h4>" + jalonsList(x.jalons, 5) + "</div></div>"),
+      slide("3 · Gestion par exception", "Tolérances du projet", '<div class="grid" style="grid-template-columns:1fr 1fr;gap:4px 40px">' + gauges(m) + "</div>"),
+      slide("4 · Risques", "Risques majeurs", '<div class="grid" style="grid-template-columns:1.8fr 1fr;gap:28px"><div>' + riskTable(x.risquesOuverts.slice(0, 4), true) + "</div><div>" + matrix(x.risquesOuverts) + "</div></div>"),
+      slide("5 · Économie de l'affaire", "Marge, facturation et charge", '<div class="grid" style="grid-template-columns:1fr 1fr;gap:40px"><div>' + margeBlock(m, true) + "</div><div>" + factuBar(m) +
+        '<div class="kpis" style="margin-top:20px;grid-template-columns:1fr 1fr"><div class="kpi"><div class="v">' + (m.ressources.total.prevision || 0) + ' j</div><div class="l">charge prévue pour ' + (m.ressources.total.vendus || 0) + ' j vendus</div></div><div class="kpi"><div class="v">' + keur(m.facturation.reste) + '</div><div class="l">reste à facturer</div></div></div></div></div>'),
+      slide("6 · Décisions", "Décisions attendues du comité", (dem.length ? '<ol style="font-size:22px;margin:0;padding-left:28px;display:grid;gap:12px">' + dem.map(function (d) { return "<li>" + esc(d.replace(/^\d+\.\s*/, "")) + "</li>"; }).join("") + "</ol>" : '<p class="empty">Aucune décision demandée.</p>') +
+        (copilPoints.length ? '<div><h4 style="margin:0 0 8px;font-size:18px">Points soumis au comité</h4>' + pointsTable(copilPoints) + "</div>" : "") +
+        (exc ? '<div class="quote" style="font-size:18px"><strong>Recommandation du chef de projet (rapport d\'exception) :</strong> ' + esc(m.recits.exception.recommandation) + "</div>" : "")),
+      slide("7 · Suite", "Prochaines étapes", '<div class="grid" style="grid-template-columns:1fr 1fr;gap:40px"><div><h4 style="margin:0 0 8px;font-size:18px">Jalons</h4>' + jalonsList(x.jalons, 5) + "</div><div><h4 style=\"margin:0 0 8px;font-size:18px\">Actions en cours</h4>" +
+        '<div class="tablewrap"><table><tbody>' + x.actions.slice(0, 5).map(function (d) { return "<tr><td>" + esc(d.texte.replace(/^(Action|Décision)\s*(\(client\))?\s*:\s*/, "")) + '<div class="note">' + esc(d.responsable) + " · " + fd(d.echeance) + "</div></td></tr>"; }).join("") + "</tbody></table></div></div></div>" +
+        (m.recits.prochainComite.date ? '<p style="font-size:22px;margin:0"><strong>Prochain comité de pilotage :</strong> ' + fd(m.recits.prochainComite.date) + " · " + esc(m.recits.prochainComite.objet) + "</p>" : ""))
+    ];
+  }
+  function deckCoproj(m, x) {
+    return [
+      slide("Comité de projet · semaine du " + fd(x.debutPeriode) + " au " + fd(x.sit), m.meta.projet, '<ol class="agenda"><li>Travaux de la semaine</li><li>Prévu sur deux semaines</li><li>Actions en cours</li><li>Points ouverts</li><li>Risques à suivre</li><li>Charge des ressources</li><li>Attendus et livrables</li></ol>', "cover"),
+      slide("1 · Semaine écoulée", "Travaux de la période", taskTable(x.travaux.slice(0, 8))),
+      slide("2 · À venir", "Prévu sur les deux prochaines semaines", taskTable(x.aVenir.slice(0, 8))),
+      slide("3 · Suivi", "Actions en cours", actionsTable(x.actions.slice(0, 6))),
+      slide("4 · Points", "Points ouverts", pointsTable(x.pointsOuverts.slice(0, 6))),
+      slide("5 · Risques", "Risques à suivre", riskTable(x.risquesOuverts.slice(0, 6), true)),
+      slide("6 · Ressources", "Charge des ressources", '<div class="grid" style="grid-template-columns:1.2fr 1fr;gap:36px"><div>' + chargeBars(m) + "</div><div>" + planMensuel(m, 260) + "</div></div>"),
+      slide("7 · Attendus", "Attendus du client et livrables à venir", '<div class="grid" style="grid-template-columns:1fr 1fr;gap:36px"><div><h4 style="margin:0 0 8px;font-size:18px">Attendus du client</h4>' +
+        (x.attenduClient.length ? '<div class="tablewrap"><table><tbody>' + x.attenduClient.slice(0, 5).map(function (t) { return "<tr><td>" + esc(t.tache) + '<div class="note">' + esc(t.responsable) + " · " + fd(t.fin) + "</div></td><td>" + pill(t.statut) + "</td></tr>"; }).join("") + "</tbody></table></div>" : '<p class="empty">Aucun.</p>') +
+        '</div><div><h4 style="margin:0 0 8px;font-size:18px">Livrables attendus sous 30 jours</h4>' +
+        (x.produits30.length ? '<div class="tablewrap"><table><tbody>' + x.produits30.map(function (p) { return "<tr><td>" + esc(p.produit) + '<div class="note">' + esc(p.approbateur) + " · " + fd(p.datePrevue) + "</div></td><td>" + pill(p.statut) + "</td></tr>"; }).join("") + "</tbody></table></div>" : '<p class="empty">Aucun.</p>') + "</div></div>")
+    ];
+  }
+  function renderDeck() {
+    var m = state.model, x = derive(m), slides = state.deck === "copil" ? deckCopil(m, x) : deckCoproj(m, x);
+    state.slide = Math.max(0, Math.min(state.slide, slides.length - 1));
+    var s = slides[state.slide], name = state.deck === "copil" ? "COPIL" : "COPROJ";
+    var html = '<div class="deck" id="deck" role="dialog" aria-label="Présentation ' + name + '"><div class="stage" id="stage"><div class="slide ' + s.cls + '" id="slide">' +
+      "<div><div class=\"kick\">" + esc(s.kick) + "</div><h3>" + esc(s.title) + "</h3>" + (s.cls === "cover" ? '<p style="font-size:22px;margin:16px 0 0;opacity:.9">' + esc(m.meta.client) + "</p>" : "") + "</div>" +
+      '<div class="body">' + s.body + "</div>" +
+      '<div class="foot"><span>' + esc(m.meta.projet) + " · " + name + " du " + fd(x.sit) + "</span><span>" + esc(m.meta.chefDeProjet ? "Chef de projet : " + m.meta.chefDeProjet : "") + " · " + (state.slide + 1) + " / " + slides.length + "</span></div></div></div>" +
+      '<div class="deckbar"><button type="button" data-deck="prev" aria-label="Diapositive précédente">←</button><span class="count">' + (state.slide + 1) + " / " + slides.length + '</span><button type="button" data-deck="next" aria-label="Diapositive suivante">→</button>' +
+      '<button type="button" data-deck="full">Plein écran</button><button type="button" data-deck="exit">Quitter</button></div></div>';
+    return html;
+  }
+  function fitSlide() {
+    var st = document.getElementById("stage"), sl = document.getElementById("slide");
+    if (!st || !sl) return;
+    var k = Math.min((st.clientWidth - 24) / 1280, (st.clientHeight - 24) / 720);
+    sl.style.transform = "translate(-50%, -50%) scale(" + Math.max(0.1, k) + ")";
+  }
+
+  /* ---------- rendu principal ---------- */
+  function render() {
+    var m = state.model;
+    if (!m) return;
+    var x = derive(m);
+    var nav = VIEWS.map(function (v) { return '<a href="#' + v[0] + '"' + (state.view === v[0] ? ' aria-current="page"' : "") + ">" + v[1] + "</a>"; }).join("");
+    var body = { synthese: viewSynthese, planning: viewPlanning, risques: viewRisques, points: viewPoints, finances: viewFinances, gouvernance: viewGouvernance }[state.view](m, x);
+    var b = state.banner;
+    var banner = b ? '<div class="banner' + (b.err ? " err" : "") + '" role="status"><span>' + esc(b.text) + '</span><span class="actions">' + (b.actions || []).map(function (a) { return '<button type="button" class="' + (a.primary ? "primary" : "") + '" data-banner="' + a.id + '">' + esc(a.label) + "</button>"; }).join("") + "</span></div>" : "";
+    app.innerHTML = '<header class="top"><div class="wrap"><div class="brand"><div><div class="eyebrow">Pilotage PRINCE2 · ' + esc(m.meta.client.split("|")[0].trim()) + '</div><h1>' + esc(m.meta.projet) + '</h1><div class="sub">Situation au ' + fd(x.sit) + " · chef de projet " + esc(m.meta.chefDeProjet) + " · fin contractuelle " + fd(m.meta.finContrat) + (state.source === "local" ? ' · <strong>classeur importé (vue personnelle)</strong>' : "") + "</div></div>" +
+      '<div class="actions"><button type="button" class="primary" data-present="copil">Présenter le COPIL</button><button type="button" class="primary" data-present="coproj">Présenter le COPROJ</button><button type="button" data-import="1">Mettre à jour depuis Excel</button></div></div>' +
+      '<nav class="tabs" aria-label="Vues">' + nav + "</nav></div></header><main><div class=\"wrap\">" + banner + body + '<p class="note">Données issues du classeur « Pilotage PRINCE2 PACS, version éditeur ». Projet fictif présenté à titre d\'exemple.</p></div></main>' +
+      (state.deck ? renderDeck() : "");
+    if (state.deck) { fitSlide(); var dk = document.getElementById("deck"); if (dk) dk.focus && dk.setAttribute("tabindex", "-1"); }
+  }
+
+  /* ---------- navigation ---------- */
+  function fromHash() {
+    var h = (location.hash || "").replace("#", "");
+    if (h === "copil" || h === "coproj") { if (state.deck !== h) { state.deck = h; state.slide = 0; } }
+    else { state.deck = null; if (VIEWS.some(function (v) { return v[0] === h; })) state.view = h; }
+    render();
+  }
+  window.addEventListener("hashchange", fromHash);
+  window.addEventListener("resize", fitSlide);
+  document.addEventListener("keydown", function (e) {
+    if (!state.deck) return;
+    if (["ArrowRight", "PageDown", " "].indexOf(e.key) >= 0) { e.preventDefault(); state.slide++; render(); }
+    else if (["ArrowLeft", "PageUp"].indexOf(e.key) >= 0) { e.preventDefault(); state.slide--; render(); }
+    else if (e.key === "Escape") { if (!document.fullscreenElement) location.hash = state.view; }
+  });
+  app.addEventListener("click", function (e) {
+    var t = e.target.closest("button");
+    if (!t) return;
+    if (t.dataset.present) { location.hash = t.dataset.present; return; }
+    if (t.dataset.deck) {
+      var a = t.dataset.deck;
+      if (a === "next") state.slide++; else if (a === "prev") state.slide--;
+      else if (a === "exit") { try { if (document.fullscreenElement) document.exitFullscreen(); } catch (err) {} location.hash = state.view; return; }
+      else if (a === "full") { try { var el = document.documentElement; if (document.fullscreenElement) document.exitFullscreen(); else if (el.requestFullscreen) el.requestFullscreen().then(fitSlide, function () {}); } catch (err) {} return; }
+      render(); return;
+    }
+    if (t.dataset.seq !== undefined) { state.seqFiltre = t.dataset.seq; render(); return; }
+    if (t.dataset.rf) { state.filtreRisques = t.dataset.rf; render(); return; }
+    if (t.dataset.pf) { state.filtrePoints = t.dataset.pf; render(); return; }
+    if (t.dataset.import) { document.getElementById("xlsx-input").click(); return; }
+    if (t.dataset.banner) { onBanner(t.dataset.banner); return; }
+  });
+  document.addEventListener("fullscreenchange", function () { setTimeout(fitSlide, 50); });
+
+  /* ---------- import et publication ---------- */
+  var pending = null;
+  function loadSheetJS() {
+    if (window.XLSX) return Promise.resolve();
+    return new Promise(function (ok, ko) {
+      var s = document.createElement("script");
+      s.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+      s.onload = ok; s.onerror = function () { ko(new Error("Le lecteur de fichiers Excel n'a pas pu être chargé. Vérifiez la connexion puis réessayez.")); };
+      document.head.appendChild(s);
+    });
+  }
+  document.getElementById("xlsx-input").addEventListener("change", function (e) {
+    var f = e.target.files && e.target.files[0]; e.target.value = "";
+    if (!f) return;
+    state.banner = { text: "Lecture de « " + f.name + " »…" }; render();
+    loadSheetJS().then(function () { return f.arrayBuffer(); }).then(function (buf) {
+      var model = parseWorkbook(XLSX.read(buf, { type: "array" }));
+      if (!model.meta.situation) throw new Error("La date de situation est vide dans l'onglet Accueil. Ouvrez le classeur dans Excel, enregistrez-le, puis réessayez.");
+      pending = model; state.model = model; state.source = "local";
+      var canShare = !!(window.claude && window.claude.use);
+      state.banner = canShare
+        ? { text: "Classeur chargé : situation au " + fd(model.meta.situation) + ". Vous êtes seul à voir ces données pour l'instant.",
+            actions: [{ id: "publish", label: "Publier pour tous les lecteurs", primary: true }, { id: "dismiss", label: "Garder pour moi" }] }
+        : { text: "Classeur chargé : situation au " + fd(model.meta.situation) + ". Ces données restent dans votre navigateur et disparaissent au rechargement de la page.",
+            actions: [{ id: "dismiss", label: "Fermer" }] };
+      render();
+    }).catch(function (err) { state.banner = { err: true, text: err.message || String(err), actions: [{ id: "dismiss", label: "Fermer" }] }; render(); });
+  });
+  function onBanner(id) {
+    if (id === "dismiss") { state.banner = null; render(); return; }
+    if (id === "publish" && pending) {
+      state.banner = { text: "Publication en cours…" }; render();
+      var cl = window.claude && window.claude.use ? window.claude.use("artifact") : Promise.resolve(null);
+      cl.then(function (art) {
+        if (!art) throw { code: "not_granted" };
+        return art.publish({ "data/projet.json": { content: JSON.stringify(pending), contentType: "application/json" } });
+      }).then(function () {
+        state.source = "publie"; pending = null;
+        state.banner = { text: "Publié : tous les lecteurs voient maintenant la situation au " + fd(state.model.meta.situation) + ".", actions: [{ id: "dismiss", label: "Fermer" }] }; render();
+      }).catch(function (err) {
+        var c = err && err.code, msg;
+        if (c === "conflict") msg = "Une version plus récente vient d'être publiée par quelqu'un d'autre ; la page se recharge avec elle.";
+        else if (c === "not_writer" || c === "not_granted" || c === "capability_disabled" || c === "consent_required" || c === "not_declared") msg = "Cette page est en lecture seule pour vous : les données importées restent visibles dans votre navigateur uniquement.";
+        else if (c === "too_large") msg = "Le classeur produit trop de données pour être publié.";
+        else msg = "La publication a échoué. Réessayez dans un instant.";
+        state.banner = { err: c !== "conflict", text: msg, actions: [{ id: "dismiss", label: "Fermer" }] }; render();
+      });
+    }
+  }
+
+  /* ---------- démarrage ---------- */
+  fetch("data/projet.json", { cache: "no-store" }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (m) {
+    state.model = m; fromHash();
+  }).catch(function () {
+    app.innerHTML = '<div class="wrap" style="padding-block:40px"><div class="banner err"><span>Les données du projet n\'ont pas pu être chargées. Rechargez la page, ou chargez un classeur avec le bouton ci-dessous.</span><button type="button" data-import="1">Charger un classeur Excel</button></div></div>';
+  });
+})();
+</script>
+
+</body>
+</html>
