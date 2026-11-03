@@ -10,6 +10,6 @@ Cockpit de pilotage PRINCE2 d'un déploiement de PACS, vu du côté de l'éditeu
 
 ## Boîte à outils PACS (`outils/`)
 
-13 outils pour un déploiement PACS : dimensionnement du stockage, estimateur de migration, prérequis client, inventaire des modalités, plan d'adressage DICOM, matrice des flux, cahier de recette, chronogramme de bascule (mode jour J), suivi de migration, plan de formation, guides de démarrage, générateur de compte rendu, simulateur d'avenant. Chaque outil exporte un document Excel ou PDF (client ou interne). Les saisies sont enregistrées dans le navigateur.
+13 outils pour un déploiement PACS : stockage (cache) et archivage, estimateur de migration, prérequis client, inventaire des modalités, plan d'adressage DICOM, matrice des flux, cahier de recette, chronogramme de bascule (mode jour J), suivi de migration, plan de formation, guides de démarrage, générateur de compte rendu, simulateur d'avenant. Chaque outil exporte un document Excel ou PDF (client ou interne). Les saisies sont enregistrées dans le navigateur.
 
 Auteur : Florian CROSES

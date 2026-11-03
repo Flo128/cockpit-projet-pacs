@@ -73,7 +73,7 @@ textarea { width: 100%; resize: vertical; line-height: 1.5; }
 table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
 th { text-align: left; font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); padding: 6px 6px; border-bottom: 1px solid var(--line); white-space: nowrap; }
 td { padding: 4px 6px; border-bottom: 1px solid var(--line); vertical-align: middle; }
-td.num, th.num { text-align: right; }
+td.num, th.num { text-align: right; white-space: nowrap; }
 table.edit input, table.edit select { width: 100%; border-color: transparent; background: transparent; padding: 4px 5px; }
 table.edit input:hover, table.edit select:hover { border-color: var(--line); }
 table.edit input:focus, table.edit select:focus { border-color: var(--accent); background: var(--surface); }
@@ -132,7 +132,7 @@ select[data-v="Connectée"], select[data-v="Développé"] { background: var(--ac
 var DEFAULTS = {
   meta: { projet: "Déploiement de la solution PACS au CH de Saint-Aubert", client: "Centre hospitalier de Saint-Aubert (fictif)", chefDeProjet: "Florian CROSES", support: "Support éditeur : 01 00 00 00 00 (fictif), 24 h / 24", savedAt: null },
   stockage: {
-    compression: 2, copies: 2, marge: 0.2, annees: 10, archives: 85,
+    cacheMois: 24, compressionCache: 1, copiesCache: 2, compressionArchive: 2.5, copiesArchive: 2, conservation: 20, horizon: 10, marge: 0.2, archives: 85,
     rows: [
       { type: "Scanner", examens: 32000, taille: 400, croissance: 0.05 },
       { type: "IRM", examens: 12000, taille: 250, croissance: 0.06 },
@@ -415,6 +415,20 @@ if (typeof module !== "undefined") module.exports = DEFAULTS;
     });
     return '<svg viewBox="0 0 ' + W + " " + H + '" width="100%" role="img" aria-label="' + esc(opts.label || "Graphique") + '">' + g + "</svg>";
   }
+  function stackChart(years) {
+    var W = 640, H = 220, L = 46, B = 26, T = 16, R = 8, n = years.length, bw = (W - L - R) / n;
+    var ny = niceMax(Math.max.apply(null, years.map(function (y) { return y.total; }).concat([1])));
+    var Y = function (v) { return H - B - v / ny * (H - T - B); }, g = "";
+    for (var i = 0; i <= 4; i++) { var v = ny * i / 4, y = Y(v); g += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y + '" y2="' + y + '" stroke="var(--line)"/><text x="' + (L - 6) + '" y="' + (y + 4) + '" text-anchor="end" font-size="10" fill="var(--muted)">' + nf(v) + "</text>"; }
+    years.forEach(function (yr, k) {
+      var x = L + k * bw + bw * 0.15, w = bw * 0.7, ya = Y(yr.archTotal), yc = Y(yr.total);
+      g += '<rect x="' + x.toFixed(1) + '" y="' + ya.toFixed(1) + '" width="' + w.toFixed(1) + '" height="' + (H - B - ya).toFixed(1) + '" fill="var(--accent)"><title>Année ' + yr.an + " : archive " + nf(yr.archTotal) + " To</title></rect>";
+      g += '<rect x="' + x.toFixed(1) + '" y="' + yc.toFixed(1) + '" width="' + w.toFixed(1) + '" height="' + (ya - yc).toFixed(1) + '" fill="var(--plan)"><title>Année ' + yr.an + " : cache " + nf(yr.cacheTotal) + " To</title></rect>";
+      if (n <= 12) g += '<text x="' + (x + w / 2) + '" y="' + (yc - 4) + '" text-anchor="middle" font-size="10" fill="var(--fg)">' + nf(yr.total) + "</text>";
+      g += '<text x="' + (x + w / 2) + '" y="' + (H - 9) + '" text-anchor="middle" font-size="10" fill="var(--muted)">A' + yr.an + "</text>";
+    });
+    return '<svg viewBox="0 0 ' + W + " " + H + '" width="100%" role="img" aria-label="Capacité par année : archive et cache">' + g + "</svg>";
+  }
   function barChart(vals, labels, opts) {
     var W = 640, H = opts.h || 200, L = 46, B = 26, T = 16, R = 8, n = vals.length, bw = (W - L - R) / n;
     var mx = Math.max.apply(null, vals.concat([1])), ny = niceMax(mx);
@@ -431,16 +445,20 @@ if (typeof module !== "undefined") module.exports = DEFAULTS;
 
   /* ================= calculs ================= */
   function calcStockage() {
-    var s = S.stockage, years = [], cum = N(s.archives), annee1 = 0;
-    for (var t = 0; t < N(s.annees); t++) {
-      var raw = s.rows.reduce(function (a, r) { return a + N(r.examens) * Math.pow(1 + N(r.croissance), t) * N(r.taille) / 1e6; }, 0);
-      var net = raw / Math.max(0.1, N(s.compression));
-      if (t === 0) annee1 = net;
-      cum += net;
-      years.push({ an: t + 1, annuel: net, cumul: cum, total: cum * Math.max(1, N(s.copies)) * (1 + N(s.marge)) });
+    var s = S.stockage, H = Math.max(1, N(s.horizon)), years = [], arch = N(s.archives), annee1 = 0;
+    var brut = function (t) { return s.rows.reduce(function (a, r) { return a + N(r.examens) * Math.pow(1 + N(r.croissance), t) * N(r.taille) / 1e6; }, 0); };
+    var kArch = Math.max(1, N(s.copiesArchive)) * (1 + N(s.marge)), kCache = Math.max(1, N(s.copiesCache)) * (1 + N(s.marge));
+    for (var t = 0; t < H; t++) {
+      var b = brut(t), netA = b / Math.max(0.1, N(s.compressionArchive));
+      if (t === 0) annee1 = b;
+      arch += netA;
+      var cache = b * Math.min(1, N(s.cacheMois) / 12) / Math.max(0.1, N(s.compressionCache)) + (N(s.cacheMois) > 12 && t > 0 ? brut(t - 1) * Math.min(1, (N(s.cacheMois) - 12) / 12) / Math.max(0.1, N(s.compressionCache)) : 0);
+      years.push({ an: t + 1, brut: b, archUtile: arch, archTotal: arch * kArch, cacheUtile: cache, cacheTotal: cache * kCache, total: arch * kArch + cache * kCache });
     }
-    var parts = s.rows.map(function (r) { return { type: r.type, to: N(r.examens) * N(r.taille) / 1e6 / Math.max(0.1, N(s.compression)) }; });
-    return { years: years, annee1: annee1, parts: parts, a5: years[Math.min(4, years.length - 1)], a10: years[years.length - 1] };
+    var last = years[years.length - 1];
+    var sansCompression = (last.archUtile - N(s.archives)) * Math.max(0.1, N(s.compressionArchive)) + N(s.archives);
+    var parts = s.rows.map(function (r) { return { type: r.type, to: N(r.examens) * N(r.taille) / 1e6 }; });
+    return { years: years, annee1: annee1, parts: parts, last: last, a5: years[Math.min(4, years.length - 1)], gainCompression: (sansCompression - last.archUtile) * kArch };
   }
   function simMigration(mult) {
     var m = S.migration, reste = N(m.volume) * (1 + N(m.erreurs)), d = m.debut, jours = 0, pts = [[0, 0]], fait = 0;
@@ -544,7 +562,7 @@ if (typeof module !== "undefined") module.exports = DEFAULTS;
   var PROTOS = ["HL7 ADT", "HL7 ORM", "HL7 ORU", "DICOM C-STORE", "DICOM C-FIND / C-MOVE", "DICOM MWL (worklist)", "DICOM MPPS", "DICOM Storage Commitment", "Lien contextuel (URL)", "XDS-I", "Autre"];
   var TOOLS = [
     { id: "accueil", g: "", l: "Vue d'ensemble" },
-    { id: "stockage", g: "Avant-vente et cadrage", l: "Dimensionnement du stockage", d: "Calcule les To nécessaires à 5 et 10 ans à partir de l'activité par modalité, de la compression, de la réplication et de la marge de sécurité." },
+    { id: "stockage", g: "Avant-vente et cadrage", l: "Stockage et archivage", d: "Dimensionne séparément le cache en ligne (examens récents, accès rapide) et l'archive long terme (toute la durée de conservation, compressée), à partir de l'activité par modalité." },
     { id: "migration", g: "Avant-vente et cadrage", l: "Estimateur de migration", d: "Estime la durée de migration des archives jour par jour, selon le débit mesuré à la migration à blanc et les fenêtres de travail, avec plusieurs hypothèses de débit." },
     { id: "prerequis", g: "Avant-vente et cadrage", l: "Prérequis client", d: "Liste des prérequis à la charge du client et de l'éditeur, par site, avec le PV que chacun bloque. À envoyer dès la notification du marché." },
     { id: "modalites", g: "Intégration technique", l: "Inventaire des modalités", d: "Toutes les modalités à connecter : AE Title, adresse IP, port, worklist, état de la connexion et date de test." },
@@ -571,7 +589,7 @@ if (typeof module !== "undefined") module.exports = DEFAULTS;
     var card = function (id, m, d) { var t = TOOLS.filter(function (x) { return x.id === id; })[0]; return '<a class="card" href="#' + id + '"><span class="eyebrow">' + esc(t.g) + '</span><span class="t">' + esc(t.l) + '</span><span class="m">' + m + '</span><span class="d">' + esc(d) + "</span></a>"; };
     return '<div class="toolhead"><h2>Boîte à outils du projet PACS</h2><p>' + esc(S.meta.projet) + ". Les données sont un exemple fictif : remplace-les par celles de ton projet. Tout ce que tu saisis est enregistré dans ce navigateur." + '</p><div style="margin-top:10px">' + exportButtons("accueil") + "</div></div>" +
       '<div class="cards">' +
-      card("stockage", nf(st.a10 ? st.a10.total : 0) + " To", "Capacité à prévoir à " + S.stockage.annees + " ans") +
+      card("stockage", nf(st.last.cacheTotal) + " + " + nf(st.last.archTotal) + " To", "Cache + archive à prévoir à " + S.stockage.horizon + " ans") +
       card("migration", mg ? fd(mg.fin) : "–", "Fin estimée de la migration (" + nf(S.migration.volume) + " To)") +
       card("prerequis", pr.filter(function (r) { return r.statut === "Fait"; }).length + " / " + pr.length, bloq ? bloq + " prérequis bloquant" + (bloq > 1 ? "s" : "") : "Aucun prérequis bloquant") +
       card("modalites", okMod + " / " + md.length, "Modalités connectées ou testées") +
@@ -589,19 +607,27 @@ if (typeof module !== "undefined") module.exports = DEFAULTS;
 
   V.stockage = {
     main: function () {
-      return '<div class="panel"><h3>Hypothèses</h3><div class="params">' + param("stockage.compression", "Ratio de compression sans perte", "num", "2 = les images occupent moitié moins") + param("stockage.copies", "Nombre de copies", "num", "2 pour une réplication sur deux salles") +
-        param("stockage.marge", "Marge de sécurité (%)", "pct") + param("stockage.annees", "Horizon (années)", "num") + param("stockage.archives", "Archives existantes à reprendre (To)", "num", "Volume déjà compressé de l'ancien PACS") + "</div></div>" +
+      return '<div class="grid g2"><div class="panel"><h3>Cache en ligne <small>stockage court terme, rapide</small></h3><div class="params">' +
+        param("stockage.cacheMois", "Durée en cache (mois)", "num", "Examens récents et antériorités consultés au quotidien") + param("stockage.compressionCache", "Ratio de compression du cache", "num", "1 = images non compressées, pour la vitesse d'affichage") + param("stockage.copiesCache", "Copies du cache", "num", "2 pour la haute disponibilité sur deux salles") + "</div></div>" +
+        '<div class="panel"><h3>Archive long terme <small>toute la durée de conservation</small></h3><div class="params">' +
+        param("stockage.compressionArchive", "Ratio de compression sans perte", "num", "JPEG 2000 sans perte : souvent 2 à 3") + param("stockage.copiesArchive", "Copies de l'archive", "num", "2 = deuxième site ou hébergeur HDS") + param("stockage.archives", "Archives reprises de l'ancien PACS (To)", "num", "Volume après compression") +
+        param("stockage.conservation", "Durée de conservation (années)", "num", "En général 20 ans après le dernier passage du patient : à confirmer avec l'établissement") + "</div></div></div>" +
+        '<div class="panel"><h3>Dimensionnement</h3><div class="params">' + param("stockage.horizon", "Horizon de dimensionnement (années)", "num", "Souvent la durée du marché ou de la garantie") + param("stockage.marge", "Marge de sécurité (%)", "pct") + "</div></div>" +
         '<div class="panel"><h3>Activité annuelle par modalité <small>taille moyenne d\'un examen non compressé, en Mo</small></h3>' +
         table("stockage.rows", [{ k: "type", l: "Modalité", w: 200 }, { k: "examens", l: "Examens par an", t: "num" }, { k: "taille", l: "Taille moyenne (Mo)", t: "num" }, { k: "croissance", l: "Croissance annuelle (%)", t: "pct" }]) + "</div>" +
         '<div id="sum"></div>';
     },
     sum: function () {
-      var c = calcStockage(), s = S.stockage, tot = c.parts.reduce(function (a, p) { return a + p.to; }, 0);
-      return kpis([[nf(c.annee1, 1) + " To", "Volume produit la 1re année (une copie, compressé)"], [nf(c.a5 ? c.a5.total : 0) + " To", "Capacité à prévoir à 5 ans"], [nf(c.a10 ? c.a10.total : 0) + " To", "Capacité à prévoir à " + s.annees + " ans", "info"], [nf(c.a10 ? c.a10.cumul : 0) + " To", "Volume utile à " + s.annees + " ans (une copie)"]]) +
-        '<div class="grid g2" style="margin-top:16px"><div class="panel"><h3>Capacité totale à prévoir <small>copies et marge incluses, en To</small></h3>' + barChart(c.years.map(function (y) { return y.total; }), c.years.map(function (y) { return "A" + y.an; }), { label: "Capacité par année" }) + "</div>" +
-        '<div class="panel"><h3>Part de chaque modalité <small>volume annuel compressé</small></h3><div class="tablewrap"><table><tbody>' +
+      var c = calcStockage(), s = S.stockage, tot = c.parts.reduce(function (a, p) { return a + p.to; }, 0), H = N(s.horizon);
+      var purge = N(s.conservation) && N(s.conservation) < H;
+      return kpis([[nf(c.annee1, 1) + " To", "Images produites la 1re année (non compressées)"], [nf(c.last.cacheTotal) + " To", "Cache en ligne à prévoir (copies et marge incluses)", "info"], [nf(c.last.archTotal) + " To", "Archive à prévoir à " + H + " ans (copies et marge incluses)", "info"], [nf(c.last.total) + " To", "Capacité totale à " + H + " ans"], [nf(c.gainCompression) + " To", "Économisés par la compression de l'archive", "ok"]]) +
+        '<div class="grid g2" style="margin-top:16px"><div class="panel"><h3>Capacité à prévoir par année <small>To, copies et marge incluses</small></h3>' + stackChart(c.years) +
+        '<div class="legend"><span style="--c:var(--accent)">Archive long terme</span><span style="--c:var(--plan)">Cache en ligne</span></div></div>' +
+        '<div class="panel"><h3>Part de chaque modalité <small>volume annuel non compressé</small></h3><div class="tablewrap"><table><tbody>' +
         c.parts.slice().sort(function (a, b) { return b.to - a.to; }).map(function (p) { return "<tr><td>" + esc(p.type) + '</td><td style="width:45%"><div class="bar"><i style="width:' + (tot ? p.to / tot * 100 : 0).toFixed(1) + '%"></i></div></td><td class="num mono">' + nf(p.to, 1) + " To</td><td class=\"num mono\">" + pct(tot ? p.to / tot : 0) + "</td></tr>"; }).join("") +
-        '</tbody></table></div><p class="note">Le scanner et la tomosynthèse pèsent souvent plus de la moitié du volume : ce sont les hypothèses à vérifier en premier avec le client.</p></div></div>';
+        '</tbody></table></div><p class="note">Le scanner et la tomosynthèse pèsent souvent plus de la moitié du volume : ce sont les hypothèses à vérifier en premier avec le client.</p></div></div>' +
+        '<div class="panel"><h3>À retenir</h3><p style="margin:0">Le cache ne grossit qu\'avec l\'activité : il garde ' + nf(s.cacheMois) + " mois d'examens" + (N(s.compressionCache) > 1 ? ", compressés à " + nf(s.compressionCache, 1) + ":1" : ", non compressés") + ". L'archive cumule toute la production depuis la mise en service, plus les " + nf(s.archives) + " To repris : c'est elle qui porte l'essentiel du volume, et c'est là que la compression sans perte (" + nf(s.compressionArchive, 1) + ":1) fait gagner " + nf(c.gainCompression) + " To sur " + H + " ans. " +
+        (purge ? "La durée de conservation (" + nf(s.conservation) + " ans) étant plus courte que l'horizon, des purges sont possibles : le calcul ne les déduit pas." : "Aucune purge n'interviendra pendant l'horizon : la durée de conservation (" + nf(s.conservation) + " ans) le dépasse.") + "</p></div>";
     }
   };
 
@@ -897,12 +923,12 @@ if (typeof module !== "undefined") module.exports = DEFAULTS;
   var EXP = {
     stockage: function () {
       var r = calcStockage(), s = S.stockage;
-      return { title: "Dimensionnement du stockage", aud: "client", kpis: [["Volume produit la 1re année (une copie)", nf(r.annee1, 1) + " To"], ["Capacité à 5 ans", nf(r.a5 ? r.a5.total : 0) + " To"], ["Capacité à " + s.annees + " ans", nf(r.a10 ? r.a10.total : 0) + " To"], ["Volume utile à " + s.annees + " ans", nf(r.a10 ? r.a10.cumul : 0) + " To"]],
-        charts: [barChart(r.years.map(function (y) { return y.total; }), r.years.map(function (y) { return "A" + y.an; }), { label: "Capacité" })], chartNote: "Capacité totale à prévoir par année (To), copies et marge de sécurité incluses.",
-        tables: [T("Hypothèses", [c("Paramètre"), c("Valeur", "num", 2)], [["Ratio de compression sans perte", N(s.compression)], ["Nombre de copies", N(s.copies)], ["Marge de sécurité", N(s.marge)], ["Horizon (années)", N(s.annees)], ["Archives existantes à reprendre (To)", N(s.archives)]].map(function (x, i) { return i === 2 ? [x[0], pct(x[1])] : x; })),
-          T("Activité par modalité", [c("Modalité"), c("Examens par an", "num"), c("Taille moyenne (Mo)", "num"), c("Croissance annuelle", "pct", 1), c("Volume annuel compressé (To)", "num", 1)], s.rows.map(function (x) { return [x.type, N(x.examens), N(x.taille), N(x.croissance), N(x.examens) * N(x.taille) / 1e6 / Math.max(0.1, N(s.compression))]; })),
-          T("Projection", [c("Année"), c("Volume annuel (To)", "num", 1), c("Cumul utile (To)", "num", 1), c("Capacité totale (To)", "num", 0)], r.years.map(function (y) { return ["Année " + y.an, y.annuel, y.cumul, y.total]; }))],
-        texts: [{ h: "Méthode", b: "Volume annuel = examens × taille moyenne × (1 + croissance) ^ année, divisé par le ratio de compression. Capacité = cumul utile, archives reprises comprises, × nombre de copies × (1 + marge de sécurité)." }] };
+      return { title: "Stockage et archivage", aud: "client", kpis: [["Images produites la 1re année (non compressées)", nf(r.annee1, 1) + " To"], ["Cache en ligne à prévoir", nf(r.last.cacheTotal) + " To"], ["Archive à prévoir à " + s.horizon + " ans", nf(r.last.archTotal) + " To"], ["Capacité totale à " + s.horizon + " ans", nf(r.last.total) + " To"], ["Économisés par la compression", nf(r.gainCompression) + " To"]],
+        charts: [stackChart(r.years)], chartNote: "Capacité à prévoir par année (To), copies et marge incluses. Bleu foncé : archive long terme ; bleu clair : cache en ligne.",
+        tables: [T("Hypothèses", [c("Paramètre"), c("Valeur")], [["Durée en cache", nf(s.cacheMois) + " mois"], ["Compression du cache", nf(s.compressionCache, 1) + ":1"], ["Copies du cache", nf(s.copiesCache)], ["Compression sans perte de l'archive", nf(s.compressionArchive, 1) + ":1"], ["Copies de l'archive", nf(s.copiesArchive)], ["Archives reprises de l'ancien PACS", nf(s.archives) + " To"], ["Durée de conservation", nf(s.conservation) + " ans"], ["Horizon de dimensionnement", nf(s.horizon) + " ans"], ["Marge de sécurité", pct(s.marge)]]),
+          T("Activité par modalité", [c("Modalité"), c("Examens par an", "num"), c("Taille moyenne (Mo)", "num"), c("Croissance annuelle", "pct", 1), c("Volume annuel non compressé (To)", "num", 1)], s.rows.map(function (x) { return [x.type, N(x.examens), N(x.taille), N(x.croissance), N(x.examens) * N(x.taille) / 1e6]; })),
+          T("Projection", [c("Année"), c("Images produites (To)", "num", 1), c("Cache utile (To)", "num", 1), c("Archive utile (To)", "num", 1), c("Cache à prévoir (To)", "num", 0), c("Archive à prévoir (To)", "num", 0), c("Total (To)", "num", 0)], r.years.map(function (y) { return ["Année " + y.an, y.brut, y.cacheUtile, y.archUtile, y.cacheTotal, y.archTotal, y.total]; }))],
+        texts: [{ h: "Méthode", b: "Cache = examens des " + nf(s.cacheMois) + " derniers mois, divisés par la compression du cache. Archive = cumul de toute la production depuis la mise en service, divisé par la compression sans perte, plus les archives reprises. Chaque volume est multiplié par son nombre de copies et par (1 + marge de sécurité)." }] };
     },
     migration: function () {
       var m = S.migration, base = simMigration(1), need = debitNecessaire();
@@ -1251,6 +1277,8 @@ if (typeof module !== "undefined") module.exports = DEFAULTS;
     S = clone(base);
     ["stockage", "migration", "prerequis", "modalites", "aet", "flux", "recette", "bascule", "suivi", "formation", "cr", "avenant", "meta"].forEach(function (k) { if (!S[k]) S[k] = clone(DEFAULTS[k]); });
     if (!S.meta.situation) S.meta.situation = "2026-11-03";
+    var st0 = S.stockage;
+    if (st0.compressionArchive == null) { var dS = DEFAULTS.stockage; st0.compressionArchive = st0.compression || dS.compressionArchive; st0.copiesArchive = st0.copies || dS.copiesArchive; st0.horizon = st0.annees || dS.horizon; st0.cacheMois = dS.cacheMois; st0.compressionCache = dS.compressionCache; st0.copiesCache = dS.copiesCache; st0.conservation = dS.conservation; delete st0.compression; delete st0.copies; delete st0.annees; }
     if (S.aet.pacsAet == null) { S.aet.pacsAet = "PACS_SA"; S.aet.pacsIp = "10.20.0.10"; S.aet.pacsPort = 104; }
     var dr = loadDraft();
     if (dr && dr.data) {
