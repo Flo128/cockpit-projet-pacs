@@ -71,6 +71,9 @@ main .wrap { padding-block: 24px 48px; display: grid; gap: 20px; }
 .kpi .l { font-size: 12px; color: var(--muted); }
 .kpis.ot { background: none; border: 0; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
 .kpis.ot .kpi { border: 1px solid var(--line); border-radius: var(--radius); }
+.wbstate { align-self: center; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: var(--ok-soft); color: var(--ok); }
+.wbstate.todo { background: var(--warn-soft); color: var(--warn); }
+.tabs a.tab-ot { margin-left: auto; }
 .btnlink { display: inline-flex; align-items: center; font: inherit; font-size: 13px; font-weight: 600; color: var(--accent); text-decoration: none; border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 6px 12px; }
 .btnlink:hover { border-color: var(--accent); }
 .btnlink:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -813,26 +816,38 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
     var locked = !!m.clientOnly, aud = locked ? "client" : state.audience;
     var x = derive(m, aud);
     if (x.client && state.view === "finances") state.view = "synthese";
-    var nav = VIEWS.filter(function (v) { return !(x.client && v[0] === "finances"); }).map(function (v) { return '<a href="#' + v[0] + '"' + (state.view === v[0] ? ' aria-current="page"' : "") + ">" + v[1] + "</a>"; }).join("");
-    var body = { synthese: viewSynthese, planning: viewPlanning, risques: viewRisques, points: viewPoints, finances: viewFinances, gouvernance: viewGouvernance }[state.view](m, x);
+    var SUITE = OUTILS_URL === "#outils" && !locked, onOT = SUITE && state.onOutils;
+    var nav = VIEWS.filter(function (v) { return !(x.client && v[0] === "finances"); }).map(function (v) { return '<a href="#' + v[0] + '"' + (!onOT && state.view === v[0] ? ' aria-current="page"' : "") + ">" + v[1] + "</a>"; }).join("") +
+      (SUITE ? '<a href="#outils" class="tab-ot"' + (onOT ? ' aria-current="page"' : "") + ">Boîte à outils</a>" : "");
+    var body = onOT ? "" : { synthese: viewSynthese, planning: viewPlanning, risques: viewRisques, points: viewPoints, finances: viewFinances, gouvernance: viewGouvernance }[state.view](m, x);
     var b = state.banner;
+    var cur = SUITE && window.PACS ? window.PACS.current() : null;
+    var wbCtl = SUITE
+      ? (state.wbName ? '<span class="wbstate' + (cur && cur.dirty ? " todo" : "") + '" title="' + esc(state.wbName) + '">' + (cur && cur.dirty ? "Modifications à enregistrer" : "Classeur à jour") + "</span>" +
+          (cur && cur.dirty ? '<button type="button" class="primary" data-savewb="1">Enregistrer dans le classeur</button>' : "") +
+          '<button type="button" data-closewb="1">Fermer le classeur</button>' : "") +
+        '<button type="button"' + (state.wbName ? "" : ' class="primary"') + ' data-import="1">' + (state.wbName ? "Ouvrir un autre classeur" : "Ouvrir le classeur du projet") + "</button>"
+      : null;
     var banner = b ? '<div class="banner' + (b.err ? " err" : "") + '" role="status"><span>' + esc(b.text) + '</span><span class="actions">' + (b.actions || []).map(function (a) { return '<button type="button" class="' + (a.primary ? "primary" : "") + '" data-banner="' + a.id + '">' + esc(a.label) + "</button>"; }).join("") + "</span></div>" : "";
     app.innerHTML = '<header class="top"><div class="wrap"><div class="brand"><div><div class="eyebrow">Pilotage PRINCE2 · ' + esc(m.meta.client.split("|")[0].trim()) + '</div><h1>' + esc(m.meta.projet) + '</h1><div class="sub">Situation au ' + fd(x.sit) + " · chef de projet " + esc(m.meta.chefDeProjet) + " · fin contractuelle " + fd(m.meta.finContrat) + (state.wbName ? ' · <strong>classeur « ' + esc(state.wbName) + " »</strong>" : state.source === "local" ? ' · <strong>classeur importé (vue personnelle)</strong>' : "") + "</div></div>" +
-      '<div class="actions">' + (OUTILS_URL && !locked ? '<a class="btnlink" href="' + esc(OUTILS_URL) + '"' + (OUTILS_URL.charAt(0) === "#" ? "" : ' target="_blank" rel="noopener"') + ">Boîte à outils</a>" : "") + (state.wbName && !locked ? '<button type="button" data-closewb="1">Fermer le classeur</button>' : "") + '<button type="button" data-import="1">' + (locked ? "Mettre à jour depuis Excel" : "Ouvrir le classeur du projet") + '</button></div></div>' +
-      '<div class="filters audience" role="group" aria-label="Public et présentations">' +
+      '<div class="actions">' + (wbCtl !== null ? wbCtl : (OUTILS_URL && !locked ? '<a class="btnlink" href="' + esc(OUTILS_URL) + '"' + (OUTILS_URL.charAt(0) === "#" ? "" : ' target="_blank" rel="noopener"') + ">Boîte à outils</a>" : "") + (state.wbName && !locked ? '<button type="button" data-closewb="1">Fermer le classeur</button>' : "") + '<button type="button" data-import="1">' + (locked ? "Mettre à jour depuis Excel" : "Ouvrir le classeur du projet") + '</button>') + '</div></div>' +
+      (onOT ? "" : '<div class="filters audience" role="group" aria-label="Public et présentations">' +
       (locked ? "" : '<span class="seg"><button type="button" data-aud="interne" aria-pressed="' + (aud === "interne") + '">Vue interne</button><button type="button" data-aud="client" aria-pressed="' + (aud === "client") + '">Vue client</button></span>') +
       (x.client ? '<button type="button" class="primary" data-present="copil">Présenter le COPIL</button><button type="button" class="primary" data-present="coproj">Présenter le COPROJ</button>'
                 : '<button type="button" class="primary internal" data-present="interne">Présenter la revue interne</button>') +
-      '<span class="note" style="align-self:center">' + (locked ? "Édition client." : aud === "client" ? "Marge, coûts, charge et éléments internes masqués." : "Toutes les données de l'éditeur sont visibles. Passez en vue client pour présenter le COPIL ou le COPROJ.") + "</span></div>" +
-      '<nav class="tabs" aria-label="Vues">' + nav + "</nav></div></header><main><div class=\"wrap\">" + banner + body + '<p class="note">' + (locked ? "Édition client : les données internes à l'éditeur ne figurent pas dans cette version. " : x.client ? "Vue client : affichage seulement, les données internes restent présentes dans la page. Pour transmettre au client, utilisez l'édition client. " : "") + 'Données issues du classeur « Pilotage PRINCE2 PACS, version éditeur ». Projet fictif présenté à titre d\'exemple.</p></div></main>' +
+      '<span class="note" style="align-self:center">' + (locked ? "Édition client." : aud === "client" ? "Marge, coûts, charge et éléments internes masqués." : "Toutes les données de l'éditeur sont visibles. Passez en vue client pour présenter le COPIL ou le COPROJ.") + "</span></div>") +
+      '<nav class="tabs" aria-label="Vues">' + nav + "</nav></div></header>" + (onOT ? "" : '<main><div class="wrap">' + banner + body + '<p class="note">' + (locked ? "Édition client : les données internes à l'éditeur ne figurent pas dans cette version. " : x.client ? "Vue client : affichage seulement, les données internes restent présentes dans la page. Pour transmettre au client, utilisez l'édition client. " : "") + 'Données issues du classeur « Pilotage PRINCE2 PACS, version éditeur ». Projet fictif présenté à titre d\'exemple.</p></div></main>') +
       (state.deck ? renderDeck() : "");
+    var tabCur = app.querySelector("nav.tabs a[aria-current]"), tabs = app.querySelector("nav.tabs");
+    if (tabCur && tabs && tabs.scrollWidth > tabs.clientWidth) tabs.scrollLeft = Math.max(0, tabCur.offsetLeft - tabs.clientWidth + tabCur.offsetWidth + 16);
     if (state.deck) { fitSlide(); var dk = document.getElementById("deck"); if (dk) dk.focus && dk.setAttribute("tabindex", "-1"); }
   }
 
   /* ---------- navigation ---------- */
   function fromHash() {
     var h = (location.hash || "").replace("#", "");
-    if (/^outils/.test(h)) return;
+    state.onOutils = /^outils/.test(h);
+    if (state.onOutils) { state.deck = null; render(); return; }
     if (h === "interne" && state.model && state.model.clientOnly) h = "copil";
     if (h === "copil" || h === "coproj" || h === "interne") { if (state.deck !== h) { state.deck = h; state.slide = 0; } }
     else { state.deck = null; if (VIEWS.some(function (v) { return v[0] === h; })) state.view = h; }
@@ -862,7 +877,12 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
     if (t.dataset.seq !== undefined) { state.seqFiltre = t.dataset.seq; render(); return; }
     if (t.dataset.rf) { state.filtreRisques = t.dataset.rf; render(); return; }
     if (t.dataset.pf) { state.filtrePoints = t.dataset.pf; render(); return; }
-    if (t.dataset.import) { document.getElementById("xlsx-input").click(); return; }
+    if (t.dataset.savewb) { if (window.PACS) window.PACS.save(); return; }
+    if (t.dataset.import) {
+      var c0 = window.PACS && window.PACS.current();
+      if (c0 && c0.dirty && !t.dataset.force) { state.banner = { text: "La boîte à outils a des modifications pas encore enregistrées dans « " + c0.name + " ». Ouvrir un autre classeur quand même ?", actions: [{ id: "importforce", label: "Ouvrir quand même", primary: true }, { id: "dismiss", label: "Annuler" }] }; render(); return; }
+      document.getElementById("xlsx-input").click(); return;
+    }
     if (t.dataset.closewb) {
       var cur = window.PACS && window.PACS.current();
       if (cur && cur.dirty) { state.banner = { text: "La boîte à outils a des modifications pas encore enregistrées dans « " + cur.name + " ». Fermer quand même ?", actions: [{ id: "closewb", label: "Fermer sans enregistrer", primary: true }, { id: "dismiss", label: "Annuler" }] }; render(); return; }
@@ -927,6 +947,7 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
   });
   function onBanner(id) {
     if (id === "dismiss") { state.banner = null; render(); return; }
+    if (id === "importforce") { state.banner = null; render(); document.getElementById("xlsx-input").click(); return; }
     if (id === "closewb") { if (window.PACS) window.PACS.close("cockpit"); closeWorkbook(); }
   }
 
@@ -938,6 +959,7 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
         if (ev.from === "cockpit") return;
         if (ev.type === "open") loadBuffer(ev.buf, ev.name, "outils").catch(function () {});
         if (ev.type === "close") closeWorkbook();
+        if (ev.type === "dirty") render();
       });
       window.PACS.restore().then(function (rec) { if (rec && !state.wbName) loadBuffer(rec.buf, rec.name, "outils").catch(function () {}); });
     }
