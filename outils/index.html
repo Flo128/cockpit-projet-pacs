@@ -1,0 +1,973 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Boîte à outils PACS</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Mise en page : bandeau, colonne de navigation par phase du projet, zone de travail de l'outil. */
+:root {
+  --bg: #F3F5F8; --surface: #FFFFFF; --sunk: #EAEEF3; --line: #D9DFE7; --fg: #15212E; --muted: #5B6878;
+  --accent: #1F5F8B; --accent-soft: #CFE0EE; --accent-ink: #FFFFFF; --plan: #9FBBD3;
+  --ok: #2F7D53; --ok-soft: #DCEFE3; --warn: #B8700F; --warn-soft: #FBEBD2; --crit: #B93A33; --crit-soft: #F7DCDA; --mile: #C9741B;
+  --font-ui: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --radius: 8px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0E151D; --surface: #151F2A; --sunk: #1B2734; --line: #283646; --fg: #E4EAF1; --muted: #93A2B2;
+  --accent: #6BA6D6; --accent-soft: #23415B; --accent-ink: #0E151D; --plan: #3C5A75;
+  --ok: #5FBF8A; --ok-soft: #1D3A2B; --warn: #E3A447; --warn-soft: #43321A; --crit: #EE7A71; --crit-soft: #4A2523; --mile: #E39A4E; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0E151D; --surface: #151F2A; --sunk: #1B2734; --line: #283646; --fg: #E4EAF1; --muted: #93A2B2;
+  --accent: #6BA6D6; --accent-soft: #23415B; --accent-ink: #0E151D; --plan: #3C5A75;
+  --ok: #5FBF8A; --ok-soft: #1D3A2B; --warn: #E3A447; --warn-soft: #43321A; --crit: #EE7A71; --crit-soft: #4A2523; --mile: #E39A4E; color-scheme: dark }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-ui); font-size: 14px; line-height: 1.45; }
+header.top { background: var(--surface); border-bottom: 1px solid var(--line); }
+header.top .in { padding: 14px max(16px, env(safe-area-inset-right, 0px)) 14px max(16px, env(safe-area-inset-left, 0px)); display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: center; justify-content: space-between; }
+.eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+button { font: inherit; font-weight: 600; border-radius: 6px; padding: 7px 12px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; }
+button:hover { border-color: var(--accent); }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+button.small { padding: 3px 8px; font-size: 12px; }
+button.ghost { border-color: transparent; background: transparent; color: var(--muted); }
+button.ghost:hover { color: var(--crit); }
+.layout { display: grid; grid-template-columns: 250px minmax(0, 1fr); min-height: calc(100vh - 70px); }
+nav.side { border-right: 1px solid var(--line); background: var(--surface); padding: 16px 10px 40px max(10px, env(safe-area-inset-left, 0px)); }
+nav.side .grp { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 18px 10px 6px; }
+nav.side .grp:first-child { margin-top: 0; }
+nav.side a { display: block; padding: 7px 10px; border-radius: 6px; color: var(--fg); text-decoration: none; }
+nav.side a:hover { background: var(--sunk); }
+nav.side a[aria-current="page"] { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.navsel { display: none; }
+main { padding: 22px max(16px, env(safe-area-inset-right, 0px)) 60px 22px; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; align-content: start; }
+#sum { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.toolhead h2 { margin: 0 0 4px; font-size: 22px; text-wrap: balance; }
+.toolhead p { margin: 0; color: var(--muted); max-width: 75ch; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; min-width: 0; }
+.panel h3 { margin: 0 0 12px; font-size: 15px; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; align-items: baseline; }
+.panel h3 small { font-weight: 500; color: var(--muted); font-size: 12px; }
+.grid { display: grid; gap: 16px; }
+.g2 { grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.kpi { background: var(--surface); padding: 12px 14px; display: grid; gap: 3px; align-content: start; }
+.kpi .v { font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.kpi .l { font-size: 12px; color: var(--muted); }
+.kpi.ok .v { color: var(--ok); } .kpi.warn .v { color: var(--warn); } .kpi.crit .v { color: var(--crit); }
+.params { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px 16px; }
+.params label { display: grid; gap: 4px; font-size: 12px; color: var(--muted); font-weight: 600; }
+input, select, textarea { font: inherit; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 5px; padding: 5px 7px; min-width: 0; }
+textarea { width: 100%; resize: vertical; line-height: 1.5; }
+.tablewrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th { text-align: left; font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); padding: 6px 6px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 4px 6px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+td.num, th.num { text-align: right; }
+table.edit input, table.edit select { width: 100%; border-color: transparent; background: transparent; padding: 4px 5px; }
+table.edit input:hover, table.edit select:hover { border-color: var(--line); }
+table.edit input:focus, table.edit select:focus { border-color: var(--accent); background: var(--surface); }
+table.edit input[type="number"] { text-align: right; }
+table.edit input[type="checkbox"] { width: auto; }
+table.edit select { min-width: 112px; }
+table.edit input[type="number"] { min-width: 72px; }
+select[data-v="OK"], select[data-v="Fait"], select[data-v="Testée"], select[data-v="Recetté"], select[data-v="Oui"] { background: var(--ok-soft); color: var(--ok); font-weight: 600; }
+select[data-v="KO"], select[data-v="Bloquant"], select[data-v="Problème"], select[data-v="Non"] { background: var(--crit-soft); color: var(--crit); font-weight: 600; }
+select[data-v="Réserve"], select[data-v="En cours"], select[data-v="Passerelle"], select[data-v="Spécifié"] { background: var(--warn-soft); color: var(--warn); font-weight: 600; }
+select[data-v="Connectée"], select[data-v="Développé"] { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; background: var(--sunk); }
+.pill.ok { background: var(--ok-soft); color: var(--ok); } .pill.warn { background: var(--warn-soft); color: var(--warn); } .pill.crit { background: var(--crit-soft); color: var(--crit); } .pill.info { background: var(--accent-soft); color: var(--accent); }
+.note { color: var(--muted); font-size: 12px; }
+.mono { font-family: var(--font-data); font-size: 12px; }
+.bar { position: relative; height: 10px; background: var(--sunk); border-radius: 5px; overflow: hidden; }
+.bar i { position: absolute; inset: 0 auto 0 0; background: var(--accent); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--muted); }
+.legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; background: var(--c); }
+.banner { border: 1px solid var(--accent); background: var(--accent-soft); border-radius: var(--radius); padding: 10px 14px; display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: space-between; }
+.banner.err { border-color: var(--crit); background: var(--crit-soft); }
+.banner.ok { border-color: var(--ok); background: var(--ok-soft); }
+.chip { font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: var(--warn-soft); color: var(--warn); }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.card { display: grid; gap: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; text-decoration: none; color: var(--fg); }
+.card:hover { border-color: var(--accent); }
+.card .t { font-weight: 700; }
+.card .m { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.card .d { color: var(--muted); font-size: 12px; }
+.go { font-size: 22px; font-weight: 700; padding: 14px 18px; border-radius: var(--radius); }
+.go.ok { background: var(--ok-soft); color: var(--ok); } .go.crit { background: var(--crit-soft); color: var(--crit); }
+.steps { display: grid; gap: 8px; }
+.step { display: grid; grid-template-columns: 110px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.step.next { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.step.done { opacity: .7; }
+.step .t { font-family: var(--font-data); font-size: 13px; }
+.guide { max-width: 760px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 28px 32px; }
+.guide h4 { margin: 18px 0 6px; font-size: 15px; color: var(--accent); }
+.guide ol, .guide ul { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+.out { background: var(--sunk); border-radius: var(--radius); padding: 14px 16px; white-space: pre-wrap; font-size: 13px; line-height: 1.55; max-height: 520px; overflow: auto; }
+.confirm { display: inline-flex; gap: 6px; align-items: center; }
+@media (max-width: 820px) {
+  .layout { grid-template-columns: 1fr; }
+  nav.side { display: none; }
+  .navsel { display: block; padding: 10px max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px)); }
+  .navsel select { width: 100%; padding: 8px; }
+  main { padding-left: max(16px, env(safe-area-inset-left, 0px)); }
+  .step { grid-template-columns: 1fr; }
+}
+</style>
+
+<div id="app"><p style="padding:40px 20px" class="note">Chargement de la boîte à outils…</p></div>
+
+<script>
+/* Données d'exemple de la boîte à outils (projet fictif du CH de Saint-Aubert). */
+var DEFAULTS = {
+  meta: { projet: "Déploiement de la solution PACS au CH de Saint-Aubert", client: "Centre hospitalier de Saint-Aubert (fictif)", chefDeProjet: "Florian CROSES", support: "Support éditeur : 01 00 00 00 00 (fictif), 24 h / 24", savedAt: null },
+  stockage: {
+    compression: 2, copies: 2, marge: 0.2, annees: 10, archives: 85,
+    rows: [
+      { type: "Scanner", examens: 32000, taille: 400, croissance: 0.05 },
+      { type: "IRM", examens: 12000, taille: 250, croissance: 0.06 },
+      { type: "Radiologie conventionnelle", examens: 90000, taille: 25, croissance: 0.01 },
+      { type: "Échographie", examens: 30000, taille: 30, croissance: 0.03 },
+      { type: "Mammographie (tomosynthèse)", examens: 6000, taille: 450, croissance: 0.04 },
+      { type: "Médecine nucléaire / TEP", examens: 2500, taille: 300, croissance: 0.05 },
+      { type: "Angiographie", examens: 1500, taille: 600, croissance: 0.03 }
+    ]
+  },
+  migration: { volume: 85, debitHeure: 80, heuresSemaine: 12, heuresWeekend: 24, debut: "2027-03-15", echeance: "2027-05-28", erreurs: 0.01, scenarios: [0.5, 1, 1.5] },
+  prerequis: {
+    rows: [
+      { categorie: "Hébergement", libelle: "Salle serveur climatisée et ondulée (site principal)", site: "Site principal", responsable: "Client", echeance: "2026-11-13", pv: "PV d'installation", statut: "Fait" },
+      { categorie: "Hébergement", libelle: "Salle serveur climatisée et ondulée (site secondaire)", site: "Site secondaire", responsable: "Client", echeance: "2026-11-20", pv: "PV d'installation", statut: "Bloquant" },
+      { categorie: "Réseau", libelle: "Liens 10 Gb/s entre les salles serveur", site: "Les deux sites", responsable: "Client", echeance: "2026-11-13", pv: "PV d'installation", statut: "Fait" },
+      { categorie: "Réseau", libelle: "Ouverture des ports DICOM (104, 11112) et HL7 (2575)", site: "Les deux sites", responsable: "Client", echeance: "2026-11-20", pv: "PV d'installation", statut: "En cours" },
+      { categorie: "Réseau", libelle: "Adresses IP réservées pour les serveurs et le stockage", site: "Les deux sites", responsable: "Client", echeance: "2026-11-13", pv: "PV d'installation", statut: "Fait" },
+      { categorie: "Comptes et sécurité", libelle: "Comptes de service dans l'annuaire (AD)", site: "Les deux sites", responsable: "Client", echeance: "2026-11-20", pv: "PV d'installation", statut: "En cours" },
+      { categorie: "Comptes et sécurité", libelle: "Validation du dossier de sécurité par le RSSI", site: "Les deux sites", responsable: "Client", echeance: "2026-11-13", pv: "PV d'installation", statut: "En cours" },
+      { categorie: "Comptes et sécurité", libelle: "Accès VPN pour la télémaintenance de l'éditeur", site: "Les deux sites", responsable: "Client", echeance: "2026-11-20", pv: "PV d'installation", statut: "À faire" },
+      { categorie: "Interfaces", libelle: "Commande de l'interface HL7 auprès de l'éditeur du RIS", site: "Les deux sites", responsable: "Client", echeance: "2026-11-13", pv: "PV de VA", statut: "À faire" },
+      { categorie: "Interfaces", libelle: "Environnement de test du DPI disponible", site: "Les deux sites", responsable: "Client", echeance: "2027-01-08", pv: "PV de VA", statut: "À faire" },
+      { categorie: "Postes", libelle: "Écrans de diagnostic calibrés (12 postes radiologues)", site: "Les deux sites", responsable: "Client", echeance: "2027-04-02", pv: "Bascule", statut: "À faire" },
+      { categorie: "Organisation", libelle: "Référents désignés par modalité", site: "Les deux sites", responsable: "Client", echeance: "2026-12-11", pv: "PV de VA", statut: "En cours" },
+      { categorie: "Organisation", libelle: "Créneaux de recette réservés pour les radiologues", site: "Les deux sites", responsable: "Client", echeance: "2027-01-15", pv: "PV de VA", statut: "À faire" },
+      { categorie: "Livraison", libelle: "Livraison et installation des baies de stockage", site: "Les deux sites", responsable: "Éditeur", echeance: "2026-11-20", pv: "PV d'installation", statut: "En cours" }
+    ]
+  },
+  modalites: {
+    rows: [
+      { site: "Site principal", type: "CT", constructeur: "Constructeur A", modele: "Scanner 128 coupes", annee: 2021, aet: "CT1_SAP", ip: "10.20.1.11", port: 104, worklist: "Oui", statut: "Testée", test: "2026-10-28", commentaire: "" },
+      { site: "Site principal", type: "CT", constructeur: "Constructeur B", modele: "Scanner 64 coupes", annee: 2017, aet: "CT2_SAP", ip: "10.20.1.12", port: 104, worklist: "Oui", statut: "Connectée", test: "", commentaire: "" },
+      { site: "Site principal", type: "MR", constructeur: "Constructeur A", modele: "IRM 1,5 T", annee: 2019, aet: "MR1_SAP", ip: "10.20.1.21", port: 104, worklist: "Oui", statut: "Connectée", test: "", commentaire: "" },
+      { site: "Site principal", type: "MR", constructeur: "Constructeur C", modele: "IRM 3 T", annee: 2023, aet: "IRM3T", ip: "10.20.1.22", port: 11112, worklist: "Oui", statut: "À connecter", test: "", commentaire: "AE Title à renommer selon la convention" },
+      { site: "Site principal", type: "DX", constructeur: "Constructeur B", modele: "Salle de radiologie numérique", annee: 2020, aet: "DX1_SAP", ip: "10.20.1.31", port: 104, worklist: "Oui", statut: "Testée", test: "2026-10-29", commentaire: "" },
+      { site: "Site principal", type: "DX", constructeur: "Constructeur B", modele: "Salle de radiologie numérique", annee: 2020, aet: "DX2_SAP", ip: "10.20.1.32", port: 104, worklist: "Oui", statut: "Testée", test: "2026-10-29", commentaire: "" },
+      { site: "Site principal", type: "DX", constructeur: "Constructeur D", modele: "Salle os-poumons", annee: 2014, aet: "DX3_SAP", ip: "10.20.1.33", port: 104, worklist: "Non", statut: "Problème", test: "2026-10-30", commentaire: "Pas de worklist : passerelle DICOM à prévoir" },
+      { site: "Site principal", type: "DX", constructeur: "Constructeur B", modele: "Mobile de radiologie (urgences)", annee: 2022, aet: "DXM1_SAP", ip: "10.20.1.41", port: 104, worklist: "Oui", statut: "Connectée", test: "", commentaire: "Wi-Fi" },
+      { site: "Site principal", type: "DX", constructeur: "Constructeur B", modele: "Mobile de radiologie (réanimation)", annee: 2022, aet: "DXM2_SAP", ip: "10.20.1.42", port: 104, worklist: "Oui", statut: "À connecter", test: "", commentaire: "" },
+      { site: "Site principal", type: "US", constructeur: "Constructeur E", modele: "Échographe polyvalent", annee: 2021, aet: "US1_SAP", ip: "10.20.1.51", port: 104, worklist: "Oui", statut: "Testée", test: "2026-10-30", commentaire: "" },
+      { site: "Site principal", type: "US", constructeur: "Constructeur E", modele: "Échographe polyvalent", annee: 2021, aet: "US2_SAP", ip: "10.20.1.52", port: 104, worklist: "Oui", statut: "Testée", test: "2026-10-30", commentaire: "" },
+      { site: "Site principal", type: "US", constructeur: "Constructeur F", modele: "Échographe cardiologie", annee: 2016, aet: "ECHOCARDIO", ip: "10.20.1.53", port: 104, worklist: "Non", statut: "Problème", test: "", commentaire: "Envoi DICOM seul, saisie manuelle de l'identité" },
+      { site: "Site principal", type: "MG", constructeur: "Constructeur A", modele: "Mammographe tomosynthèse", annee: 2022, aet: "MG1_SAP", ip: "10.20.1.61", port: 104, worklist: "Oui", statut: "Connectée", test: "", commentaire: "" },
+      { site: "Site principal", type: "XA", constructeur: "Constructeur A", modele: "Salle d'angiographie", annee: 2018, aet: "XA1_SAP", ip: "10.20.1.71", port: 104, worklist: "Oui", statut: "À connecter", test: "", commentaire: "" },
+      { site: "Site principal", type: "NM", constructeur: "Constructeur C", modele: "TEP-scanner", annee: 2020, aet: "NM1_SAP", ip: "10.20.1.81", port: 104, worklist: "Oui", statut: "À connecter", test: "", commentaire: "" },
+      { site: "Site secondaire", type: "CT", constructeur: "Constructeur D", modele: "Scanner 16 coupes", annee: 2012, aet: "CT_SITE2", ip: "10.30.1.11", port: 104, worklist: "Passerelle", statut: "Problème", test: "", commentaire: "Point P03 : passerelle DICOM chiffrée" },
+      { site: "Site secondaire", type: "DX", constructeur: "Constructeur B", modele: "Salle de radiologie numérique", annee: 2019, aet: "DX1_SAS", ip: "10.30.1.31", port: 104, worklist: "Oui", statut: "Connectée", test: "", commentaire: "" },
+      { site: "Site secondaire", type: "DX", constructeur: "Constructeur B", modele: "Mobile de radiologie", annee: 2021, aet: "DXM1_SAS", ip: "10.30.1.41", port: 104, worklist: "Oui", statut: "À connecter", test: "", commentaire: "" },
+      { site: "Site secondaire", type: "US", constructeur: "Constructeur E", modele: "Échographe polyvalent", annee: 2020, aet: "US1_SAS", ip: "10.30.1.51", port: 104, worklist: "Oui", statut: "Connectée", test: "", commentaire: "" },
+      { site: "Site secondaire", type: "US", constructeur: "Constructeur E", modele: "Échographe polyvalent", annee: 2015, aet: "US2_SAS", ip: "10.30.1.52", port: 104, worklist: "Non", statut: "À connecter", test: "", commentaire: "Mise à jour logicielle constructeur à demander" }
+    ]
+  },
+  aet: { prefixe: "", separateur: "_", sites: { "Site principal": "SAP", "Site secondaire": "SAS" }, ordre: "type-site" },
+  flux: {
+    systemes: ["RIS", "PACS", "DPI", "Modalités", "Postes de lecture", "Ancien PACS", "Plateforme régionale"],
+    rows: [
+      { source: "RIS", cible: "Modalités", protocole: "DICOM MWL (worklist)", description: "Liste de travail des examens planifiés", statut: "Recetté" },
+      { source: "RIS", cible: "PACS", protocole: "HL7 ADT", description: "Identités et mouvements des patients", statut: "Développé" },
+      { source: "RIS", cible: "PACS", protocole: "HL7 ORM", description: "Demandes d'examen", statut: "Développé" },
+      { source: "Modalités", cible: "PACS", protocole: "DICOM C-STORE", description: "Envoi des images", statut: "Recetté" },
+      { source: "Modalités", cible: "RIS", protocole: "DICOM MPPS", description: "Statut de réalisation de l'examen", statut: "Spécifié" },
+      { source: "RIS", cible: "PACS", protocole: "HL7 ORU", description: "Comptes rendus validés", statut: "Spécifié" },
+      { source: "PACS", cible: "DPI", protocole: "Lien contextuel (URL)", description: "Ouverture des images depuis le dossier patient", statut: "À spécifier" },
+      { source: "Postes de lecture", cible: "PACS", protocole: "DICOM C-FIND / C-MOVE", description: "Recherche et récupération des examens antérieurs", statut: "Recetté" },
+      { source: "Ancien PACS", cible: "PACS", protocole: "DICOM C-FIND / C-MOVE", description: "Migration des archives (85 To)", statut: "Spécifié" },
+      { source: "PACS", cible: "Plateforme régionale", protocole: "XDS-I", description: "Partage des images (point P04, en analyse)", statut: "À spécifier" },
+      { source: "PACS", cible: "Ancien PACS", protocole: "HL7 ADT", description: "Fusions d'identités pendant la période de double fonctionnement", statut: "KO" }
+    ]
+  },
+  recette: {
+    rows: [
+      { domaine: "Acquisition", profil: "Manipulateur", intitule: "Récupérer la worklist sur un scanner et lancer l'examen", attendu: "Identité et demande reprises sans ressaisie", bloquant: true, statut: "OK", testeur: "Cadre d'imagerie", commentaire: "" },
+      { domaine: "Acquisition", profil: "Manipulateur", intitule: "Envoyer les images d'un examen au PACS", attendu: "Examen complet dans le PACS en moins de 2 min", bloquant: true, statut: "OK", testeur: "Cadre d'imagerie", commentaire: "" },
+      { domaine: "Acquisition", profil: "Manipulateur", intitule: "Corriger une erreur d'identité sur un examen", attendu: "Fusion tracée, examen rattaché au bon patient", bloquant: true, statut: "Réserve", testeur: "Cadre d'imagerie", commentaire: "Procédure à documenter" },
+      { domaine: "Acquisition", profil: "Manipulateur", intitule: "Examen sur une modalité sans worklist", attendu: "Identité saisie puis réconciliée automatiquement", bloquant: false, statut: "KO", testeur: "Cadre d'imagerie", commentaire: "Réconciliation non déclenchée (DX3)" },
+      { domaine: "Interprétation", profil: "Radiologue", intitule: "Ouvrir la liste de travail des examens à interpréter", attendu: "Liste filtrée par spécialité et priorité", bloquant: true, statut: "OK", testeur: "Radiologue référent", commentaire: "" },
+      { domaine: "Interprétation", profil: "Radiologue", intitule: "Afficher un scanner thoracique avec protocole d'affichage", attendu: "Disposition automatique selon le protocole", bloquant: false, statut: "OK", testeur: "Radiologue référent", commentaire: "" },
+      { domaine: "Interprétation", profil: "Radiologue", intitule: "Comparer avec l'examen antérieur migré", attendu: "Antériorité affichée automatiquement", bloquant: true, statut: "Non testé", testeur: "", commentaire: "Après la migration à blanc" },
+      { domaine: "Interprétation", profil: "Radiologue", intitule: "Reconstruction MPR et mesures", attendu: "Outils disponibles et mesures conservées", bloquant: false, statut: "OK", testeur: "Radiologue référent", commentaire: "" },
+      { domaine: "Interprétation", profil: "Radiologue", intitule: "Mammographie : hanging protocol de dépistage", attendu: "4 vues standard + tomosynthèse", bloquant: true, statut: "Non testé", testeur: "", commentaire: "" },
+      { domaine: "Diffusion", profil: "Clinicien", intitule: "Ouvrir les images depuis le DPI", attendu: "Ouverture en moins de 3 s, bon patient", bloquant: true, statut: "Non testé", testeur: "", commentaire: "Lien contextuel non livré" },
+      { domaine: "Diffusion", profil: "Clinicien", intitule: "Consulter les images sur tablette aux urgences", attendu: "Affichage diagnostique non requis, lecture fluide", bloquant: false, statut: "Non testé", testeur: "", commentaire: "Avenant n°1" },
+      { domaine: "Diffusion", profil: "Secrétariat", intitule: "Graver un CD patient avec visionneuse", attendu: "CD lisible sur un poste externe", bloquant: false, statut: "OK", testeur: "Secrétariat", commentaire: "" },
+      { domaine: "Archivage", profil: "Administrateur", intitule: "Vérifier la double copie sur les deux salles", attendu: "Chaque étude présente sur les deux sites", bloquant: true, statut: "OK", testeur: "DSI", commentaire: "" },
+      { domaine: "Archivage", profil: "Administrateur", intitule: "Purger le cache selon la politique de rétention", attendu: "Purge sans perte, étude rappelable", bloquant: false, statut: "Non testé", testeur: "", commentaire: "" },
+      { domaine: "Sécurité", profil: "Administrateur", intitule: "Connexion avec le compte de l'annuaire", attendu: "Authentification unique, droits par profil", bloquant: true, statut: "OK", testeur: "DSI", commentaire: "" },
+      { domaine: "Sécurité", profil: "Administrateur", intitule: "Traçabilité des accès à un dossier", attendu: "Journal consultable par le DPO", bloquant: true, statut: "Réserve", testeur: "DSI", commentaire: "Export du journal à ajouter" },
+      { domaine: "Performance", profil: "Radiologue", intitule: "Ouvrir un scanner de 2 000 coupes", attendu: "Première image en moins de 2 s", bloquant: true, statut: "OK", testeur: "Radiologue référent", commentaire: "1,4 s mesuré" },
+      { domaine: "Haute disponibilité", profil: "Administrateur", intitule: "Couper la salle principale", attendu: "Bascule automatique, pas d'interruption de lecture", bloquant: true, statut: "Non testé", testeur: "", commentaire: "Planifié semaine 12" },
+      { domaine: "Haute disponibilité", profil: "Administrateur", intitule: "Restaurer une étude depuis la sauvegarde", attendu: "Restauration en moins de 4 h", bloquant: false, statut: "Non testé", testeur: "", commentaire: "" },
+      { domaine: "Interfaces", profil: "Secrétariat", intitule: "Compte rendu validé dans le RIS visible dans le PACS", attendu: "Compte rendu attaché à l'examen", bloquant: true, statut: "Non testé", testeur: "", commentaire: "Flux ORU spécifié" }
+    ]
+  },
+  bascule: {
+    t0: "2027-05-21T18:00",
+    etapes: [
+      { phase: "Préparation", prevu: "2027-05-14T09:00", duree: 120, action: "Comité Go / No-Go préliminaire", responsable: "Comité de pilotage", controle: "Critères relus, décision tracée", statut: "À faire", reel: "" },
+      { phase: "Préparation", prevu: "2027-05-19T14:00", duree: 60, action: "Comité Go / No-Go définitif", responsable: "Comité de pilotage", controle: "Tous les critères à « Oui »", statut: "À faire", reel: "" },
+      { phase: "Préparation", prevu: "2027-05-20T10:00", duree: 30, action: "Information des services et des urgences (mode dégradé)", responsable: "Cadre d'imagerie", controle: "Message envoyé, affiches en salle", statut: "À faire", reel: "" },
+      { phase: "Gel", prevu: "2027-05-21T18:00", duree: 30, action: "Gel des modifications sur l'ancien PACS", responsable: "Ingénieur intégration", controle: "Plus aucune configuration modifiée", statut: "À faire", reel: "" },
+      { phase: "Gel", prevu: "2027-05-21T18:30", duree: 60, action: "Dernière synchronisation des examens du jour", responsable: "Partenaire migration", controle: "Écart de volumétrie nul", statut: "À faire", reel: "" },
+      { phase: "Bascule", prevu: "2027-05-21T19:30", duree: 90, action: "Redirection des modalités vers le nouveau PACS (AE Titles, IP)", responsable: "Ingénieurs d'installation", controle: "Test d'envoi réussi pour chaque modalité", statut: "À faire", reel: "" },
+      { phase: "Bascule", prevu: "2027-05-21T21:00", duree: 60, action: "Activation des flux HL7 avec le RIS", responsable: "Ingénieur intégration", controle: "Messages ADT et ORM reçus", statut: "À faire", reel: "" },
+      { phase: "Bascule", prevu: "2027-05-21T22:00", duree: 60, action: "Activation du lien contextuel dans le DPI", responsable: "DSI (client)", controle: "Ouverture d'un dossier test", statut: "À faire", reel: "" },
+      { phase: "Vérification", prevu: "2027-05-21T23:00", duree: 120, action: "Examens tests de bout en bout sur chaque modalité", responsable: "Manipulateurs d'astreinte", controle: "Worklist, envoi, affichage OK", statut: "À faire", reel: "" },
+      { phase: "Vérification", prevu: "2027-05-22T08:00", duree: 120, action: "Validation par le radiologue de garde", responsable: "Radiologue de garde", controle: "Interprétation d'examens réels", statut: "À faire", reel: "" },
+      { phase: "Vérification", prevu: "2027-05-22T10:00", duree: 30, action: "Point de décision : maintien ou retour arrière", responsable: "Chef de projet", controle: "Décision consignée", statut: "À faire", reel: "" },
+      { phase: "Stabilisation", prevu: "2027-05-22T14:00", duree: 240, action: "Surveillance des flux et des files d'attente", responsable: "Ingénieur intégration", controle: "Aucune file bloquée", statut: "À faire", reel: "" },
+      { phase: "Stabilisation", prevu: "2027-05-24T07:30", duree: 180, action: "Présence sur site à l'ouverture du lundi", responsable: "Chef de projet / support", controle: "Tickets suivis, aucune anomalie bloquante", statut: "À faire", reel: "" }
+    ],
+    criteres: [
+      { critere: "PV de VA signé sans réserve bloquante", ok: "Non" },
+      { critere: "Migration des archives à 95 % au moins", ok: "Non" },
+      { critere: "90 % des utilisateurs formés sur chaque site", ok: "Non" },
+      { critere: "Tests de bascule HA / PRA réussis", ok: "Non" },
+      { critere: "Retour arrière testé et chronométré", ok: "Non" },
+      { critere: "Astreintes éditeur, DSI et radiologie confirmées", ok: "Non" },
+      { critere: "Mode dégradé documenté et diffusé", ok: "Non" }
+    ],
+    retour: "Si le point de décision du samedi 10 h conclut au retour arrière : les modalités sont redirigées vers l'ancien PACS (configuration sauvegardée), les flux HL7 sont réactivés vers l'ancien PACS, et les examens acquis depuis vendredi 19 h 30 sont renvoyés depuis le nouveau PACS. Durée estimée : 2 h."
+  },
+  suivi: {
+    volume: 85, debut: "2027-03-15", fin: "2027-05-28",
+    jours: [
+      { date: "2027-03-15", to: 0.9, erreurs: 2 }, { date: "2027-03-16", to: 1.0, erreurs: 1 }, { date: "2027-03-17", to: 0.95, erreurs: 0 }, { date: "2027-03-18", to: 0.6, erreurs: 14 },
+      { date: "2027-03-19", to: 0.9, erreurs: 1 }, { date: "2027-03-20", to: 1.8, erreurs: 0 }, { date: "2027-03-21", to: 1.9, erreurs: 0 }, { date: "2027-03-22", to: 1.0, erreurs: 3 },
+      { date: "2027-03-23", to: 0.95, erreurs: 0 }, { date: "2027-03-24", to: 0.9, erreurs: 0 }, { date: "2027-03-25", to: 0.95, erreurs: 1 }, { date: "2027-03-26", to: 0.85, erreurs: 0 },
+      { date: "2027-03-27", to: 1.85, erreurs: 0 }, { date: "2027-03-28", to: 1.9, erreurs: 2 }
+    ]
+  },
+  formation: {
+    seuil: 0.9, sites: ["Site principal", "Site secondaire"],
+    profils: [
+      { profil: "Radiologues", duree: 2, effectifs: [18, 6] },
+      { profil: "Manipulateurs", duree: 3, effectifs: [40, 12] },
+      { profil: "Secrétariat", duree: 1.5, effectifs: [14, 5] },
+      { profil: "Cliniciens (DPI)", duree: 1, effectifs: [60, 20] },
+      { profil: "Administrateurs", duree: 14, effectifs: [3, 1] },
+      { profil: "Biomédical", duree: 3, effectifs: [3, 1] }
+    ],
+    sessions: [
+      { date: "2027-04-26", site: "Site principal", profil: "Administrateurs", formateur: "Formateur éditeur", places: 4, presents: 4 },
+      { date: "2027-04-27", site: "Site principal", profil: "Biomédical", formateur: "Formateur éditeur", places: 4, presents: 3 },
+      { date: "2027-05-03", site: "Site principal", profil: "Manipulateurs", formateur: "Formateur éditeur", places: 10, presents: 9 },
+      { date: "2027-05-04", site: "Site principal", profil: "Manipulateurs", formateur: "Formateur éditeur", places: 10, presents: 10 },
+      { date: "2027-05-05", site: "Site principal", profil: "Manipulateurs", formateur: "Référent manipulateur", places: 10, presents: 8 },
+      { date: "2027-05-06", site: "Site principal", profil: "Radiologues", formateur: "Formateur éditeur", places: 8, presents: 7 },
+      { date: "2027-05-07", site: "Site principal", profil: "Radiologues", formateur: "Formateur éditeur", places: 8, presents: 8 },
+      { date: "2027-05-10", site: "Site principal", profil: "Secrétariat", formateur: "Référent secrétariat", places: 8, presents: 7 },
+      { date: "2027-05-11", site: "Site secondaire", profil: "Manipulateurs", formateur: "Formateur éditeur", places: 12, presents: 11 },
+      { date: "2027-05-11", site: "Site secondaire", profil: "Radiologues", formateur: "Formateur éditeur", places: 6, presents: 6 },
+      { date: "2027-05-12", site: "Site principal", profil: "Cliniciens (DPI)", formateur: "Référent DPI", places: 30, presents: 26 },
+      { date: "2027-05-17", site: "Site principal", profil: "Manipulateurs", formateur: "Référent manipulateur", places: 10, presents: 0 }
+    ]
+  },
+  cr: {
+    instance: "Comité projet", date: "2026-10-30",
+    notes: "Participants : chef de projet éditeur, chef de projet client, cadre d'imagerie, ingénieur intégration, DSI\n\nPoint sur la séquence 2 : DAT v1 refusé par le RSSI, PRA absent.\nD: le DAT v2 intégrera le PRA et sera présenté au comité technique du 06/11\nA: intégrer le PRA au DAT v2 @Ingénieur intégration 06/11\nLivraison des baies : le distributeur annonce 2 semaines de retard.\nA: obtenir un plan de rattrapage écrit du distributeur @Chef de projet 06/11\nR: retard de livraison du stockage, impact sur le jalon de facturation livraison\nP: salle serveur du site secondaire non climatisée (prérequis client)\nA: climatiser la salle serveur du site secondaire @DSI 20/11\nD: étudier une installation sur stockage temporaire si le plan de rattrapage est insuffisant\nProchain comité projet le 06/11"
+  },
+  avenant: {
+    intitule: "Connexion à la plateforme régionale de partage d'images (point P04)",
+    margeVisee: 0.4, caProjet: 807000, coutProjet: 477350, delaiJours: 8,
+    profils: [
+      { profil: "Ingénieur d'intégration", jours: 12, cout: 600, vente: 950 },
+      { profil: "Chef de projet", jours: 3, cout: 650, vente: 1050 },
+      { profil: "Spécialiste applicatif (recette)", jours: 2, cout: 550, vente: 900 }
+    ],
+    achats: [
+      { libelle: "Licence du connecteur XDS-I", cout: 4000, vente: 6000 },
+      { libelle: "Certificats et habilitation plateforme", cout: 600, vente: 900 }
+    ]
+  }
+};
+if (typeof module !== "undefined") module.exports = DEFAULTS;
+
+</script>
+<script>
+(function () {
+  "use strict";
+  /* ================= utilitaires ================= */
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+  function D(iso) { return iso ? new Date(iso.slice(0, 10) + "T00:00:00Z") : null; }
+  function iso(d) { return d.toISOString().slice(0, 10); }
+  function addDays(s, n) { var d = D(s); d.setUTCDate(d.getUTCDate() + n); return iso(d); }
+  function diffDays(a, b) { return Math.round((D(b) - D(a)) / 864e5); }
+  function fd(s) { if (!s) return "–"; var p = s.slice(0, 10).split("-"); return p[2] + "/" + p[1] + "/" + p[0]; }
+  function fdt(s) { if (!s) return "–"; return fd(s) + " " + s.slice(11, 16); }
+  function nf(v, d) { return v == null || isNaN(v) ? "–" : Number(v).toLocaleString("fr-FR", { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }); }
+  function eur(v) { return v == null || isNaN(v) ? "–" : Number(v).toLocaleString("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }); }
+  function pct(v, d) { return v == null || isNaN(v) ? "–" : nf(v * 100, d) + " %"; }
+  function N(v) { v = Number(v); return isNaN(v) ? 0 : v; }
+  function pill(t, c) { return '<span class="pill ' + (c || "") + '">' + esc(t) + "</span>"; }
+  function getP(o, p) { return p.split(".").reduce(function (a, k) { return a == null ? a : a[k]; }, o); }
+  function setP(o, p, v) { var ks = p.split("."), last = ks.pop(); var t = ks.reduce(function (a, k) { return a[k]; }, o); t[last] = v; }
+  function today() { var d = new Date(); return new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())).toISOString().slice(0, 10); }
+  function nowLocal() { var d = new Date(), z = function (n) { return String(n).padStart(2, "0"); }; return d.getFullYear() + "-" + z(d.getMonth() + 1) + "-" + z(d.getDate()) + "T" + z(d.getHours()) + ":" + z(d.getMinutes()); }
+  function copyText(txt, btn) {
+    var done = function () { if (btn) { var o = btn.textContent; btn.textContent = "Copié"; setTimeout(function () { btn.textContent = o; }, 1500); } };
+    try { navigator.clipboard.writeText(txt).then(done, function () { fallback(); }); } catch (e) { fallback(); }
+    function fallback() { var ta = document.createElement("textarea"); ta.value = txt; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); done(); } catch (e) {} ta.remove(); }
+  }
+
+  /* ================= état et sauvegarde ================= */
+  var S = clone(DEFAULTS), shared = null, dirty = false, view = "accueil", msg = null, ui = { jourJ: false, guide: "Radiologue", cr: null, confirmReset: false, pasteOpen: false };
+  var KEY = "pacs-outils-brouillon";
+  function saveDraft() {
+    dirty = true;
+    try { localStorage.setItem(KEY, JSON.stringify({ basedOn: shared && shared.meta ? shared.meta.savedAt : null, data: S })); } catch (e) {}
+    var chip = document.getElementById("dirty"); if (chip) chip.hidden = false;
+  }
+  function loadDraft() {
+    try { var raw = localStorage.getItem(KEY); if (!raw) return null; return JSON.parse(raw); } catch (e) { return null; }
+  }
+  function clearDraft() { try { localStorage.removeItem(KEY); } catch (e) {} dirty = false; }
+  function canShare() { return !!(window.claude && window.claude.use); }
+
+  /* ================= tableaux éditables ================= */
+  function cell(path, c, v) {
+    var a = ' data-p="' + path + '"' + (c.t === "pct" ? ' data-pct="1"' : "") + (c.t === "num" || c.t === "pct" ? ' data-num="1"' : "");
+    var lbl = ' aria-label="' + esc(c.l) + '"';
+    if (c.t === "sel") return '<select' + a + lbl + ' data-v="' + esc(v) + '">' + (v && c.o.indexOf(v) < 0 ? [v] : []).concat(c.o).map(function (o) { return "<option" + (o === v ? " selected" : "") + ">" + esc(o) + "</option>"; }).join("") + "</select>";
+    if (c.t === "chk") return '<input type="checkbox"' + a + lbl + ' data-chk="1"' + (v ? " checked" : "") + ">";
+    if (c.t === "num") return '<input type="number" step="any"' + a + lbl + ' value="' + (v === "" || v == null ? "" : esc(v)) + '"' + (c.w ? ' style="min-width:' + c.w + 'px"' : "") + ">";
+    if (c.t === "pct") return '<input type="number" step="any"' + a + lbl + ' value="' + (v == null || v === "" ? "" : +(v * 100).toFixed(4)) + '">';
+    if (c.t === "date") return '<input type="date"' + a + lbl + ' value="' + esc(v || "") + '">';
+    if (c.t === "dt") return '<input type="datetime-local"' + a + lbl + ' value="' + esc(v || "") + '">';
+    return '<input type="text"' + a + lbl + ' value="' + esc(v) + '"' + (c.w ? ' style="min-width:' + c.w + 'px"' : "") + ">";
+  }
+  function table(path, cols, opts) {
+    opts = opts || {};
+    var rows = getP(S, path) || [];
+    var h = '<div class="tablewrap"><table class="edit"><thead><tr>' + (opts.num ? "<th>#</th>" : "") + cols.map(function (c) { return '<th' + (c.t === "num" || c.t === "pct" ? ' class="num"' : "") + ">" + esc(c.l) + "</th>"; }).join("") + (opts.extra ? "<th>" + esc(opts.extra.l) + "</th>" : "") + "<th></th></tr></thead><tbody>";
+    rows.forEach(function (r, i) {
+      h += "<tr>" + (opts.num ? '<td class="mono">' + (i + 1) + "</td>" : "") + cols.map(function (c) {
+        var p = path + "." + i + "." + c.k, v = c.k.indexOf(".") >= 0 ? getP(r, c.k) : r[c.k];
+        return "<td" + (c.w ? ' style="min-width:' + c.w + 'px"' : "") + ">" + cell(p, c, v) + "</td>";
+      }).join("") + (opts.extra ? "<td>" + opts.extra.f(r, i) + "</td>" : "") + '<td><button type="button" class="ghost small" data-del="' + path + "." + i + '" aria-label="Supprimer la ligne">✕</button></td></tr>';
+    });
+    h += "</tbody></table></div>";
+    if (opts.add !== false) h += '<div style="margin-top:8px"><button type="button" class="small" data-add="' + path + '">+ Ajouter une ligne</button></div>';
+    return h;
+  }
+  var BLANK = {};
+  function blankRow(path) {
+    var rows = getP(S, path) || [], tpl = rows[rows.length - 1] || BLANK[path] || {}, r = {};
+    Object.keys(tpl).forEach(function (k) { var v = tpl[k]; r[k] = typeof v === "number" ? 0 : typeof v === "boolean" ? false : Array.isArray(v) ? v.map(function () { return 0; }) : (k === "statut" || k === "worklist" || k === "site" || k === "phase" || k === "domaine" || k === "profil" || k === "categorie" || k === "responsable" || k === "pv" || k === "source" || k === "cible" || k === "protocole" || k === "type" || k === "ok") ? v : ""; });
+    return r;
+  }
+  function param(path, label, t, extra) {
+    var v = getP(S, path);
+    var inp = t === "pct" ? '<input type="number" step="any" data-p="' + path + '" data-num="1" data-pct="1" value="' + +(N(v) * 100).toFixed(4) + '">'
+      : t === "num" ? '<input type="number" step="any" data-p="' + path + '" data-num="1" value="' + esc(v) + '">'
+      : t === "date" ? '<input type="date" data-p="' + path + '" value="' + esc(v) + '">'
+      : t === "dt" ? '<input type="datetime-local" data-p="' + path + '" value="' + esc(v) + '">'
+      : t && t.sel ? '<select data-p="' + path + '">' + t.sel.map(function (o) { return "<option value=\"" + esc(o[0]) + "\"" + (o[0] === v ? " selected" : "") + ">" + esc(o[1]) + "</option>"; }).join("") + "</select>"
+      : '<input type="text" data-p="' + path + '" value="' + esc(v) + '">';
+    return "<label>" + esc(label) + inp + (extra ? '<span class="note" style="font-weight:400">' + extra + "</span>" : "") + "</label>";
+  }
+  function kpis(items) { return '<div class="kpis">' + items.map(function (i) { return '<div class="kpi ' + (i[2] || "") + '"><div class="v">' + i[0] + '</div><div class="l">' + esc(i[1]) + "</div></div>"; }).join("") + "</div>"; }
+
+  /* ================= petits graphiques ================= */
+  function niceMax(v) { var raw = v / 4, mag = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / mag, st = f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10; return st * mag * 4; }
+  function lineChart(series, opts) {
+    var W = 640, H = opts.h || 220, L = 46, R = 14, T = 14, B = 28;
+    var xs = [], ys = [];
+    series.forEach(function (s) { s.pts.forEach(function (p) { xs.push(p[0]); ys.push(p[1]); }); });
+    if (opts.vline != null) xs.push(opts.vline);
+    var x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs), y1 = Math.max.apply(null, ys.concat([opts.ymax || 0, 1]));
+    var ny = niceMax(y1);
+    var X = function (v) { return L + (v - x0) / Math.max(1, x1 - x0) * (W - L - R); }, Y = function (v) { return H - B - v / ny * (H - T - B); };
+    var g = "";
+    for (var i = 0; i <= 4; i++) { var v = ny * i / 4, y = Y(v); g += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y + '" y2="' + y + '" stroke="var(--line)"/><text x="' + (L - 6) + '" y="' + (y + 4) + '" text-anchor="end" font-size="10" fill="var(--muted)">' + nf(v, v < 10 && v % 1 ? 1 : 0) + "</text>"; }
+    (opts.xticks || []).forEach(function (t) { g += '<text x="' + X(t[0]) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="10" fill="var(--muted)">' + esc(t[1]) + "</text>"; });
+    if (opts.vline != null) g += '<line x1="' + X(opts.vline) + '" x2="' + X(opts.vline) + '" y1="' + T + '" y2="' + (H - B) + '" stroke="var(--crit)" stroke-dasharray="4 3"/><text x="' + (X(opts.vline) + 5) + '" y="' + (H - B - 6) + '" text-anchor="start" font-size="10" fill="var(--crit)">' + esc(opts.vlabel || "") + "</text>";
+    series.forEach(function (s) {
+      g += '<polyline fill="none" stroke="' + s.c + '" stroke-width="' + (s.w || 2.5) + '"' + (s.dash ? ' stroke-dasharray="' + s.dash + '"' : "") + ' points="' + s.pts.map(function (p) { return X(p[0]).toFixed(1) + "," + Y(p[1]).toFixed(1); }).join(" ") + '"/>';
+      var last = s.pts[s.pts.length - 1]; if (last && !s.dash) g += '<circle cx="' + X(last[0]) + '" cy="' + Y(last[1]) + '" r="3.5" fill="' + s.c + '"/>';
+    });
+    return '<svg viewBox="0 0 ' + W + " " + H + '" width="100%" role="img" aria-label="' + esc(opts.label || "Graphique") + '">' + g + "</svg>";
+  }
+  function barChart(vals, labels, opts) {
+    var W = 640, H = opts.h || 200, L = 46, B = 26, T = 16, R = 8, n = vals.length, bw = (W - L - R) / n;
+    var mx = Math.max.apply(null, vals.concat([1])), ny = niceMax(mx);
+    var Y = function (v) { return H - B - v / ny * (H - T - B); }, g = "";
+    for (var i = 0; i <= 4; i++) { var v = ny * i / 4, y = Y(v); g += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y + '" y2="' + y + '" stroke="var(--line)"/><text x="' + (L - 6) + '" y="' + (y + 4) + '" text-anchor="end" font-size="10" fill="var(--muted)">' + nf(v) + "</text>"; }
+    vals.forEach(function (v, k) {
+      var x = L + k * bw + bw * 0.15, w = bw * 0.7, y = Y(v);
+      g += '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + w.toFixed(1) + '" height="' + (H - B - y).toFixed(1) + '" rx="2" fill="' + (opts.c ? opts.c(k) : "var(--accent)") + '"><title>' + esc(labels[k] + " : " + nf(v, opts.d || 0) + (opts.unit || "")) + "</title></rect>";
+      if (n <= 12) g += '<text x="' + (x + w / 2) + '" y="' + (y - 4) + '" text-anchor="middle" font-size="10" fill="var(--fg)">' + nf(v, opts.d || 0) + "</text>";
+      g += '<text x="' + (x + w / 2) + '" y="' + (H - 9) + '" text-anchor="middle" font-size="10" fill="var(--muted)">' + esc(labels[k]) + "</text>";
+    });
+    return '<svg viewBox="0 0 ' + W + " " + H + '" width="100%" role="img" aria-label="' + esc(opts.label || "Graphique") + '">' + g + "</svg>";
+  }
+
+  /* ================= calculs ================= */
+  function calcStockage() {
+    var s = S.stockage, years = [], cum = N(s.archives), annee1 = 0;
+    for (var t = 0; t < N(s.annees); t++) {
+      var raw = s.rows.reduce(function (a, r) { return a + N(r.examens) * Math.pow(1 + N(r.croissance), t) * N(r.taille) / 1e6; }, 0);
+      var net = raw / Math.max(0.1, N(s.compression));
+      if (t === 0) annee1 = net;
+      cum += net;
+      years.push({ an: t + 1, annuel: net, cumul: cum, total: cum * Math.max(1, N(s.copies)) * (1 + N(s.marge)) });
+    }
+    var parts = s.rows.map(function (r) { return { type: r.type, to: N(r.examens) * N(r.taille) / 1e6 / Math.max(0.1, N(s.compression)) }; });
+    return { years: years, annee1: annee1, parts: parts, a5: years[Math.min(4, years.length - 1)], a10: years[years.length - 1] };
+  }
+  function simMigration(mult) {
+    var m = S.migration, reste = N(m.volume) * (1 + N(m.erreurs)), d = m.debut, jours = 0, pts = [[0, 0]], fait = 0;
+    if (!d || N(m.debitHeure) * mult <= 0) return null;
+    while (reste > 1e-9 && jours < 2000) {
+      var wd = D(d).getUTCDay(), h = (wd === 0 || wd === 6) ? N(m.heuresWeekend) : N(m.heuresSemaine);
+      var cap = N(m.debitHeure) * mult * h / 1000;
+      fait += Math.min(cap, reste); reste -= cap; jours++; pts.push([jours, Math.min(fait, N(m.volume) * (1 + N(m.erreurs)))]); d = addDays(d, 1);
+    }
+    return { fin: addDays(m.debut, jours - 1), jours: jours, pts: pts };
+  }
+  function debitNecessaire() {
+    var m = S.migration; if (!m.debut || !m.echeance) return null;
+    var h = 0, d = m.debut; while (d <= m.echeance) { var wd = D(d).getUTCDay(); h += (wd === 0 || wd === 6) ? N(m.heuresWeekend) : N(m.heuresSemaine); d = addDays(d, 1); }
+    return h ? N(m.volume) * (1 + N(m.erreurs)) * 1000 / h : null;
+  }
+  function aetPropose() {
+    var c = S.aet, count = {}, out = [];
+    S.modalites.rows.forEach(function (r) {
+      var site = c.sites[r.site] || (r.site || "").replace(/[^A-Za-z0-9]/g, "").slice(0, 3).toUpperCase();
+      var k = r.site + "|" + r.type; count[k] = (count[k] || 0) + 1;
+      var t = (r.type || "XX").toUpperCase().replace(/[^A-Z0-9]/g, "") + count[k];
+      var parts = c.ordre === "site-type" ? [site, t] : [t, site];
+      if (c.prefixe) parts.unshift(c.prefixe.toUpperCase());
+      out.push(parts.join(c.separateur || "").toUpperCase());
+    });
+    return out;
+  }
+  function recetteStats() {
+    var rows = S.recette.rows, st = function (s) { return rows.filter(function (r) { return r.statut === s; }); };
+    var bl = rows.filter(function (r) { return r.bloquant; });
+    var blKO = bl.filter(function (r) { return r.statut === "KO"; }), blNT = bl.filter(function (r) { return r.statut === "Non testé"; });
+    return { total: rows.length, ok: st("OK").length, ko: st("KO").length, res: st("Réserve").length, nt: st("Non testé").length, bl: bl.length, blKO: blKO, blNT: blNT, pret: !blKO.length && !blNT.length };
+  }
+  function formationStats() {
+    var f = S.formation, m = {};
+    f.profils.forEach(function (p) { f.sites.forEach(function (s, j) { m[p.profil + "|" + s] = { eff: N((p.effectifs || [])[j]), forme: 0 }; }); });
+    f.sessions.forEach(function (x) { var k = x.profil + "|" + x.site; if (m[k]) m[k].forme += N(x.presents); });
+    var sites = f.sites.map(function (s) {
+      var eff = 0, fo = 0, min = 1; f.profils.forEach(function (p) { var c = m[p.profil + "|" + s]; if (c && c.eff) { eff += c.eff; fo += Math.min(c.forme, c.eff); min = Math.min(min, Math.min(c.forme, c.eff) / c.eff); } });
+      return { site: s, taux: eff ? fo / eff : 0, min: min, pret: eff > 0 && min >= N(f.seuil) };
+    });
+    var heures = f.sessions.reduce(function (a, x) { var p = f.profils.filter(function (q) { return q.profil === x.profil; })[0]; return a + N(x.presents) * (p ? N(p.duree) : 0); }, 0);
+    return { m: m, sites: sites, heures: heures };
+  }
+  function avenantCalc() {
+    var a = S.avenant;
+    var coutMO = a.profils.reduce(function (s, p) { return s + N(p.jours) * N(p.cout); }, 0), venteMO = a.profils.reduce(function (s, p) { return s + N(p.jours) * N(p.vente); }, 0);
+    var coutA = a.achats.reduce(function (s, p) { return s + N(p.cout); }, 0), venteA = a.achats.reduce(function (s, p) { return s + N(p.vente); }, 0);
+    var cout = coutMO + coutA, catalogue = venteMO + venteA, plancher = cout / Math.max(0.01, 1 - N(a.margeVisee));
+    var prix = Math.max(catalogue, plancher), marge = prix ? (prix - cout) / prix : 0;
+    var avant = N(a.caProjet) ? (N(a.caProjet) - N(a.coutProjet)) / N(a.caProjet) : 0, apres = (N(a.caProjet) + prix) ? (N(a.caProjet) + prix - N(a.coutProjet) - cout) / (N(a.caProjet) + prix) : 0;
+    return { coutMO: coutMO, venteMO: venteMO, coutA: coutA, venteA: venteA, cout: cout, catalogue: catalogue, plancher: plancher, prix: Math.ceil(prix / 100) * 100, marge: marge, avant: avant, apres: apres, jours: a.profils.reduce(function (s, p) { return s + N(p.jours); }, 0) };
+  }
+  function parseCR(notes, base) {
+    var y = (base || today()).slice(0, 4), out = { participants: "", decisions: [], actions: [], points: [], risques: [], discussion: [], prochain: "" };
+    function dateOf(t) {
+      var m = t.match(/(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/); if (!m) return "";
+      var yy = m[3] ? (m[3].length === 2 ? "20" + m[3] : m[3]) : y; var d = yy + "-" + String(m[2]).padStart(2, "0") + "-" + String(m[1]).padStart(2, "0");
+      if (!m[3] && base && d < base) d = (+yy + 1) + d.slice(4); return d;
+    }
+    (notes || "").split(/\n/).forEach(function (line) {
+      var l = line.trim(); if (!l) return;
+      var mm = l.match(/^(d|décision|decision|a|action|p|point|r|risque)\s*[:\-–]\s*(.*)$/i);
+      if (/^participants?\s*:/i.test(l)) { out.participants = l.replace(/^participants?\s*:\s*/i, ""); return; }
+      if (/^prochain/i.test(l)) { out.prochain = l; return; }
+      if (!mm) { out.discussion.push(l); return; }
+      var k = mm[1].toLowerCase()[0], txt = mm[2], resp = "", m2 = txt.match(/@([^@\d]+?)(?=\s+\d{1,2}\/|\s*$)/);
+      if (m2) { resp = m2[1].trim(); }
+      var isAct = k === "a" || !!resp, ech = isAct ? dateOf(txt) : "";
+      var clean = isAct ? txt.replace(/@[^@]*$/, "").replace(/\s+\d{1,2}\/\d{1,2}(\/\d{2,4})?\s*$/, "").trim() : txt.trim();
+      var item = { texte: clean.charAt(0).toUpperCase() + clean.slice(1), responsable: resp, echeance: ech };
+      (k === "d" ? out.decisions : k === "a" ? out.actions : k === "p" ? out.points : out.risques).push(item);
+    });
+    return out;
+  }
+  function crText(cr, meta) {
+    var L = [];
+    L.push("COMPTE RENDU : " + meta.instance.toUpperCase() + " DU " + fd(meta.date));
+    L.push("Projet : " + S.meta.projet);
+    if (cr.participants) L.push("Participants : " + cr.participants);
+    if (cr.resume) { L.push(""); L.push("SYNTHÈSE"); L.push(cr.resume); }
+    if (cr.discussion && cr.discussion.length) { L.push(""); L.push("POINTS ABORDÉS"); cr.discussion.forEach(function (d) { L.push("- " + d); }); }
+    if (cr.decisions.length) { L.push(""); L.push("DÉCISIONS"); cr.decisions.forEach(function (d, i) { L.push((i + 1) + ". " + d.texte); }); }
+    if (cr.actions.length) { L.push(""); L.push("ACTIONS"); cr.actions.forEach(function (a, i) { L.push((i + 1) + ". " + a.texte + (a.responsable ? " | " + a.responsable : "") + (a.echeance ? " | échéance " + fd(a.echeance) : "")); }); }
+    if (cr.points.length) { L.push(""); L.push("POINTS À INSCRIRE AU REGISTRE"); cr.points.forEach(function (d) { L.push("- " + d.texte); }); }
+    if (cr.risques.length) { L.push(""); L.push("RISQUES À INSCRIRE AU REGISTRE"); cr.risques.forEach(function (d) { L.push("- " + d.texte); }); }
+    if (cr.prochain) { L.push(""); L.push(cr.prochain); }
+    return L.join("\n");
+  }
+
+  /* ================= outils ================= */
+  var STAT = {
+    prerequis: ["À faire", "En cours", "Fait", "Bloquant"],
+    modal: ["À connecter", "Connectée", "Testée", "Problème"],
+    wl: ["Oui", "Non", "Passerelle"],
+    flux: ["À spécifier", "Spécifié", "Développé", "Recetté", "KO"],
+    recette: ["Non testé", "OK", "Réserve", "KO"],
+    etape: ["À faire", "Fait", "KO"]
+  };
+  var PROTOS = ["HL7 ADT", "HL7 ORM", "HL7 ORU", "DICOM C-STORE", "DICOM C-FIND / C-MOVE", "DICOM MWL (worklist)", "DICOM MPPS", "DICOM Storage Commitment", "Lien contextuel (URL)", "XDS-I", "Autre"];
+  var TOOLS = [
+    { id: "accueil", g: "", l: "Vue d'ensemble" },
+    { id: "stockage", g: "Avant-vente et cadrage", l: "Dimensionnement du stockage", d: "Calcule les To nécessaires à 5 et 10 ans à partir de l'activité par modalité, de la compression, de la réplication et de la marge de sécurité." },
+    { id: "migration", g: "Avant-vente et cadrage", l: "Estimateur de migration", d: "Estime la durée de migration des archives jour par jour, selon le débit mesuré à la migration à blanc et les fenêtres de travail, avec plusieurs hypothèses de débit." },
+    { id: "prerequis", g: "Avant-vente et cadrage", l: "Prérequis client", d: "Liste des prérequis à la charge du client et de l'éditeur, par site, avec le PV que chacun bloque. À envoyer dès la notification du marché." },
+    { id: "modalites", g: "Intégration technique", l: "Inventaire des modalités", d: "Toutes les modalités à connecter : AE Title, adresse IP, port, worklist, état de la connexion et date de test." },
+    { id: "aet", g: "Intégration technique", l: "Plan d'adressage DICOM", d: "Génère des AE Titles cohérents selon une convention, signale les doublons et produit la table de configuration pour le biomédical." },
+    { id: "flux", g: "Intégration technique", l: "Matrice des flux", d: "Flux HL7 et DICOM entre le RIS, le PACS, le DPI et les modalités, avec leur état de recette et un schéma d'architecture généré." },
+    { id: "recette", g: "Recette et bascule", l: "Cahier de recette", d: "Scénarios de recette par profil. Le taux de réussite et les réserves bloquantes décident si le PV de VA peut être signé." },
+    { id: "bascule", g: "Recette et bascule", l: "Chronogramme de bascule", d: "Déroulé heure par heure du week-end de bascule, critères Go / No-Go et plan de retour arrière. Le mode « jour J » permet de cocher les étapes en direct." },
+    { id: "suivi", g: "Recette et bascule", l: "Suivi de migration", d: "To migrés chaque jour comparés au plan, projection de la date de fin et lots en erreur." },
+    { id: "formation", g: "Conduite du changement", l: "Plan de formation", d: "Effectifs par profil et par site, sessions et présence. Un site n'est prêt que si chaque profil atteint le seuil de formation." },
+    { id: "guides", g: "Conduite du changement", l: "Guides de démarrage", d: "Une page par profil d'utilisateur, à distribuer avant la bascule. Le contenu est à adapter au paramétrage réel." },
+    { id: "cr", g: "Pilotage", l: "Générateur de compte rendu", d: "Colle tes notes de réunion : décisions, actions, points et risques sont extraits et mis en forme, prêts à coller dans le classeur." },
+    { id: "avenant", g: "Pilotage", l: "Simulateur d'avenant", d: "Chiffre une demande hors CCTP : coût, prix plancher et prix catalogue, impact sur la marge du projet et texte de proposition." }
+  ];
+
+  var V = {}; // rendu de chaque outil : { main: fn, sum: fn }
+
+  V.accueil = { main: function () {
+    var st = calcStockage(), mg = simMigration(1), pr = S.prerequis.rows, md = S.modalites.rows, rc = recetteStats(), fo = formationStats(), av = avenantCalc();
+    var okMod = md.filter(function (r) { return r.statut === "Testée" || r.statut === "Connectée"; }).length;
+    var bloq = pr.filter(function (r) { return r.statut === "Bloquant"; }).length;
+    var go = S.bascule.criteres.filter(function (c) { return c.ok === "Oui"; }).length;
+    var cum = S.suivi.jours.reduce(function (a, j) { return a + N(j.to); }, 0);
+    var fx = S.flux.rows.filter(function (f) { return f.statut === "Recetté"; }).length;
+    var card = function (id, m, d) { var t = TOOLS.filter(function (x) { return x.id === id; })[0]; return '<a class="card" href="#' + id + '"><span class="eyebrow">' + esc(t.g) + '</span><span class="t">' + esc(t.l) + '</span><span class="m">' + m + '</span><span class="d">' + esc(d) + "</span></a>"; };
+    return '<div class="toolhead"><h2>Boîte à outils du projet PACS</h2><p>' + esc(S.meta.projet) + ". Les données sont un exemple fictif : remplace-les par celles de ton projet. Tout ce que tu saisis est enregistré dans ce navigateur." + "</p></div>" +
+      '<div class="cards">' +
+      card("stockage", nf(st.a10 ? st.a10.total : 0) + " To", "Capacité à prévoir à " + S.stockage.annees + " ans") +
+      card("migration", mg ? fd(mg.fin) : "–", "Fin estimée de la migration (" + nf(S.migration.volume) + " To)") +
+      card("prerequis", pr.filter(function (r) { return r.statut === "Fait"; }).length + " / " + pr.length, bloq ? bloq + " prérequis bloquant" + (bloq > 1 ? "s" : "") : "Aucun prérequis bloquant") +
+      card("modalites", okMod + " / " + md.length, "Modalités connectées ou testées") +
+      card("aet", aetPropose().filter(function (a, i) { return a !== S.modalites.rows[i].aet; }).length + " à renommer", "AE Titles hors convention") +
+      card("flux", fx + " / " + S.flux.rows.length, "Flux recettés") +
+      card("recette", pct(rc.total ? (rc.ok + rc.res) / rc.total : 0), rc.pret ? "Prêt pour le PV de VA" : (rc.blKO.length + rc.blNT.length) + " scénarios bloquants en attente") +
+      card("bascule", go + " / " + S.bascule.criteres.length, "Critères Go / No-Go remplis") +
+      card("suivi", pct(cum / Math.max(1, N(S.suivi.volume))), nf(cum, 1) + " To migrés sur " + nf(S.suivi.volume) + " To") +
+      card("formation", fo.sites.map(function (s) { return pct(s.taux); }).join(" · "), "Utilisateurs formés par site") +
+      card("guides", "5 profils", "Guides d'une page à distribuer") +
+      card("cr", "Notes → CR", "Décisions et actions extraites automatiquement") +
+      card("avenant", eur(av.prix), "Prix proposé pour : " + S.avenant.intitule) +
+      "</div>";
+  } };
+
+  V.stockage = {
+    main: function () {
+      return '<div class="panel"><h3>Hypothèses</h3><div class="params">' + param("stockage.compression", "Ratio de compression sans perte", "num", "2 = les images occupent moitié moins") + param("stockage.copies", "Nombre de copies", "num", "2 pour une réplication sur deux salles") +
+        param("stockage.marge", "Marge de sécurité (%)", "pct") + param("stockage.annees", "Horizon (années)", "num") + param("stockage.archives", "Archives existantes à reprendre (To)", "num", "Volume déjà compressé de l'ancien PACS") + "</div></div>" +
+        '<div class="panel"><h3>Activité annuelle par modalité <small>taille moyenne d\'un examen non compressé, en Mo</small></h3>' +
+        table("stockage.rows", [{ k: "type", l: "Modalité", w: 200 }, { k: "examens", l: "Examens par an", t: "num" }, { k: "taille", l: "Taille moyenne (Mo)", t: "num" }, { k: "croissance", l: "Croissance annuelle (%)", t: "pct" }]) + "</div>" +
+        '<div id="sum"></div>';
+    },
+    sum: function () {
+      var c = calcStockage(), s = S.stockage, tot = c.parts.reduce(function (a, p) { return a + p.to; }, 0);
+      return kpis([[nf(c.annee1, 1) + " To", "Volume produit la 1re année (une copie, compressé)"], [nf(c.a5 ? c.a5.total : 0) + " To", "Capacité à prévoir à 5 ans"], [nf(c.a10 ? c.a10.total : 0) + " To", "Capacité à prévoir à " + s.annees + " ans", "info"], [nf(c.a10 ? c.a10.cumul : 0) + " To", "Volume utile à " + s.annees + " ans (une copie)"]]) +
+        '<div class="grid g2" style="margin-top:16px"><div class="panel"><h3>Capacité totale à prévoir <small>copies et marge incluses, en To</small></h3>' + barChart(c.years.map(function (y) { return y.total; }), c.years.map(function (y) { return "A" + y.an; }), { label: "Capacité par année" }) + "</div>" +
+        '<div class="panel"><h3>Part de chaque modalité <small>volume annuel compressé</small></h3><div class="tablewrap"><table><tbody>' +
+        c.parts.slice().sort(function (a, b) { return b.to - a.to; }).map(function (p) { return "<tr><td>" + esc(p.type) + '</td><td style="width:45%"><div class="bar"><i style="width:' + (tot ? p.to / tot * 100 : 0).toFixed(1) + '%"></i></div></td><td class="num mono">' + nf(p.to, 1) + " To</td><td class=\"num mono\">" + pct(tot ? p.to / tot : 0) + "</td></tr>"; }).join("") +
+        '</tbody></table></div><p class="note">Le scanner et la tomosynthèse pèsent souvent plus de la moitié du volume : ce sont les hypothèses à vérifier en premier avec le client.</p></div></div>';
+    }
+  };
+
+  V.migration = {
+    main: function () {
+      return '<div class="panel"><h3>Hypothèses</h3><div class="params">' + param("migration.volume", "Volume à migrer (To)", "num") + param("migration.debitHeure", "Débit mesuré (Go par heure)", "num", "Mesuré pendant la migration à blanc") +
+        param("migration.heuresSemaine", "Heures par jour de semaine", "num", "Souvent la nuit seulement") + param("migration.heuresWeekend", "Heures par jour de week-end", "num") +
+        param("migration.debut", "Date de début", "date") + param("migration.echeance", "Échéance à tenir", "date", "Par exemple la veille de la VSR") + param("migration.erreurs", "Part à reprendre après erreur (%)", "pct") + "</div></div><div id=\"sum\"></div>";
+    },
+    sum: function () {
+      var m = S.migration, base = simMigration(1), need = debitNecessaire();
+      if (!base) return '<p class="empty note">Renseigne une date de début et un débit.</p>';
+      var marge = diffDays(base.fin, m.echeance), cols = ["var(--crit)", "var(--accent)", "var(--ok)"];
+      var sims = m.scenarios.map(function (k) { return { k: k, r: simMigration(k) }; });
+      var maxd = Math.max.apply(null, sims.map(function (s) { return s.r ? s.r.jours : 0; }).concat([diffDays(m.debut, m.echeance) + 1]));
+      var ticks = []; for (var t = 0; t <= maxd; t += Math.max(7, Math.round(maxd / 6 / 7) * 7)) ticks.push([t, fd(addDays(m.debut, t)).slice(0, 5)]);
+      return kpis([[fd(base.fin), "Fin estimée au débit mesuré"], [nf(base.jours) + " j", "Durée calendaire"], [(marge >= 0 ? "+" : "") + marge + " j", marge >= 0 ? "Marge avant l'échéance" : "Retard sur l'échéance", marge >= 7 ? "ok" : marge >= 0 ? "warn" : "crit"], [nf(need) + " Go/h", "Débit minimal pour tenir l'échéance", need > N(m.debitHeure) ? "crit" : ""]]) +
+        '<div class="panel" style="margin-top:16px"><h3>Volume migré cumulé selon le débit <small>To</small></h3>' +
+        lineChart(sims.filter(function (s) { return s.r; }).map(function (s, i) { return { c: cols[i], pts: s.r.pts }; }), { xticks: ticks, vline: diffDays(m.debut, m.echeance), vlabel: "Échéance " + fd(m.echeance), label: "Migration cumulée" }) +
+        '<div class="legend">' + sims.map(function (s, i) { return '<span style="--c:' + cols[i] + '">Débit × ' + nf(s.k, 1) + " (" + nf(N(m.debitHeure) * s.k) + " Go/h) : fin le " + (s.r ? fd(s.r.fin) : "–") + "</span>"; }).join("") + "</div></div>" +
+        '<div class="panel"><h3>À retenir</h3><p style="margin:0">' + (marge >= 0 ? "Au débit mesuré, la migration se termine le " + fd(base.fin) + ", " + marge + " jours avant l'échéance. " : "Au débit mesuré, la migration dépasse l'échéance de " + (-marge) + " jours : il faut élargir les fenêtres, paralléliser ou démarrer plus tôt. ") +
+        (sims[0].r && sims[0].r.fin > m.echeance ? "Si le débit réel est deux fois plus faible que lors de la migration à blanc, la fin glisse au " + fd(sims[0].r.fin) + " : c'est le scénario à présenter au comité comme risque." : "") + "</p></div>";
+    }
+  };
+
+  V.prerequis = {
+    main: function () {
+      return '<div id="sum"></div><div class="panel"><h3>Prérequis</h3>' + table("prerequis.rows", [{ k: "categorie", l: "Catégorie", w: 130 }, { k: "libelle", l: "Prérequis", w: 300 }, { k: "site", l: "Site", w: 120 }, { k: "responsable", l: "À la charge de", t: "sel", o: ["Client", "Éditeur", "Partenaire"] }, { k: "echeance", l: "Échéance", t: "date" }, { k: "pv", l: "PV bloqué", t: "sel", o: ["PV d'installation", "PV de VA", "Bascule", "PV de VSR"] }, { k: "statut", l: "Statut", t: "sel", o: STAT.prerequis }]) + "</div>";
+    },
+    sum: function () {
+      var rows = S.prerequis.rows, sit = S.meta.situation || today();
+      var retard = rows.filter(function (r) { return r.statut !== "Fait" && r.echeance && r.echeance < sit; });
+      var pvs = ["PV d'installation", "PV de VA", "Bascule", "PV de VSR"].map(function (p) { var l = rows.filter(function (r) { return r.pv === p; }); return { pv: p, n: l.length, ok: l.filter(function (r) { return r.statut === "Fait"; }).length, bl: l.filter(function (r) { return r.statut === "Bloquant"; }).length }; }).filter(function (p) { return p.n; });
+      return kpis([[rows.filter(function (r) { return r.statut === "Fait"; }).length + " / " + rows.length, "Prérequis remplis"], [String(rows.filter(function (r) { return r.statut === "Bloquant"; }).length), "Bloquants", rows.some(function (r) { return r.statut === "Bloquant"; }) ? "crit" : "ok"], [String(retard.length), "En retard au " + fd(sit), retard.length ? "warn" : "ok"]]) +
+        '<div class="panel" style="margin-top:16px"><h3>Par PV bloqué</h3><div class="tablewrap"><table><tbody>' + pvs.map(function (p) { return "<tr><td><strong>" + esc(p.pv) + '</strong></td><td style="width:45%"><div class="bar"><i style="width:' + (p.ok / p.n * 100).toFixed(1) + '%;background:var(--ok)"></i></div></td><td class="num mono">' + p.ok + " / " + p.n + "</td><td>" + (p.bl ? pill(p.bl + " bloquant" + (p.bl > 1 ? "s" : ""), "crit") : p.ok === p.n ? pill("Prêt", "ok") : pill("En cours", "warn")) + "</td></tr>"; }).join("") + "</tbody></table></div>" +
+        (retard.length ? '<p class="note" style="margin-top:10px">En retard : ' + retard.map(function (r) { return esc(r.libelle) + " (" + fd(r.echeance) + ")"; }).join(" ; ") + "</p>" : "") + "</div>";
+    }
+  };
+
+  var MOD_COLS = [{ k: "site", l: "Site", w: 120 }, { k: "type", l: "Type", w: 54 }, { k: "constructeur", l: "Constructeur", w: 120 }, { k: "modele", l: "Modèle", w: 190 }, { k: "annee", l: "Année", t: "num", w: 64 }, { k: "aet", l: "AE Title", w: 110 }, { k: "ip", l: "Adresse IP", w: 110 }, { k: "port", l: "Port", t: "num", w: 64 },
+    { k: "worklist", l: "Worklist", t: "sel", o: STAT.wl }, { k: "statut", l: "Statut", t: "sel", o: STAT.modal }, { k: "test", l: "Testée le", t: "date" }, { k: "commentaire", l: "Commentaire", w: 200 }];
+  V.modalites = {
+    main: function () {
+      return '<div id="sum"></div><div class="panel"><h3>Inventaire <small>types DICOM : CT scanner, MR IRM, DX radiologie, US échographie, MG mammographie, XA angiographie, NM médecine nucléaire</small></h3>' + table("modalites.rows", MOD_COLS, { num: true }) +
+        '<div style="margin-top:12px"><button type="button" class="small" data-act="paste-toggle">Coller depuis Excel</button></div>' +
+        (ui.pasteOpen ? '<div style="margin-top:10px;display:grid;gap:8px"><p class="note" style="margin:0">Copie des lignes dans Excel avec les colonnes dans cet ordre : ' + MOD_COLS.map(function (c) { return c.l; }).join(", ") + '. Les lignes sont ajoutées à la fin de l\'inventaire.</p><textarea id="paste" rows="6" aria-label="Lignes copiées depuis Excel"></textarea><div><button type="button" class="primary small" data-act="paste-import">Ajouter ces lignes</button></div></div>' : "") + "</div>";
+    },
+    sum: function () {
+      var r = S.modalites.rows, c = function (k, v) { return r.filter(function (x) { return x[k] === v; }).length; };
+      var sites = {}; r.forEach(function (x) { sites[x.site] = sites[x.site] || { n: 0, ok: 0 }; sites[x.site].n++; if (x.statut === "Testée" || x.statut === "Connectée") sites[x.site].ok++; });
+      var pb = r.filter(function (x) { return x.statut === "Problème"; });
+      return kpis([[c("statut", "Testée") + c("statut", "Connectée") + " / " + r.length, "Connectées ou testées"], [String(c("statut", "Testée")), "Testées de bout en bout", "ok"], [String(c("statut", "Problème")), "En problème", pb.length ? "crit" : "ok"], [String(c("worklist", "Non")), "Sans worklist", c("worklist", "Non") ? "warn" : ""], [String(c("worklist", "Passerelle")), "Via passerelle DICOM"]]) +
+        '<div class="grid g2" style="margin-top:16px"><div class="panel"><h3>Avancement par site</h3><div class="tablewrap"><table><tbody>' + Object.keys(sites).map(function (s) { var x = sites[s]; return "<tr><td><strong>" + esc(s) + '</strong></td><td style="width:50%"><div class="bar"><i style="width:' + (x.ok / x.n * 100).toFixed(1) + '%"></i></div></td><td class="num mono">' + x.ok + " / " + x.n + "</td></tr>"; }).join("") + "</tbody></table></div></div>" +
+        '<div class="panel"><h3>Modalités en problème</h3>' + (pb.length ? '<div class="tablewrap"><table><tbody>' + pb.map(function (x) { return "<tr><td><strong>" + esc(x.type) + "</strong> " + esc(x.modele) + '<div class="note">' + esc(x.site) + "</div></td><td>" + esc(x.commentaire) + "</td></tr>"; }).join("") + "</tbody></table></div>" : '<p class="note">Aucune.</p>') + "</div></div>";
+    }
+  };
+
+  V.aet = {
+    main: function () {
+      var c = S.aet, sites = {}; S.modalites.rows.forEach(function (r) { sites[r.site] = 1; });
+      return '<div class="panel"><h3>Convention de nommage</h3><div class="params">' + param("aet.prefixe", "Préfixe (facultatif)", "text", "Par exemple le code de l'établissement") + param("aet.separateur", "Séparateur", "text") +
+        param("aet.ordre", "Ordre", { sel: [["type-site", "Type puis site (CT1_SAP)"], ["site-type", "Site puis type (SAP_CT1)"]] }) +
+        Object.keys(sites).map(function (s) { if (c.sites[s] == null) c.sites[s] = s.replace(/[^A-Za-z]/g, "").slice(0, 3).toUpperCase(); return param("aet.sites." + s, "Code du « " + s + " »", "text"); }).join("") +
+        param("aet.pacsAet", "AE Title du PACS", "text") + param("aet.pacsIp", "Adresse IP du PACS", "text") + param("aet.pacsPort", "Port du PACS", "num") + '</div><p class="note">Un AE Title DICOM fait au plus 16 caractères, en majuscules, sans espace ni accent.</p></div><div id="sum"></div>';
+    },
+    sum: function () {
+      var prop = aetPropose(), rows = S.modalites.rows, seen = {}, dup = {};
+      rows.forEach(function (r) { var a = (r.aet || "").toUpperCase(); if (seen[a]) dup[a] = 1; seen[a] = 1; });
+      var aRen = prop.filter(function (p, i) { return p !== rows[i].aet; }).length;
+      var c = S.aet;
+      var tsv = ["Site\tModalité\tAE Title\tIP\tPort\tAE Title du PACS\tIP du PACS\tPort du PACS"].concat(rows.map(function (r, i) { return [r.site, r.type + " " + r.modele, prop[i], r.ip, r.port, c.pacsAet || "", c.pacsIp || "", c.pacsPort || ""].join("\t"); })).join("\n");
+      return kpis([[String(aRen), "AE Titles à renommer", aRen ? "warn" : "ok"], [String(Object.keys(dup).length), "Doublons actuels", Object.keys(dup).length ? "crit" : "ok"], [String(prop.filter(function (p) { return p.length > 16; }).length), "Propositions trop longues", prop.some(function (p) { return p.length > 16; }) ? "crit" : "ok"]]) +
+        '<div class="panel" style="margin-top:16px"><h3>Plan d\'adressage <small><button type="button" class="small" data-act="aet-apply">Appliquer les AE Titles proposés à l\'inventaire</button> <button type="button" class="small" data-act="aet-copy">Copier la table de configuration</button></small></h3><div class="tablewrap"><table><thead><tr><th>Site</th><th>Modalité</th><th>Actuel</th><th>Proposé</th><th>IP</th><th>Port</th><th>État</th></tr></thead><tbody>' +
+        rows.map(function (r, i) { var p = prop[i], st = p.length > 16 ? pill("Trop long", "crit") : dup[(r.aet || "").toUpperCase()] ? pill("Doublon", "crit") : p === r.aet ? pill("Conforme", "ok") : pill("À renommer", "warn"); return "<tr><td>" + esc(r.site) + "</td><td>" + esc(r.type) + " · " + esc(r.modele) + '</td><td class="mono">' + esc(r.aet) + '</td><td class="mono"><strong>' + esc(p) + '</strong></td><td class="mono">' + esc(r.ip) + '</td><td class="mono">' + esc(r.port) + "</td><td>" + st + "</td></tr>"; }).join("") +
+        '</tbody></table></div><textarea id="aet-tsv" hidden>' + esc(tsv) + "</textarea></div>";
+    }
+  };
+
+  V.flux = {
+    main: function () {
+      return '<div class="panel"><h3>Systèmes</h3><div class="params">' + '<label>Systèmes du schéma, séparés par des virgules<input type="text" data-p="flux.systemesTxt" value="' + esc(S.flux.systemes.join(", ")) + '"></label></div></div>' +
+        '<div class="panel"><h3>Flux</h3>' + table("flux.rows", [{ k: "source", l: "Source", t: "sel", o: S.flux.systemes }, { k: "cible", l: "Cible", t: "sel", o: S.flux.systemes }, { k: "protocole", l: "Protocole", t: "sel", o: PROTOS }, { k: "description", l: "Description", w: 280 }, { k: "statut", l: "Statut", t: "sel", o: STAT.flux }], { num: true }) + '</div><div id="sum"></div>';
+    },
+    sum: function () {
+      var f = S.flux, sys = f.systemes, n = sys.length, W = 720, H = 440, cx = W / 2, cy = H / 2 + 6, rx = 270, ry = 165, pos = {};
+      sys.forEach(function (s, i) { var a = -Math.PI / 2 + i * 2 * Math.PI / n; pos[s] = [cx + rx * Math.cos(a), cy + ry * Math.sin(a)]; });
+      var col = { "Recetté": "var(--ok)", "Développé": "var(--accent)", "Spécifié": "var(--warn)", "À spécifier": "var(--muted)", "KO": "var(--crit)" };
+      var g = '<defs>' + Object.keys(col).map(function (k, i) { return '<marker id="ar' + i + '" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" fill="' + col[k] + '"/></marker>'; }).join("") + "</defs>";
+      var pairs = {};
+      f.rows.forEach(function (r, i) {
+        var a = pos[r.source], b = pos[r.cible]; if (!a || !b || a === b) return;
+        var key = [r.source, r.cible].sort().join("|"); pairs[key] = (pairs[key] || 0) + 1; var k = pairs[key];
+        var mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, dx = b[0] - a[0], dy = b[1] - a[1], len = Math.sqrt(dx * dx + dy * dy) || 1;
+        var off = (k % 2 ? 1 : -1) * Math.ceil(k / 2) * 26 * (r.source < r.cible ? 1 : -1);
+        var qx = mx - dy / len * off, qy = my + dx / len * off;
+        var sh = function (p, q) { var vx = q[0] - p[0], vy = q[1] - p[1], l = Math.sqrt(vx * vx + vy * vy) || 1; return [p[0] + vx / l * 52, p[1] + vy / l * 22]; };
+        var p1 = sh(a, [qx, qy]), p2 = sh(b, [qx, qy]), ci = Object.keys(col).indexOf(r.statut);
+        g += '<path d="M' + p1[0].toFixed(1) + " " + p1[1].toFixed(1) + " Q" + qx.toFixed(1) + " " + qy.toFixed(1) + " " + p2[0].toFixed(1) + " " + p2[1].toFixed(1) + '" fill="none" stroke="' + (col[r.statut] || "var(--muted)") + '" stroke-width="2" marker-end="url(#ar' + Math.max(0, ci) + ')"><title>' + esc((i + 1) + ". " + r.source + " → " + r.cible + " : " + r.protocole + " (" + r.statut + ")") + "</title></path>";
+        var lx = 0.25 * p1[0] + 0.5 * qx + 0.25 * p2[0], ly = 0.25 * p1[1] + 0.5 * qy + 0.25 * p2[1];
+        g += '<circle cx="' + lx + '" cy="' + ly + '" r="9" fill="var(--surface)" stroke="' + (col[r.statut] || "var(--muted)") + '"/><text x="' + lx + '" y="' + (ly + 3.5) + '" text-anchor="middle" font-size="10" font-weight="700" fill="var(--fg)">' + (i + 1) + "</text>";
+      });
+      sys.forEach(function (s) { var p = pos[s]; g += '<rect x="' + (p[0] - 62) + '" y="' + (p[1] - 18) + '" width="124" height="36" rx="6" fill="var(--surface)" stroke="var(--fg)" stroke-width="1.2"/><text x="' + p[0] + '" y="' + (p[1] + 4) + '" text-anchor="middle" font-size="12" font-weight="600" fill="var(--fg)">' + esc(s.length > 18 ? s.slice(0, 17) + "…" : s) + "</text>"; });
+      var cnt = function (s) { return f.rows.filter(function (r) { return r.statut === s; }).length; };
+      return kpis([[cnt("Recetté") + " / " + f.rows.length, "Flux recettés", "ok"], [String(cnt("Développé")), "Développés"], [String(cnt("Spécifié") + cnt("À spécifier")), "À développer", "warn"], [String(cnt("KO")), "En échec", cnt("KO") ? "crit" : "ok"]]) +
+        '<div class="panel" style="margin-top:16px"><h3>Schéma d\'architecture <small>les numéros renvoient aux lignes du tableau</small></h3><div class="tablewrap"><svg viewBox="0 0 ' + W + " " + H + '" width="100%" style="min-width:560px" role="img" aria-label="Schéma des flux entre systèmes">' + g + '</svg></div><div class="legend">' + Object.keys(col).map(function (k) { return '<span style="--c:' + col[k] + '">' + k + "</span>"; }).join("") + "</div></div>";
+    }
+  };
+
+  V.recette = {
+    main: function () {
+      return '<div id="sum"></div><div class="panel"><h3>Scénarios</h3>' + table("recette.rows", [{ k: "domaine", l: "Domaine", w: 120 }, { k: "profil", l: "Profil", w: 110 }, { k: "intitule", l: "Scénario", w: 280 }, { k: "attendu", l: "Résultat attendu", w: 240 }, { k: "bloquant", l: "Bloquant", t: "chk" }, { k: "statut", l: "Statut", t: "sel", o: STAT.recette }, { k: "testeur", l: "Testeur", w: 120 }, { k: "commentaire", l: "Commentaire", w: 200 }], { num: true }) + "</div>";
+    },
+    sum: function () {
+      var s = recetteStats(), rows = S.recette.rows, res = rows.filter(function (r) { return r.statut === "Réserve" || r.statut === "KO"; });
+      var pv = "PROJET DE PV DE VÉRIFICATION D'APTITUDE\n" + S.meta.projet + "\n\nScénarios exécutés : " + (s.total - s.nt) + " / " + s.total + " (dont " + s.ok + " conformes, " + s.res + " avec réserve, " + s.ko + " non conformes).\nScénarios bloquants : " + s.bl + ", dont " + s.blKO.length + " non conformes et " + s.blNT.length + " non testés.\n\n" +
+        (s.pret ? "Proposition : prononcer la vérification d'aptitude avec les réserves ci-dessous." : "Proposition : ajourner la vérification d'aptitude tant que les scénarios bloquants ne sont pas conformes.") + "\n\nRÉSERVES\n" + (res.length ? res.map(function (r, i) { return (i + 1) + ". " + r.intitule + (r.bloquant ? " (bloquant)" : "") + " : " + (r.commentaire || r.statut); }).join("\n") : "Aucune.");
+      return kpis([[pct(s.total ? (s.total - s.nt) / s.total : 0), "Scénarios exécutés"], [String(s.ok), "Conformes", "ok"], [String(s.res), "Avec réserve", s.res ? "warn" : ""], [String(s.ko), "Non conformes", s.ko ? "crit" : "ok"], [s.pret ? "Oui" : "Non", "PV de VA possible", s.pret ? "ok" : "crit"]]) +
+        '<div class="grid g2" style="margin-top:16px"><div class="panel"><h3>Ce qui bloque le PV de VA</h3>' + (s.pret ? '<p class="note">Aucun scénario bloquant en échec ou non testé.</p>' : '<div class="tablewrap"><table><tbody>' + s.blKO.concat(s.blNT).map(function (r) { return "<tr><td>" + esc(r.intitule) + '<div class="note">' + esc(r.domaine) + " · " + esc(r.commentaire) + "</div></td><td>" + pill(r.statut, r.statut === "KO" ? "crit" : "") + "</td></tr>"; }).join("") + "</tbody></table></div>") + "</div>" +
+        '<div class="panel"><h3>Projet de PV <small><button type="button" class="small" data-act="copy-pv">Copier</button></small></h3><div class="out" id="pv-text">' + esc(pv) + "</div></div></div>";
+    }
+  };
+
+  V.bascule = {
+    main: function () {
+      var b = S.bascule;
+      return '<div id="sum"></div>' +
+        (ui.jourJ ? "" : '<div class="panel"><h3>Étapes <small>triées par heure prévue dans le mode jour J</small></h3>' + table("bascule.etapes", [{ k: "phase", l: "Phase", t: "sel", o: ["Préparation", "Gel", "Bascule", "Vérification", "Retour arrière", "Stabilisation"] }, { k: "prevu", l: "Prévu", t: "dt" }, { k: "duree", l: "Durée (min)", t: "num", w: 70 }, { k: "action", l: "Action", w: 280 }, { k: "responsable", l: "Responsable", w: 150 }, { k: "controle", l: "Point de contrôle", w: 220 }, { k: "statut", l: "Statut", t: "sel", o: STAT.etape }, { k: "reel", l: "Réalisé", t: "dt" }]) + "</div>") +
+        '<div class="grid g2"><div class="panel"><h3>Critères Go / No-Go</h3>' + table("bascule.criteres", [{ k: "critere", l: "Critère", w: 300 }, { k: "ok", l: "Rempli", t: "sel", o: ["Non", "Oui"] }]) + "</div>" +
+        '<div class="panel"><h3>Plan de retour arrière</h3><textarea rows="7" data-p="bascule.retour" aria-label="Plan de retour arrière">' + esc(b.retour) + "</textarea></div></div>";
+    },
+    sum: function () {
+      var b = S.bascule, cr = b.criteres, ok = cr.filter(function (c) { return c.ok === "Oui"; }).length, go = ok === cr.length && cr.length > 0;
+      var et = b.etapes.map(function (e, i) { return { e: e, i: i }; }).sort(function (a, c) { return (a.e.prevu || "") < (c.e.prevu || "") ? -1 : 1; });
+      var faits = et.filter(function (x) { return x.e.statut === "Fait"; }).length, next = et.filter(function (x) { return x.e.statut !== "Fait"; })[0];
+      var head = '<div class="go ' + (go ? "ok" : "crit") + '">' + (go ? "GO : tous les critères sont remplis (" + ok + " / " + cr.length + ")" : "NO-GO pour l'instant : " + ok + " / " + cr.length + " critères remplis") + "</div>" +
+        '<div class="panel"><h3>Week-end de bascule <small>T0 : ' + fdt(b.t0) + '</small></h3><div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center"><button type="button" class="' + (ui.jourJ ? "" : "primary") + '" data-act="jourj">' + (ui.jourJ ? "Revenir à la préparation" : "Passer en mode jour J") + "</button>" +
+        '<span class="note">' + faits + " / " + et.length + " étapes réalisées" + (next ? " · prochaine : " + esc(next.e.action) + " (" + fdt(next.e.prevu) + ")" : "") + "</span></div></div>";
+      if (!ui.jourJ) return head;
+      return head + '<div class="steps">' + et.map(function (x) {
+        var e = x.e, ecart = e.reel && e.prevu ? Math.round((new Date(e.reel) - new Date(e.prevu)) / 60000) : null; if (ecart != null && Math.abs(ecart) > 2880) ecart = null;
+        return '<div class="step ' + (e.statut === "Fait" ? "done" : next && next.i === x.i ? "next" : "") + '"><div><div class="t">' + fdt(e.prevu) + '</div><div class="note">' + esc(e.phase) + " · " + esc(e.duree) + ' min</div></div><div><strong>' + esc(e.action) + '</strong><div class="note">' + esc(e.responsable) + " · contrôle : " + esc(e.controle) + "</div>" +
+          (e.reel ? '<div class="note">Réalisé ' + fdt(e.reel) + (ecart != null ? " (" + (ecart > 0 ? "+" + ecart + " min de retard" : ecart < 0 ? -ecart + " min d'avance" : "à l'heure") + ")" : "") + "</div>" : "") + "</div>" +
+          '<div class="actions">' + (e.statut === "Fait" ? pill("Fait", "ok") + ' <button type="button" class="small" data-step="' + x.i + '" data-st="À faire">Annuler</button>' : '<button type="button" class="primary small" data-step="' + x.i + '" data-st="Fait">Fait maintenant</button><button type="button" class="small" data-step="' + x.i + '" data-st="KO">KO</button>') + (e.statut === "KO" ? pill("KO", "crit") : "") + "</div></div>";
+      }).join("") + "</div>";
+    }
+  };
+
+  V.suivi = {
+    main: function () {
+      return '<div class="panel"><h3>Paramètres</h3><div class="params">' + param("suivi.volume", "Volume total (To)", "num") + param("suivi.debut", "Début prévu", "date") + param("suivi.fin", "Fin prévue", "date") + "</div></div><div id=\"sum\"></div>" +
+        '<div class="panel"><h3>Relevés quotidiens</h3>' + table("suivi.jours", [{ k: "date", l: "Date", t: "date" }, { k: "to", l: "To migrés", t: "num" }, { k: "erreurs", l: "Lots en erreur", t: "num" }]) + "</div>";
+    },
+    sum: function () {
+      var s = S.suivi, j = s.jours.slice().filter(function (x) { return x.date; }).sort(function (a, b) { return a.date < b.date ? -1 : 1; });
+      if (!j.length || !s.debut) return '<p class="note">Ajoute un premier relevé.</p>';
+      var cum = 0, pts = [[0, 0]]; j.forEach(function (x) { cum += N(x.to); pts.push([diffDays(s.debut, x.date) + 1, cum]); });
+      var last = j[j.length - 1].date, elapsed = diffDays(s.debut, last) + 1, rate = cum / Math.max(1, elapsed), reste = Math.max(0, N(s.volume) - cum);
+      var proj = rate > 0 ? addDays(last, Math.ceil(reste / rate)) : null, dur = diffDays(s.debut, s.fin), planned = N(s.volume) * Math.min(1, elapsed / Math.max(1, dur + 1));
+      var ecart = proj ? diffDays(s.fin, proj) : null, err = j.reduce(function (a, x) { return a + N(x.erreurs); }, 0);
+      var mean = err / j.length, pics = j.filter(function (x) { return N(x.erreurs) > Math.max(5, mean * 3); });
+      var ticks = []; for (var t = 0; t <= dur + 1; t += 14) ticks.push([t, fd(addDays(s.debut, t)).slice(0, 5)]);
+      return kpis([[nf(cum, 1) + " To", "Migrés (" + pct(cum / Math.max(1, N(s.volume))) + ")"], [nf(planned, 1) + " To", "Prévu à date (rythme linéaire)"], [nf(rate, 2) + " To/j", "Rythme moyen observé"], [proj ? fd(proj) : "–", "Fin projetée", ecart > 0 ? "crit" : "ok"], [String(err), "Lots en erreur", pics.length ? "warn" : ""]]) +
+        '<div class="panel" style="margin-top:16px"><h3>Cumul migré et projection <small>To</small></h3>' +
+        lineChart([{ c: "var(--plan)", dash: "5 4", pts: [[0, 0], [dur + 1, N(s.volume)]] }, { c: "var(--accent)", pts: pts }].concat(proj ? [{ c: "var(--accent)", dash: "2 4", w: 2, pts: [pts[pts.length - 1], [diffDays(s.debut, proj) + 1, N(s.volume)]] }] : []), { xticks: ticks, vline: dur + 1, vlabel: "Fin prévue " + fd(s.fin), label: "Cumul migré" }) +
+        '<div class="legend"><span style="--c:var(--accent)">Réalisé, puis projection au rythme moyen</span><span style="--c:var(--plan)">Plan linéaire</span></div>' +
+        '<p style="margin:10px 0 0">' + (ecart == null ? "" : ecart > 0 ? "Au rythme observé, la migration finit " + ecart + " jours après la date prévue : à signaler au comité." : "Au rythme observé, la migration finit " + (-ecart) + " jours avant la date prévue.") + (pics.length ? " Pics d'erreurs à analyser : " + pics.map(function (x) { return fd(x.date) + " (" + x.erreurs + " lots)"; }).join(", ") + "." : "") + "</p></div>";
+    }
+  };
+
+  V.formation = {
+    main: function () {
+      var f = S.formation, cols = [{ k: "profil", l: "Profil", w: 160 }, { k: "duree", l: "Durée (h)", t: "num" }].concat(f.sites.map(function (s, j) { return { k: "effectifs." + j, l: "Effectif " + s, t: "num" }; }));
+      return '<div class="panel"><h3>Paramètres</h3><div class="params">' + param("formation.seuil", "Seuil pour basculer un site (%)", "pct") + '<label>Sites, séparés par des virgules<input type="text" data-p="formation.sitesTxt" value="' + esc(f.sites.join(", ")) + '"></label></div></div><div id="sum"></div>' +
+        '<div class="panel"><h3>Profils et effectifs</h3>' + table("formation.profils", cols) + "</div>" +
+        '<div class="panel"><h3>Sessions</h3>' + table("formation.sessions", [{ k: "date", l: "Date", t: "date" }, { k: "site", l: "Site", t: "sel", o: f.sites }, { k: "profil", l: "Profil", t: "sel", o: f.profils.map(function (p) { return p.profil; }) }, { k: "formateur", l: "Formateur", w: 160 }, { k: "places", l: "Places", t: "num" }, { k: "presents", l: "Présents", t: "num" }]) + "</div>";
+    },
+    sum: function () {
+      var f = S.formation, st = formationStats();
+      var h = '<div class="panel"><h3>Taux de formation par profil et par site <small>seuil ' + pct(f.seuil) + "</small></h3><div class=\"tablewrap\"><table><thead><tr><th>Profil</th>" + f.sites.map(function (s) { return "<th>" + esc(s) + "</th>"; }).join("") + "</tr></thead><tbody>";
+      f.profils.forEach(function (p) {
+        h += "<tr><td>" + esc(p.profil) + "</td>" + f.sites.map(function (s) { var c = st.m[p.profil + "|" + s]; if (!c || !c.eff) return '<td class="note">–</td>'; var t = Math.min(c.forme, c.eff) / c.eff; return "<td>" + pill(pct(t) + " (" + Math.min(c.forme, c.eff) + "/" + c.eff + ")", t >= N(f.seuil) ? "ok" : t >= 0.5 ? "warn" : "crit") + "</td>"; }).join("") + "</tr>";
+      });
+      h += '</tbody></table></div><p class="note" style="margin-top:8px">' + nf(st.heures) + " heures de formation dispensées.</p></div>";
+      return kpis(st.sites.map(function (s) { return [pct(s.taux), s.site + (s.pret ? " : prêt à basculer" : " : pas encore prêt"), s.pret ? "ok" : "crit"]; })) + '<div style="margin-top:16px">' + h + "</div>";
+    }
+  };
+
+  var GUIDES = {
+    "Radiologue": { intro: "Lire et interpréter les examens dans le nouveau PACS.", jour: ["Se connecter au poste de lecture avec son identifiant habituel (annuaire de l'hôpital).", "Ouvrir sa liste de travail : les examens à interpréter sont filtrés par spécialité et priorité.", "Double-cliquer sur un examen : il s'affiche selon le protocole d'affichage de la modalité.", "Les antériorités du patient sont proposées automatiquement à droite de l'écran.", "Utiliser les outils de mesure, de fenêtrage et de reconstruction depuis la barre d'outils.", "Dicter et valider le compte rendu dans le RIS : il est rattaché automatiquement à l'examen."], astuces: ["Les raccourcis clavier sont listés dans l'aide du poste de lecture.", "Un examen marqué « urgent » remonte en tête de liste."] },
+    "Manipulateur": { intro: "Réaliser les examens et vérifier leur arrivée dans le PACS.", jour: ["Sur la modalité, ouvrir la worklist : l'examen planifié dans le RIS apparaît avec l'identité du patient.", "Sélectionner le patient et lancer l'examen, sans ressaisir l'identité.", "En fin d'examen, envoyer les images au PACS (envoi automatique sur la plupart des modalités).", "Vérifier dans le PACS que l'examen est complet (nombre de séries et d'images).", "En cas d'erreur d'identité, ne pas renvoyer l'examen : signaler au référent pour une correction tracée."], astuces: ["Sur une modalité sans worklist, saisir l'identité exactement comme dans le RIS (IPP).", "Un examen absent après 5 minutes doit être signalé au référent."] },
+    "Secrétariat": { intro: "Gérer les rendez-vous, les comptes rendus et la diffusion des images.", jour: ["Planifier l'examen dans le RIS : il alimente la worklist des modalités.", "Suivre l'état des examens (réalisé, interprété, validé) depuis le RIS.", "Diffuser le compte rendu validé au prescripteur selon le circuit habituel.", "Pour un patient qui demande ses images : graver un CD avec visionneuse, ou utiliser le portail patient si disponible."], astuces: ["Vérifier l'identité du patient avant chaque gravure.", "Les demandes d'examens antérieurs d'un autre établissement passent par le référent PACS."] },
+    "Clinicien (DPI)": { intro: "Consulter les images depuis le dossier patient informatisé.", jour: ["Ouvrir le dossier du patient dans le DPI.", "Cliquer sur le bouton d'accès aux images de l'examen d'imagerie.", "Les images s'ouvrent dans la visionneuse web, sans nouvelle connexion.", "Consulter le compte rendu associé depuis la même fenêtre."], astuces: ["La visionneuse web n'est pas destinée au diagnostic : demander un avis radiologique en cas de doute.", "Sur tablette, l'accès est limité aux services autorisés (urgences)."] },
+    "Administrateur": { intro: "Superviser la plateforme et traiter les incidents de premier niveau.", jour: ["Consulter chaque matin le tableau de supervision : files d'attente, espace disque, réplication.", "Vérifier que la double copie sur les deux salles est à jour.", "Traiter les demandes de fusion d'identité selon la procédure validée.", "Gérer les comptes et les droits par profil dans l'annuaire.", "Ouvrir un ticket au support éditeur pour tout incident non résolu en 30 minutes."], astuces: ["Conserver la procédure de mode dégradé imprimée en salle de radiologie.", "Toute modification de configuration est consignée dans le cahier d'exploitation."] }
+  };
+  V.guides = {
+    main: function () {
+      var g = GUIDES[ui.guide] || GUIDES.Radiologue;
+      return '<div class="panel"><h3>Profil</h3><div class="filters" style="display:flex;flex-wrap:wrap;gap:6px">' + Object.keys(GUIDES).map(function (k) { return '<button type="button" data-guide="' + esc(k) + '" class="' + (k === ui.guide ? "primary" : "") + '">' + esc(k) + "</button>"; }).join("") + ' <button type="button" data-act="copy-guide">Copier le texte du guide</button></div></div>' +
+        '<article class="guide" id="guide"><div class="eyebrow">Guide de démarrage · ' + esc(ui.guide) + "</div><h2 style=\"margin:4px 0 6px\">Nouveau PACS : l'essentiel en une page</h2><p style=\"margin:0\" class=\"note\">" + esc(S.meta.projet) + "</p><p>" + esc(g.intro) + "</p>" +
+        "<h4>Au quotidien</h4><ol>" + g.jour.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ol>" +
+        "<h4>Bon à savoir</h4><ul>" + g.astuces.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul>" +
+        "<h4>En cas de panne</h4><ul><li>Appliquer la procédure de mode dégradé affichée en salle : les modalités conservent les images localement.</li><li>Ne pas renvoyer plusieurs fois un examen : prévenir le référent PACS du service.</li></ul>" +
+        "<h4>Contacts</h4><ul><li>Référent PACS du service : à compléter</li><li>" + esc(S.meta.support) + "</li></ul>" +
+        '<p class="note" style="margin-top:18px">Contenu générique à adapter au paramétrage réel de l\'établissement avant diffusion.</p></article>';
+    }
+  };
+
+  V.cr = {
+    main: function () {
+      var c = S.cr, has = canShare();
+      return '<div class="panel"><h3>Réunion</h3><div class="params">' + param("cr.instance", "Instance", { sel: [["COPIL", "COPIL"], ["Comité projet", "Comité projet"], ["Comité technique", "Comité technique"], ["Revue interne", "Revue interne"]] }) + param("cr.date", "Date", "date") + "</div>" +
+        '<p class="note" style="margin:12px 0 6px">Une ligne par élément. Préfixes reconnus : <span class="mono">D:</span> décision, <span class="mono">A:</span> action, <span class="mono">P:</span> point, <span class="mono">R:</span> risque, <span class="mono">Participants :</span>, <span class="mono">Prochain…</span>. Pour une action : <span class="mono">@responsable</span> puis la date <span class="mono">jj/mm</span>. Les autres lignes deviennent des points abordés.</p>' +
+        '<textarea rows="12" data-p="cr.notes" aria-label="Notes de réunion">' + esc(c.notes) + '</textarea><div class="actions" style="margin-top:10px"><button type="button" class="primary" data-act="cr-gen">Générer le compte rendu</button>' + (has ? '<button type="button" data-act="cr-ai">Structurer avec Claude</button><span class="note">pour des notes libres, sans préfixes</span>' : "") + "</div></div><div id=\"sum\"></div>";
+    },
+    sum: function () {
+      var cr = ui.cr; if (!cr) return "";
+      if (cr.loading) return '<div class="banner">Claude structure les notes…</div>';
+      if (cr.error) return '<div class="banner err">' + esc(cr.error) + "</div>";
+      var meta = { instance: S.cr.instance, date: S.cr.date }, txt = crText(cr, meta);
+      var tsv = cr.decisions.map(function (d) { return [fd(meta.date), meta.instance, "", "Décision : " + d.texte, d.responsable || "", d.echeance ? fd(d.echeance) : "", "Fait"].join("\t"); })
+        .concat(cr.actions.map(function (a) { return [fd(meta.date), meta.instance, "", "Action : " + a.texte, a.responsable || "", a.echeance ? fd(a.echeance) : "", "À faire"].join("\t"); })).join("\n");
+      var list = function (t, arr, withResp) { return arr.length ? '<h4 style="margin:14px 0 6px">' + t + '</h4><div class="tablewrap"><table><tbody>' + arr.map(function (x) { return "<tr><td>" + esc(x.texte) + "</td>" + (withResp ? "<td>" + esc(x.responsable || "–") + '</td><td class="mono">' + fd(x.echeance) + "</td>" : "") + "</tr>"; }).join("") + "</tbody></table></div>" : ""; };
+      return '<div class="grid g2"><div class="panel"><h3>Éléments extraits</h3>' + list("Décisions", cr.decisions) + list("Actions", cr.actions, true) + list("Points à inscrire au registre", cr.points) + list("Risques à inscrire au registre", cr.risques) +
+        '<div class="actions" style="margin-top:12px"><button type="button" class="small" data-act="cr-tsv">Copier pour l\'onglet Décisions du classeur</button></div><textarea id="cr-tsv" hidden>' + esc(tsv) + "</textarea></div>" +
+        '<div class="panel"><h3>Compte rendu <small><button type="button" class="small" data-act="cr-copy">Copier</button></small></h3><div class="out" id="cr-text">' + esc(txt) + "</div></div></div>";
+    }
+  };
+
+  V.avenant = {
+    main: function () {
+      return '<div class="panel"><h3>Demande</h3><div class="params">' + param("avenant.intitule", "Objet de l'avenant", "text") + param("avenant.margeVisee", "Marge visée (%)", "pct") + param("avenant.delaiJours", "Impact sur le délai (jours)", "num") +
+        param("avenant.caProjet", "Chiffre d'affaires actuel du projet (€)", "num") + param("avenant.coutProjet", "Coût prévu actuel du projet (€)", "num") + "</div></div>" +
+        '<div class="grid g2"><div class="panel"><h3>Main-d\'œuvre <small>coût et prix de vente journaliers</small></h3>' + table("avenant.profils", [{ k: "profil", l: "Profil", w: 170 }, { k: "jours", l: "Jours", t: "num" }, { k: "cout", l: "Coût/j (€)", t: "num" }, { k: "vente", l: "Vente/j (€)", t: "num" }]) + "</div>" +
+        '<div class="panel"><h3>Achats et licences</h3>' + table("avenant.achats", [{ k: "libelle", l: "Libellé", w: 190 }, { k: "cout", l: "Coût (€)", t: "num" }, { k: "vente", l: "Vente (€)", t: "num" }]) + '</div></div><div id="sum"></div>';
+    },
+    sum: function () {
+      var a = S.avenant, c = avenantCalc(), dpt = c.apres - c.avant;
+      var txt = "Objet : proposition d'avenant, " + a.intitule + "\n\nMadame, Monsieur,\n\nSuite à votre demande, nous vous proposons de réaliser la prestation suivante, hors du périmètre du marché initial : " + a.intitule.charAt(0).toLowerCase() + a.intitule.slice(1) + ".\n\n" +
+        "Contenu de la prestation :\n" + a.profils.filter(function (p) { return N(p.jours); }).map(function (p) { return "- " + p.profil + " : " + nf(p.jours) + " jours"; }).join("\n") + (a.achats.length ? "\n" + a.achats.map(function (x) { return "- " + x.libelle; }).join("\n") : "") +
+        "\n\nMontant de l'avenant : " + eur(c.prix) + " HT.\nImpact sur le planning : " + (N(a.delaiJours) ? "+" + nf(a.delaiJours) + " jours ouvrés sur le jalon concerné." : "aucun.") + "\n\nCette proposition est valable 30 jours. Nous restons à votre disposition pour en préciser le contenu.\n\n" + S.meta.chefDeProjet + ", chef de projet";
+      return kpis([[eur(c.cout), "Coût de revient (" + nf(c.jours) + " j)"], [eur(c.plancher), "Prix plancher à " + pct(a.margeVisee) + " de marge"], [eur(c.catalogue), "Prix au tarif catalogue"], [eur(c.prix), "Prix proposé (marge " + pct(c.marge, 1) + ")", "info"], [(dpt >= 0 ? "+" : "") + nf(dpt * 100, 2) + " pt", "Effet sur la marge du projet (" + pct(c.avant, 1) + " → " + pct(c.apres, 1) + ")", dpt >= 0 ? "ok" : "warn"]]) +
+        '<div class="grid g2" style="margin-top:16px"><div class="panel"><h3>Lecture</h3><p style="margin:0">' + (c.catalogue >= c.plancher ? "Le tarif catalogue couvre la marge visée : c'est lui qui est proposé." : "Le tarif catalogue ne couvre pas la marge visée : le prix proposé est remonté au prix plancher.") +
+        " L'avenant " + (dpt >= 0 ? "améliore" : "dégrade") + " la marge globale du projet de " + nf(Math.abs(dpt) * 100, 2) + " point. Il compte aussi dans la tolérance de périmètre (demandes de changement approuvées).</p>" +
+        '<p class="note" style="margin-top:10px">Geste commercial : si l\'avenant était offert, la marge du projet passerait à ' + pct((N(a.caProjet) - N(a.coutProjet) - c.cout) / Math.max(1, N(a.caProjet)), 1) + ".</p></div>" +
+        '<div class="panel"><h3>Proposition à envoyer <small><button type="button" class="small" data-act="av-copy">Copier</button></small></h3><div class="out" id="av-text">' + esc(txt) + "</div></div></div>";
+    }
+  };
+
+  /* ================= rendu ================= */
+  var app = document.getElementById("app");
+  function render() {
+    var t = TOOLS.filter(function (x) { return x.id === view; })[0] || TOOLS[0];
+    var groups = [], seen = {};
+    TOOLS.forEach(function (x) { if (!seen[x.g]) { seen[x.g] = 1; groups.push(x.g); } });
+    var side = groups.map(function (g) { return (g ? '<div class="grp">' + esc(g) + "</div>" : "") + TOOLS.filter(function (x) { return x.g === g; }).map(function (x) { return '<a href="#' + x.id + '"' + (x.id === t.id ? ' aria-current="page"' : "") + ">" + esc(x.l) + "</a>"; }).join(""); }).join("");
+    var sel = '<div class="navsel"><select id="navsel" aria-label="Choisir un outil">' + groups.map(function (g) { return (g ? '<optgroup label="' + esc(g) + '">' : "") + TOOLS.filter(function (x) { return x.g === g; }).map(function (x) { return '<option value="' + x.id + '"' + (x.id === t.id ? " selected" : "") + ">" + esc(x.l) + "</option>"; }).join("") + (g ? "</optgroup>" : ""); }).join("") + "</select></div>";
+    var share = canShare() ? '<button type="button" class="primary" data-act="publish">Publier pour tous</button>' : "";
+    var banner = msg ? '<div class="banner ' + (msg.cls || "") + '" role="status"><span>' + esc(msg.text) + '</span><span class="actions">' + (msg.actions || []).map(function (a) { return '<button type="button" class="small ' + (a.primary ? "primary" : "") + '" data-msg="' + a.id + '">' + esc(a.label) + "</button>"; }).join("") + '<button type="button" class="small" data-msg="close">Fermer</button></span></div>' : "";
+    var reset = ui.confirmReset ? '<span class="confirm"><span class="note">Effacer tes saisies et revenir à l\'exemple ?</span><button type="button" class="small primary" data-act="reset-yes">Oui, réinitialiser</button><button type="button" class="small" data-act="reset-no">Annuler</button></span>' : '<button type="button" class="small" data-act="reset">Réinitialiser l\'exemple</button>';
+    app.innerHTML = '<header class="top"><div class="in"><div><div class="eyebrow">Projet PACS · ' + esc(S.meta.client) + '</div><h1>Boîte à outils PACS</h1></div><div class="actions"><span class="chip" id="dirty"' + (dirty ? "" : " hidden") + '>Modifications enregistrées dans ce navigateur</span>' + share + '<button type="button" class="small" data-act="copy-data">Copier les données</button>' + reset + "</div></div></header>" + sel +
+      '<div class="layout"><nav class="side" aria-label="Outils">' + side + "</nav><main>" + banner +
+      (t.id !== "accueil" ? '<div class="toolhead"><div class="eyebrow">' + esc(t.g) + "</div><h2>" + esc(t.l) + "</h2><p>" + esc(t.d) + "</p></div>" : "") + V[t.id].main() + "</main></div>";
+    refreshSum();
+  }
+  function refreshSum() { var el = document.getElementById("sum"), v = V[view]; if (el && v && v.sum) el.innerHTML = v.sum(); }
+
+  /* ================= événements ================= */
+  function route() { var h = (location.hash || "").replace("#", ""); view = TOOLS.some(function (x) { return x.id === h; }) ? h : "accueil"; ui.confirmReset = false; render(); window.scrollTo(0, 0); }
+  window.addEventListener("hashchange", route);
+  function onEdit(e) {
+    var el = e.target, p = el.dataset && el.dataset.p; if (!p) return;
+    var v = el.dataset.chk ? el.checked : el.dataset.num ? (el.value === "" ? "" : Number(el.value) / (el.dataset.pct ? 100 : 1)) : el.value;
+    if (p === "flux.systemesTxt") { S.flux.systemes = el.value.split(",").map(function (s) { return s.trim(); }).filter(Boolean); if (e.type === "change") { saveDraft(); render(); } return; }
+    if (p === "formation.sitesTxt") {
+      if (e.type !== "change") return;
+      var ns = el.value.split(",").map(function (s) { return s.trim(); }).filter(Boolean), old = S.formation.sites;
+      S.formation.profils.forEach(function (pr) { pr.effectifs = ns.map(function (s) { var i = old.indexOf(s); return i >= 0 ? pr.effectifs[i] : 0; }); });
+      S.formation.sites = ns; saveDraft(); render(); return;
+    }
+    if (p.indexOf("aet.sites.") === 0) { S.aet.sites[p.slice(10)] = v; } else setP(S, p, v);
+    if (el.tagName === "SELECT") el.setAttribute("data-v", el.value);
+    saveDraft();
+    if (e.type === "change" && /^(modalites\.rows\.\d+\.site|formation\.profils\.\d+\.profil)$/.test(p)) { render(); return; }
+    refreshSum();
+  }
+  app.addEventListener("input", function (e) { if (e.target.dataset && (e.target.dataset.num || e.target.tagName === "TEXTAREA" || e.target.type === "text")) onEdit(e); });
+  app.addEventListener("change", onEdit);
+  app.addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    var d = b.dataset;
+    if (d.add) { var arr = getP(S, d.add); arr.push(blankRow(d.add)); saveDraft(); render(); return; }
+    if (d.del) { var ps = d.del.split("."), idx = +ps.pop(); getP(S, ps.join(".")).splice(idx, 1); saveDraft(); render(); return; }
+    if (d.guide) { ui.guide = d.guide; render(); return; }
+    if (d.step !== undefined) { var st = S.bascule.etapes[+d.step]; st.statut = d.st; st.reel = d.st === "À faire" ? "" : nowLocal(); saveDraft(); refreshSum(); return; }
+    if (d.msg) { if (d.msg === "close") { msg = null; render(); return; } if (d.msg === "keep") { msg = null; render(); return; } if (d.msg === "discard") { clearDraft(); S = clone(shared || DEFAULTS); msg = null; render(); return; } return; }
+    var a = d.act; if (!a) return;
+    if (a === "jourj") { ui.jourJ = !ui.jourJ; render(); return; }
+    if (a === "paste-toggle") { ui.pasteOpen = !ui.pasteOpen; render(); return; }
+    if (a === "paste-import") {
+      var txt = (document.getElementById("paste") || {}).value || "", added = 0;
+      txt.split(/\r?\n/).forEach(function (line) { if (!line.trim()) return; var f = line.split("\t"); var r = {}; MOD_COLS.forEach(function (c, i) { var v = (f[i] || "").trim(); r[c.k] = c.t === "num" ? (v ? Number(v.replace(",", ".")) : "") : v; }); if (STAT.wl.indexOf(r.worklist) < 0) r.worklist = "Oui"; if (STAT.modal.indexOf(r.statut) < 0) r.statut = "À connecter"; S.modalites.rows.push(r); added++; });
+      ui.pasteOpen = false; saveDraft(); msg = { text: added + " modalité" + (added > 1 ? "s" : "") + " ajoutée" + (added > 1 ? "s" : "") + " à l'inventaire.", cls: "ok" }; render(); return;
+    }
+    if (a === "aet-apply") { var pr = aetPropose(); S.modalites.rows.forEach(function (r, i) { r.aet = pr[i]; }); saveDraft(); msg = { text: "AE Titles appliqués à l'inventaire. Pense à les communiquer au biomédical avant la reconfiguration des modalités.", cls: "ok" }; render(); return; }
+    if (a === "aet-copy") { copyText(document.getElementById("aet-tsv").value, b); return; }
+    if (a === "copy-pv") { copyText(document.getElementById("pv-text").textContent, b); return; }
+    if (a === "copy-guide") { copyText(document.getElementById("guide").innerText, b); return; }
+    if (a === "cr-gen") { ui.cr = parseCR(S.cr.notes, S.cr.date); refreshSum(); return; }
+    if (a === "cr-copy") { copyText(document.getElementById("cr-text").textContent, b); return; }
+    if (a === "cr-tsv") { copyText(document.getElementById("cr-tsv").value, b); return; }
+    if (a === "av-copy") { copyText(document.getElementById("av-text").textContent, b); return; }
+    if (a === "cr-ai") { aiCR(); return; }
+    if (a === "copy-data") { copyText(JSON.stringify(S, null, 1), b); return; }
+    if (a === "reset") { ui.confirmReset = true; render(); return; }
+    if (a === "reset-no") { ui.confirmReset = false; render(); return; }
+    if (a === "reset-yes") { clearDraft(); S = clone(shared || DEFAULTS); ui.confirmReset = false; msg = { text: "Données réinitialisées.", cls: "ok" }; render(); return; }
+    if (a === "publish") { publish(); return; }
+  });
+  app.addEventListener("change", function (e) { if (e.target.id === "navsel") location.hash = e.target.value; });
+
+  function aiCR() {
+    ui.cr = { loading: true }; refreshSum();
+    window.claude.use("sample").then(function (sample) {
+      if (!sample) throw { code: "not_granted" };
+      var prompt = "Tu structures des notes de réunion d'un projet de déploiement PACS. Réponds uniquement par un objet JSON avec les clés : participants (texte), resume (2 à 3 phrases), decisions (liste de {texte}), actions (liste de {texte, responsable, echeance au format AAAA-MM-JJ ou chaîne vide}), points (liste de {texte}), risques (liste de {texte}), prochain (texte). Écris en français, phrases courtes. Date de la réunion : " + S.cr.date + ".\n\nNotes :\n" + S.cr.notes;
+      return sample.json ? sample.json(prompt, { modelTier: "quick", cache: false }) : sample(prompt, { modelTier: "quick", cache: false }).then(function (r) { return JSON.parse(r.text.replace(/^[^{]*/, "").replace(/[^}]*$/, "")); });
+    }).then(function (j) {
+      var arr = function (x) { return Array.isArray(x) ? x.map(function (y) { return typeof y === "string" ? { texte: y } : { texte: y.texte || "", responsable: y.responsable || "", echeance: y.echeance || "" }; }) : []; };
+      ui.cr = { participants: j.participants || "", resume: j.resume || "", decisions: arr(j.decisions), actions: arr(j.actions), points: arr(j.points), risques: arr(j.risques), discussion: [], prochain: j.prochain || "" };
+      refreshSum();
+    }).catch(function (err) {
+      var c = err && err.code;
+      ui.cr = { error: c === "not_granted" ? "Claude n'est pas disponible sur cette page. Utilise « Générer le compte rendu » avec les préfixes D:, A:, P:, R:." : c === "rate_limited" ? "Trop de demandes en peu de temps. Réessaie dans une minute." : "La structuration par Claude a échoué. Utilise « Générer le compte rendu »." };
+      refreshSum();
+    });
+  }
+  function publish() {
+    var data = clone(S); data.meta.savedAt = new Date().toISOString();
+    msg = { text: "Publication en cours…" }; render();
+    window.claude.use("artifact").then(function (art) {
+      if (!art) throw { code: "not_granted" };
+      return art.publish({ "data/outils.json": { content: JSON.stringify(data), contentType: "application/json" } });
+    }).then(function () { shared = data; S = clone(data); clearDraft(); msg = { text: "Publié : tous les lecteurs voient maintenant ces données.", cls: "ok" }; render(); })
+      .catch(function (err) {
+        var c = err && err.code;
+        msg = { cls: c === "conflict" ? "" : "err", text: c === "conflict" ? "Une version plus récente a été publiée entre-temps ; la page se recharge avec elle. Tes saisies restent dans ce navigateur." : (c === "not_writer" || c === "not_granted" || c === "capability_disabled" || c === "not_declared") ? "Cette page est en lecture seule pour toi : tes saisies restent enregistrées dans ce navigateur uniquement." : "La publication a échoué. Réessaie dans un instant." };
+        render();
+      });
+  }
+
+  /* ================= démarrage ================= */
+  function start(base) {
+    shared = base;
+    S = clone(base);
+    ["stockage", "migration", "prerequis", "modalites", "aet", "flux", "recette", "bascule", "suivi", "formation", "cr", "avenant", "meta"].forEach(function (k) { if (!S[k]) S[k] = clone(DEFAULTS[k]); });
+    if (!S.meta.situation) S.meta.situation = "2026-11-03";
+    if (S.aet.pacsAet == null) { S.aet.pacsAet = "PACS_SA"; S.aet.pacsIp = "10.20.0.10"; S.aet.pacsPort = 104; }
+    var dr = loadDraft();
+    if (dr && dr.data) {
+      S = dr.data; dirty = true;
+      if ((dr.basedOn || null) !== (base.meta.savedAt || null)) msg = { text: "Une version plus récente a été publiée depuis tes dernières saisies dans ce navigateur.", actions: [{ id: "keep", label: "Garder mes saisies" }, { id: "discard", label: "Charger la version publiée", primary: true }] };
+    }
+    route();
+  }
+  fetch("data/outils.json", { cache: "no-store" }).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(start, function () { start(clone(DEFAULTS)); });
+})();
+</script>
+
+</body>
+</html>
