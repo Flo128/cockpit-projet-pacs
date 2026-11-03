@@ -98,6 +98,17 @@ tr:last-child td { border-bottom: none; }
 .filters { display: flex; flex-wrap: wrap; gap: 6px; }
 .filters button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 .note { color: var(--muted); font-size: 12px; }
+.tip { position: relative; display: inline-block; vertical-align: middle; }
+.tip-btn { width: 22px; height: 22px; padding: 0; border-radius: 50%; font-size: 12px; font-weight: 700; line-height: 1; color: var(--accent); border-color: var(--accent); }
+.tip-pop { display: none; position: absolute; left: 0; top: calc(100% + 8px); z-index: 30; width: min(680px, calc(100vw - 48px)); max-height: 70vh; overflow: auto;
+  background: var(--surface); color: var(--fg); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 10px 30px rgba(10, 20, 30, .18); padding: 16px 18px; font-size: 13px; font-weight: 400; letter-spacing: 0; text-transform: none; line-height: 1.45; }
+.tip:hover .tip-pop, .tip:focus-within .tip-pop, .tip.open .tip-pop { display: block; }
+.tip-pop h4 { margin: 14px 0 6px; font-size: 13px; }
+.tip-pop h4:first-child { margin-top: 0; }
+.tip-pop table { font-size: 12px; margin-bottom: 4px; }
+.tip-pop td, .tip-pop th { padding: 5px 8px; }
+.tip-pop ul, .tip-pop ol { margin: 0; padding-left: 18px; display: grid; gap: 3px; }
+@media (max-width: 720px) { .tip-pop { position: fixed; left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); top: auto; bottom: max(16px, env(safe-area-inset-bottom, 0px)); width: auto; max-height: 72vh; } }
 .quote { border-left: 3px solid var(--accent); padding: 4px 0 4px 14px; white-space: pre-line; }
 .gantt svg text { font-family: var(--font-ui); }
 .gantt-handle { cursor: col-resize; touch-action: none; }
@@ -447,6 +458,28 @@ if (typeof module !== "undefined") module.exports = parseWorkbook;
       '<p class="note">Trait : marge cible ' + pct(g.cible, 1) + ". Chiffre d'affaires " + keur(g.ca) + " (marché " + keur(g.marche) + " et avenants), coût prévu " + keur(g.coutPrevu) + ".</p>";
   }
 
+  /* ---------- barème des risques ---------- */
+  function tipRisques() {
+    var P = [["1", "Très improbable (moins de 10 %)", "Jamais vu sur nos projets"], ["2", "Peu probable (10 à 30 %)", "Déjà arrivé, rarement"], ["3", "Possible (30 à 50 %)", "Arrive sur un projet sur deux ou trois"],
+      ["4", "Probable (50 à 80 %)", "Signaux déjà visibles sur ce projet"], ["5", "Quasi certain (plus de 80 %)", "En train de se produire"]];
+    var I = [["1", "moins de 2 j", "moins de 0,5 pt", "Gêne mineure, sans effet utilisateur"], ["2", "2 à 5 j", "0,5 à 1 pt", "Réserve mineure au PV"], ["3", "5 à 10 j", "1 à 2 pts", "Jalon de facturation décalé, client mécontent"],
+      ["4", "10 à 20 j", "2 à 3 pts", "Pénalités de retard, VA refusée"], ["5", "plus de 20 j", "plus de 3 pts", "Interruption du service d'imagerie, perte de données, risque patient"]];
+    var row = function (r) { return "<tr>" + r.map(function (c, i) { return "<td" + (i === 0 ? ' class="mono"' : "") + ">" + esc(c) + "</td>"; }).join("") + "</tr>"; };
+    var html = "<h4>Criticité = probabilité (P) × impact (I)</h4><p style=\"margin:0\">Deux notes de 1 à 5, soit une criticité de 1 à 25 : " + pill("Critique ≥ 15", "crit") + " " + pill("Élevé 8 à 14", "warn") + " " + pill("Modéré 4 à 7", "info") + " " + pill("Faible < 4", "ok") + "</p>" +
+      "<h4>Probabilité</h4><table><thead><tr><th>P</th><th>Niveau</th><th>Repère concret</th></tr></thead><tbody>" + P.map(row).join("") + "</tbody></table>" +
+      "<h4>Impact</h4><table><thead><tr><th>I</th><th>Délai</th><th>Marge</th><th>Qualité / client</th></tr></thead><tbody>" + I.map(row).join("") + "</tbody></table>" +
+      "<p style=\"margin:4px 0 0\"><strong>Règle :</strong> on retient la plus forte des colonnes d'impact. Une perte de données reste à 5 même si elle ne coûte rien en marge.</p>" +
+      "<p style=\"margin:6px 0 0\" class=\"note\">Exemple R01 (migration de 85 To) : signaux déjà visibles, P = 4 ; retard de plus de 10 jours sur la VSR (20 % de la facturation), I = 4 ; criticité 16, critique.</p>" +
+      "<h4>Qui cote</h4><ul><li><strong>Tout membre du projet</strong> peut signaler un risque.</li><li><strong>Le chef de projet</strong> l'inscrit au registre et propose P et I.</li>" +
+      "<li><strong>Le propriétaire</strong> valide la cotation, choisit la réponse (éviter, réduire, transférer, partager, accepter) et suit les actions.</li>" +
+      "<li><strong>L'assurance projet</strong> (PMO, contrôle de gestion) vérifie que les notes ne sont pas sous-estimées.</li>" +
+      "<li><strong>Le comité de pilotage ou la revue interne</strong> valide les risques critiques et arbitre au-delà de la tolérance.</li></ul>" +
+      "<h4>Quand coter</h4><ol><li>À l'initialisation, en atelier de risques.</li><li>Chaque semaine en COPROJ : la probabilité monte si le risque se rapproche, baisse si une action porte ses fruits.</li>" +
+      "<li>À chaque fin de séquence, avant le COPIL.</li><li>Après une action : on recote le risque résiduel, puis on le clôt quand il ne peut plus se produire.</li></ol>" +
+      "<p style=\"margin:8px 0 0\" class=\"note\">Un risque qui s'est produit n'est plus un risque : il devient un point, à traiter au registre des points.</p>";
+    return '<span class="tip"><button type="button" class="tip-btn" data-tip="1" aria-expanded="false" aria-label="Comment coter un risque">?</button><span class="tip-pop" role="tooltip">' + html + "</span></span>";
+  }
+
   /* ---------- Gantt ---------- */
   function gantt(m, filtre) {
     var tasks = m.planning.filter(function (t) { return t.debut && t.fin && (!filtre || t.sequence === filtre); });
@@ -515,10 +548,10 @@ if (typeof module !== "undefined") module.exports = parseWorkbook;
   function viewRisques(m, x) {
     var list = state.filtreRisques === "ouverts" ? x.risquesOuverts : m.risques.slice().sort(function (a, b) { return (b.criticite || 0) - (a.criticite || 0); });
     var counts = ["Critique", "Élevé", "Modéré", "Faible"].map(function (n) { return [n, x.risquesOuverts.filter(function (r) { return r.niveau === n; }).length]; });
-    return '<div class="grid g2"><section class="panel"><h2>Matrice des risques ouverts</h2>' + matrix(x.risquesOuverts) + "</section>" +
+    return '<div class="grid g2"><section class="panel"><h2><span>Matrice des risques ouverts ' + tipRisques() + '</span></h2>' + matrix(x.risquesOuverts) + "</section>" +
       '<section class="panel"><h2>Répartition</h2><div class="kpis">' + counts.map(function (c) { return '<div class="kpi"><div class="v" style="color:var(--' + niveauClass(c[0]) + ')">' + c[1] + '</div><div class="l">' + c[0] + "</div></div>"; }).join("") + "</div>" +
       '<p class="note" style="margin-top:12px">Criticité = probabilité × impact. Critique à partir de 15, élevé à partir de 8, modéré à partir de 4.</p></section></div>' +
-      '<section class="panel"><h2>Registre des risques</h2><div class="filters" style="margin-bottom:12px"><button type="button" data-rf="ouverts" aria-pressed="' + (state.filtreRisques === "ouverts") + '">Ouverts</button><button type="button" data-rf="tous" aria-pressed="' + (state.filtreRisques === "tous") + '">Tous</button></div>' + riskTable(list) + "</section>";
+      '<section class="panel"><h2><span>Registre des risques ' + tipRisques() + '</span></h2><div class="filters" style="margin-bottom:12px"><button type="button" data-rf="ouverts" aria-pressed="' + (state.filtreRisques === "ouverts") + '">Ouverts</button><button type="button" data-rf="tous" aria-pressed="' + (state.filtreRisques === "tous") + '">Tous</button></div>' + riskTable(list) + "</section>";
   }
   function viewPoints(m, x) {
     var list = state.filtrePoints === "ouverts" ? x.pointsOuverts : m.points;
@@ -642,6 +675,7 @@ if (typeof module !== "undefined") module.exports = parseWorkbook;
   app.addEventListener("click", function (e) {
     var t = e.target.closest("button");
     if (!t) return;
+    if (t.dataset.tip) { var tp = t.parentNode, op = !tp.classList.contains("open"); closeTips(); if (op) { tp.classList.add("open"); t.setAttribute("aria-expanded", "true"); } return; }
     if (t.dataset.present) { location.hash = t.dataset.present; return; }
     if (t.dataset.deck) {
       var a = t.dataset.deck;
@@ -657,6 +691,9 @@ if (typeof module !== "undefined") module.exports = parseWorkbook;
     if (t.dataset.banner) { onBanner(t.dataset.banner); return; }
   });
   document.addEventListener("fullscreenchange", function () { setTimeout(fitSlide, 50); });
+  function closeTips() { Array.prototype.forEach.call(document.querySelectorAll(".tip.open"), function (el) { el.classList.remove("open"); var b = el.querySelector(".tip-btn"); if (b) b.setAttribute("aria-expanded", "false"); }); }
+  document.addEventListener("click", function (e) { if (!e.target.closest(".tip")) closeTips(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeTips(); });
   function setLW(v, save) {
     state.ganttLW = Math.max(160, Math.min(700, Math.round(v)));
     var box = document.getElementById("gantt-box");
