@@ -49,6 +49,8 @@ nav.tabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
 nav.tabs a { padding: 10px 14px; color: var(--muted); text-decoration: none; font-weight: 600; border-bottom: 2px solid transparent; white-space: nowrap; }
 nav.tabs a[aria-current="page"] { color: var(--fg); border-bottom-color: var(--accent); }
 .audience { align-items: center; }
+.audience .note { min-width: 0; }
+.audience button { min-width: 112px; }
 .audience button[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
 button.primary.internal { background: var(--fg); border-color: var(--fg); color: var(--bg); }
 main .wrap { padding-block: 24px 48px; display: grid; gap: 20px; }
@@ -737,7 +739,7 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
     var banner = b ? '<div class="banner' + (b.err ? " err" : "") + '" role="status"><span>' + esc(b.text) + '</span><span class="actions">' + (b.actions || []).map(function (a) { return '<button type="button" class="' + (a.primary ? "primary" : "") + '" data-banner="' + a.id + '">' + esc(a.label) + "</button>"; }).join("") + "</span></div>" : "";
     app.innerHTML = '<header class="top"><div class="wrap"><div class="brand"><div><div class="eyebrow">Pilotage PRINCE2 · ' + esc(m.meta.client.split("|")[0].trim()) + '</div><h1>' + esc(m.meta.projet) + '</h1><div class="sub">Situation au ' + fd(x.sit) + " · chef de projet " + esc(m.meta.chefDeProjet) + " · fin contractuelle " + fd(m.meta.finContrat) + (state.source === "local" ? ' · <strong>classeur importé (vue personnelle)</strong>' : "") + "</div></div>" +
       '<div class="actions"><button type="button" class="primary" data-present="copil">Présenter le COPIL</button><button type="button" class="primary" data-present="coproj">Présenter le COPROJ</button>' +
-      (x.client ? "" : '<button type="button" class="primary internal" data-present="interne">Revue interne</button>') + '<button type="button" data-import="1">Mettre à jour depuis Excel</button></div></div>' +
+      (locked ? "" : '<button type="button" class="primary internal" data-present="interne"' + (x.client ? ' style="visibility:hidden" tabindex="-1" aria-hidden="true"' : "") + '>Revue interne</button>') + '<button type="button" data-import="1">Mettre à jour depuis Excel</button></div></div>' +
       (locked ? "" : '<div class="filters audience" role="group" aria-label="Public"><button type="button" data-aud="interne" aria-pressed="' + (aud === "interne") + '">Vue interne</button><button type="button" data-aud="client" aria-pressed="' + (aud === "client") + '">Vue client</button>' +
         '<span class="note" style="align-self:center">' + (aud === "client" ? "Marge, coûts, charge et éléments internes masqués." : "Toutes les données de l'éditeur sont visibles.") + "</span></div>") +
       '<nav class="tabs" aria-label="Vues">' + nav + "</nav></div></header><main><div class=\"wrap\">" + banner + body + '<p class="note">' + (locked ? "Édition client : les données internes à l'éditeur ne figurent pas dans cette version. " : x.client ? "Vue client : affichage seulement, les données internes restent présentes dans la page. Pour transmettre au client, utilisez l'édition client. " : "") + 'Données issues du classeur « Pilotage PRINCE2 PACS, version éditeur ». Projet fictif présenté à titre d\'exemple.</p></div></main>' +
