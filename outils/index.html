@@ -102,6 +102,7 @@ select[data-v="Connectée"], select[data-v="Développé"] { background: var(--ac
 .wbpanel p { margin: 6px 0; }
 .btnlink { display: inline-flex; align-items: center; font-size: 13px; font-weight: 600; color: var(--accent); text-decoration: none; border: 1px solid var(--line); background: var(--surface); border-radius: 5px; padding: 3px 8px; font-size: 12px; }
 .btnlink:hover { border-color: var(--accent); }
+.chip.wbchip.todo { background: var(--warn-soft); color: var(--warn); }
 .chip.wbchip { background: var(--ok-soft); color: var(--ok); max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .linkb { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 999px; background: var(--ok-soft); color: var(--ok); }
 .chip { font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: var(--warn-soft); color: var(--warn); }
@@ -351,7 +352,7 @@ if (typeof module !== "undefined") module.exports = DEFAULTS;
   function saveDraft() {
     dirty = true;
     try { localStorage.setItem(KEY, JSON.stringify({ basedOn: shared && shared.meta ? shared.meta.savedAt : null, data: S })); } catch (e) {}
-    var chip = document.getElementById("dirty"); if (chip) chip.hidden = false;
+    if (ui.wb && !ui.wbDirty) { ui.wbDirty = true; var chip = document.getElementById("wbchip"); if (chip) { chip.className = "chip wbchip todo"; chip.textContent = wbChipText(); } }
   }
   function loadDraft() {
     try { var raw = localStorage.getItem(KEY); if (!raw) return null; return JSON.parse(raw); } catch (e) { return null; }
@@ -1432,14 +1433,16 @@ if (typeof module !== "undefined") module.exports = DEFAULTS;
     var share = canShare() ? '<button type="button" class="primary" data-act="publish">Publier pour tous</button>' : "";
     var banner = msg ? '<div class="banner ' + (msg.cls || "") + '" role="status"><span>' + esc(msg.text) + '</span><span class="actions">' + (msg.actions || []).map(function (a) { return '<button type="button" class="small ' + (a.primary ? "primary" : "") + '" data-msg="' + a.id + '">' + esc(a.label) + "</button>"; }).join("") + '<button type="button" class="small" data-msg="close">Fermer</button></span></div>' : "";
     var reset = ui.confirmReset ? '<span class="confirm"><span class="note">Effacer tes saisies et revenir à l\'exemple ?</span><button type="button" class="small primary" data-act="reset-yes">Oui, réinitialiser</button><button type="button" class="small" data-act="reset-no">Annuler</button></span>' : '<button type="button" class="small" data-act="reset">Réinitialiser l\'exemple</button>';
-    app.innerHTML = '<header class="top"><div class="in"><div><div class="eyebrow">Projet PACS · ' + esc(S.meta.client) + '</div><h1>Boîte à outils PACS</h1></div><div class="actions"><span class="chip" id="dirty"' + (dirty ? "" : " hidden") + '>Modifications enregistrées dans ce navigateur</span>' + wbHead() + share + '<button type="button" class="small" data-act="copy-data">Copier les données</button>' + reset + "</div></div></header>" + sel +
+    app.innerHTML = '<header class="top"><div class="in"><div><div class="eyebrow">Projet PACS · ' + esc(S.meta.client) + '</div><h1>Boîte à outils PACS</h1></div><div class="actions">' + wbHead() + share + '<button type="button" class="small" data-act="copy-data">Copier les données</button>' + reset + "</div></div></header>" + sel +
       '<div class="layout"><nav class="side" aria-label="Outils">' + side + "</nav><main>" + banner + wbPanel() +
       (t.id !== "accueil" ? '<div class="toolhead"><div class="eyebrow">' + esc(t.g) + "</div><h2>" + esc(t.l) + "</h2><p>" + esc(t.d) + '</p><div style="margin-top:10px">' + exportButtons(t.id) + "</div></div>" : "") + V[t.id].main() + "</main></div>";
     refreshSum();
   }
   var COCKPIT_URL = "../";
+  function wbChipText() { return (ui.wbDirty ? "À enregistrer dans " : "À jour : ") + ui.wb.name; }
+  window.addEventListener("beforeunload", function (e) { if (ui.wb && ui.wbDirty) { e.preventDefault(); e.returnValue = ""; } });
   function wbHead() {
-    return (ui.wb ? '<span class="chip wbchip" title="' + esc(ui.wb.name) + '">Classeur : ' + esc(ui.wb.name) + "</span>" + (ui.wb.hasOT ? '<button type="button" class="small primary" data-act="wb-save">Enregistrer dans le classeur</button>' : "") : "") +
+    return (ui.wb ? '<span class="chip wbchip' + (ui.wbDirty ? " todo" : "") + '" id="wbchip" title="' + esc(ui.wb.name) + '">' + esc(wbChipText()) + "</span>" + (ui.wb.hasOT ? '<button type="button" class="small primary" data-act="wb-save">Enregistrer dans le classeur</button>' : "") : "") +
             (COCKPIT_URL ? '<a class="btnlink small" href="' + esc(COCKPIT_URL) + '" target="_blank" rel="noopener">Cockpit du projet</a>' : "") + '<button type="button" class="small" data-act="wb-panel" aria-expanded="'  + (ui.wbPanel ? "true" : "false") + '">Classeur du projet</button>';
   }
   function wbPanel() {
@@ -1466,7 +1469,7 @@ if (typeof module !== "undefined") module.exports = DEFAULTS;
       S = otMerge(S, res.data);
       ui.wb = { name: f.name, buf: buf, linked: res.linked, hasOT: res.hasOT };
       ui.wbPanel = res.hasOT ? false : true;
-      saveDraft();
+      saveDraft(); ui.wbDirty = false;
       var n = OTS.lists.length + 1 - res.missing.length;
       msg = { cls: "ok", text: res.hasOT ? "Classeur « " + f.name + " » ouvert : " + n + " onglets OT lus" + (res.missing.length ? " (absents : " + res.missing.join(", ") + ")" : "") + ", valeurs de pilotage reprises." : "Classeur « " + f.name + " » ouvert sans onglets OT : nom, client, budget et dates repris du pilotage." };
       render();
@@ -1483,7 +1486,7 @@ if (typeof module !== "undefined") module.exports = DEFAULTS;
       var blob = new Blob([r.bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
       return saveFile(name, blob).then(function () {
         var linked = isNew ? OTS.params.filter(function (p) { return p.link; }).map(function (p) { return p.k; }) : ui.wb.linked;
-        ui.wb = { name: name, buf: r.bytes, linked: linked, hasOT: true }; ui.wbPanel = false;
+        ui.wb = { name: name, buf: r.bytes, linked: linked, hasOT: true }; ui.wbPanel = false; ui.wbDirty = false;
         msg = { cls: "ok", text: isNew ? "Classeur « " + name + " » créé avec les données des outils. Complète ensuite ses onglets de pilotage (planning, budget, risques) dans Excel." : "Classeur enregistré : remplace l'ancien « " + name + " » par le fichier téléchargé." + (r.skipped.length ? " " + r.skipped.length + " valeurs liées au pilotage n'ont pas été touchées." : "") };
         render();
       });
@@ -1551,7 +1554,7 @@ if (typeof module !== "undefined") module.exports = DEFAULTS;
     if (a === "wb-open") { var fi = document.getElementById("wbfile"); if (fi) fi.click(); return; }
     if (a === "wb-save") { if (ui.wb && ui.wb.hasOT) wbWrite(false); return; }
     if (a === "wb-new") { wbWrite(true); return; }
-    if (a === "wb-close") { ui.wb = null; msg = { text: "Classeur fermé. Tes données restent dans ce navigateur.", cls: "ok" }; render(); return; }
+    if (a === "wb-close") { ui.wb = null; ui.wbDirty = false; msg = { text: "Classeur fermé. Tes données restent dans ce navigateur.", cls: "ok" }; render(); return; }
   });
   app.addEventListener("change", function (e) { if (e.target.id === "navsel") location.hash = e.target.value; if (e.target.id === "wbfile") { wbOpenFile(e.target.files && e.target.files[0]); e.target.value = ""; } });
 
