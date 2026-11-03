@@ -181,6 +181,18 @@ function parseWorkbook(wb) {
     for (var r = r1; r <= r2; r++) { if (txt(sh, key + r) !== "") out.push(fn(r)); }
     return out;
   }
+  /* Repérage des tableaux par leurs en-têtes : des lignes insérées dans Excel ne décalent pas la lecture. */
+  function lastRow(sh) { var ref = S(sh)["!ref"], mm = ref && ref.match(/(\d+)$/); return mm ? +mm[1] : 0; }
+  function findRow(sh, col, text, from, prefix) {
+    for (var r = from || 1, n = lastRow(sh); r <= n; r++) { var t = txt(sh, col + r); if (prefix ? t.indexOf(text) === 0 : t === text) return r; }
+    return 0;
+  }
+  function span(sh, col, header, defA, defB, endCol, endText, from) {
+    var h = findRow(sh, col, header, from); if (!h) return [defA, defB];
+    var end = endText ? findRow(sh, endCol || col, endText, h + 1, true) : 0;
+    return [h + 1, end ? end - 1 : Math.max(lastRow(sh), h + 1)];
+  }
+  function trows(sh, sp, key, fn) { return rows(sh, sp[0], sp[1], key, fn); }
   var A = "Accueil", T = "Tableau de bord";
   var m = {
     version: 1,
@@ -199,78 +211,79 @@ function parseWorkbook(wb) {
     r = 7 + i; var TO = "Tolérances";
     m.tolerances.push({ dimension: txt(TO, "A" + r), indicateur: txt(TO, "B" + r), tolerance: num(TO, "C" + r), actuel: num(TO, "D" + r), consommee: num(TO, "E" + r), etat: txt(TO, "F" + r), action: txt(TO, "G" + r) });
   }
-  m.planning = rows("Planning", 6, 85, "C", function (r) {
+  m.planning = trows("Planning", span("Planning", "A", "ID", 6, 85), "C", function (r) {
     var P = "Planning";
     return { id: txt(P, "A" + r), sequence: txt(P, "B" + r), tache: txt(P, "C" + r), responsable: txt(P, "D" + r), debut: dt(P, "E" + r), fin: dt(P, "F" + r),
       duree: num(P, "G" + r), jalon: txt(P, "H" + r) === "Oui", reel: num(P, "I" + r), prevu: num(P, "J" + r), statut: txt(P, "L" + r) };
   });
-  m.risques = rows("Risques", 6, 65, "C", function (r) {
+  m.risques = trows("Risques", span("Risques", "A", "ID", 6, 65), "C", function (r) {
     var R = "Risques";
     return { id: txt(R, "A" + r), date: dt(R, "B" + r), description: txt(R, "C" + r), categorie: txt(R, "D" + r), probabilite: num(R, "E" + r), impact: num(R, "F" + r),
       criticite: num(R, "G" + r), niveau: txt(R, "H" + r), proprietaire: txt(R, "I" + r), reponse: txt(R, "J" + r), actions: txt(R, "K" + r), echeance: dt(R, "L" + r), statut: txt(R, "M" + r), diffusion: txt(R, "N" + r) || "Partagé" };
   });
-  m.points = rows("Points", 6, 65, "D", function (r) {
+  m.points = trows("Points", span("Points", "A", "ID", 6, 65), "D", function (r) {
     var P = "Points";
     return { id: txt(P, "A" + r), date: dt(P, "B" + r), type: txt(P, "C" + r), description: txt(P, "D" + r), emisPar: txt(P, "E" + r), priorite: txt(P, "F" + r),
       niveau: txt(P, "G" + r), impactDelai: num(P, "H" + r), montant: num(P, "I" + r), statut: txt(P, "J" + r), decision: txt(P, "K" + r), diffusion: txt(P, "L" + r) || "Partagé" };
   });
-  if (wb.Sheets["Produits"]) m.produits = rows("Produits", 6, 45, "B", function (r) {
+  if (wb.Sheets["Produits"]) m.produits = trows("Produits", span("Produits", "A", "ID", 6, 45), "B", function (r) {
     var P = "Produits";
     return { id: txt(P, "A" + r), produit: txt(P, "B" + r), type: txt(P, "C" + r), sequence: txt(P, "D" + r), criteres: txt(P, "E" + r), methode: txt(P, "F" + r),
       producteur: txt(P, "G" + r), approbateur: txt(P, "H" + r), datePrevue: dt(P, "I" + r), statut: txt(P, "J" + r), approuveLe: dt(P, "K" + r) };
   });
-  var B = "Budget";
+  var B = "Budget", bsp = span(B, "A", "Poste de coût", 6, 30, "A", "TOTAL"), bt = bsp[1] + 1;
+  var bl = function (label, def) { var r = findRow(B, "A", label, bt, true); return num(B, "D" + (r || def)); };
   m.budget = {
-    lignes: rows(B, 6, 30, "A", function (r) {
+    lignes: trows(B, bsp, "A", function (r) {
       return { poste: txt(B, "A" + r), categorie: txt(B, "B" + r), sequence: txt(B, "C" + r), initial: num(B, "D" + r), prevision: num(B, "E" + r),
         engage: num(B, "F" + r), realise: num(B, "G" + r), ecart: num(B, "H" + r), commentaire: txt(B, "K" + r) };
     }),
-    total: { initial: num(B, "D31"), prevision: num(B, "E31"), engage: num(B, "F31"), realise: num(B, "G31"), ecart: num(B, "H31") },
-    marge: { ca: num(B, "D34"), marche: num(B, "D35"), coutInitial: num(B, "D36"), coutPrevu: num(B, "D37"), initiale: num(B, "D38"), prevue: num(B, "D39"), ecart: num(B, "D40"), cible: num(B, "D41") }
+    total: { initial: num(B, "D" + bt), prevision: num(B, "E" + bt), engage: num(B, "F" + bt), realise: num(B, "G" + bt), ecart: num(B, "H" + bt) },
+    marge: { ca: bl("Chiffre d'affaires", 34), marche: bl("dont marché initial", 35), coutInitial: bl("Coût initial", 36), coutPrevu: bl("Coût prévu", 37), initiale: bl("Marge initiale", 38), prevue: bl("Marge prévue", 39), ecart: bl("Écart", 40), cible: bl("Marge cible", 41) }
   };
-  var RS = "Ressources", cols = "LMNOPQRS".split("");
+  var RS = "Ressources", cols = "LMNOPQRS".split(""), rsp = span(RS, "A", "Ressource", 6, 25, "A", "TOTAL"), rh = rsp[0] - 1, rt = rsp[1] + 1;
   m.ressources = {
-    mois: cols.map(function (c) { return dt(RS, c + "5"); }),
-    lignes: rows(RS, 6, 25, "A", function (r) {
+    mois: cols.map(function (c) { return dt(RS, c + rh); }),
+    lignes: trows(RS, rsp, "A", function (r) {
       return { ressource: txt(RS, "A" + r), profil: txt(RS, "B" + r), cout: num(RS, "C" + r), vendus: num(RS, "D" + r), consommes: num(RS, "E" + r), reste: num(RS, "F" + r),
         prevision: num(RS, "G" + r), ecart: num(RS, "H" + r), plan: cols.map(function (c) { return num(RS, c + r) || 0; }) };
     }),
-    total: { vendus: num(RS, "D26"), consommes: num(RS, "E26"), reste: num(RS, "F26"), prevision: num(RS, "G26"), ecart: num(RS, "H26"), coutInitial: num(RS, "I26"), coutPrevu: num(RS, "J26") }
+    total: { vendus: num(RS, "D" + rt), consommes: num(RS, "E" + rt), reste: num(RS, "F" + rt), prevision: num(RS, "G" + rt), ecart: num(RS, "H" + rt), coutInitial: num(RS, "I" + rt), coutPrevu: num(RS, "J" + rt) }
   };
-  var F = "Facturation";
+  var F = "Facturation", fsp = span(F, "A", "ID", 6, 25, "B", "Total facturable"), ft = function (label, def) { var r = findRow(F, "B", label, fsp[1] + 1, true); return num(F, "E" + (r || def)); };
   m.facturation = {
-    marche: num(F, "C3"),
-    jalons: rows(F, 6, 25, "B", function (r) {
+    marche: num(F, "C" + (findRow(F, "B", "Montant du marché", 1, true) || 3)),
+    jalons: trows(F, fsp, "B", function (r) {
       return { id: txt(F, "A" + r), jalon: txt(F, "B" + r), declencheur: txt(F, "C" + r), sequence: txt(F, "D" + r), montant: num(F, "E" + r), part: num(F, "F" + r),
         datePrevue: dt(F, "G" + r), datePV: dt(F, "H" + r), statut: txt(F, "I" + r), factureLe: dt(F, "J" + r), payeLe: dt(F, "K" + r), retard: num(F, "L" + r) };
     }),
-    total: num(F, "E26"), facture: num(F, "E27"), encaisse: num(F, "E28"), reste: num(F, "E29")
+    total: ft("Total facturable", 26), facture: ft("Facturé", 27), encaisse: ft("Encaissé", 28), reste: ft("Reste à facturer", 29)
   };
-  if (wb.Sheets["Décisions"]) m.decisions = rows("Décisions", 6, 55, "E", function (r) {
+  if (wb.Sheets["Décisions"]) m.decisions = trows("Décisions", span("Décisions", "A", "ID", 6, 55), "E", function (r) {
     var D = "Décisions";
     return { id: txt(D, "A" + r), date: dt(D, "B" + r), instance: txt(D, "C" + r), sequence: txt(D, "D" + r), texte: txt(D, "E" + r), responsable: txt(D, "F" + r), echeance: dt(D, "G" + r), statut: txt(D, "H" + r) };
   });
-  if (wb.Sheets["Leçons"]) m.lecons = rows("Leçons", 6, 45, "E", function (r) {
+  if (wb.Sheets["Leçons"]) m.lecons = trows("Leçons", span("Leçons", "A", "ID", 6, 45), "E", function (r) {
     var L = "Leçons";
     return { id: txt(L, "A" + r), date: dt(L, "B" + r), source: txt(L, "C" + r), sequence: txt(L, "D" + r), constat: txt(L, "E" + r), recommandation: txt(L, "F" + r) };
   });
   if (wb.Sheets["Organisation"]) {
-    var O = "Organisation", raciRoles = "GHIJKLM".split("");
+    var O = "Organisation", raciRoles = "GHIJKLM".split(""), oh = findRow(O, "A", "Rôle PRINCE2") || 5, ih = findRow(O, "A", "Instance", oh + 1) || 16, isec = findRow(O, "A", "Instances", oh + 1, true), oend = (isec || ih) - 1;
     m.organisation = {
-      roles: rows(O, 6, 13, "A", function (r) { return { role: txt(O, "A" + r), instance: txt(O, "B" + r), titulaire: txt(O, "C" + r), responsabilites: txt(O, "D" + r) }; }),
-      instances: rows(O, 17, 21, "A", function (r) { return { instance: txt(O, "A" + r), membres: txt(O, "B" + r), frequence: txt(O, "C" + r), role: txt(O, "D" + r) }; }),
+      roles: rows(O, oh + 1, oend, "A", function (r) { return { role: txt(O, "A" + r), instance: txt(O, "B" + r), titulaire: txt(O, "C" + r), responsabilites: txt(O, "D" + r) }; }),
+      instances: rows(O, ih + 1, Math.max(lastRow(O), ih + 1), "A", function (r) { return { instance: txt(O, "A" + r), membres: txt(O, "B" + r), frequence: txt(O, "C" + r), role: txt(O, "D" + r) }; }),
       raci: {
-        roles: raciRoles.map(function (c) { return txt(O, c + "5"); }),
-        activites: rows(O, 6, 13, "F", function (r) { return { activite: txt(O, "F" + r), valeurs: raciRoles.map(function (c) { return txt(O, c + r); }) }; })
+        roles: raciRoles.map(function (c) { return txt(O, c + oh); }),
+        activites: rows(O, oh + 1, oend, "F", function (r) { return { activite: txt(O, "F" + r), valeurs: raciRoles.map(function (c) { return txt(O, c + r); }) }; })
       }
     };
   }
   if (wb.Sheets["Business case"]) {
     var BC = "Business case";
     m.businessCase = {
-      raisons: txt(BC, "B5"),
-      benefices: rows(BC, 17, 25, "B", function (r) { return { benefice: txt(BC, "B" + r), indicateur: txt(BC, "C" + r), reference: txt(BC, "D" + r), cible: txt(BC, "E" + r), echeance: dt(BC, "F" + r), atteinte: num(BC, "G" + r), proprietaire: txt(BC, "H" + r) }; }),
-      revues: rows(BC, 35, 44, "D", function (r) { return { date: dt(BC, "B" + r), instance: txt(BC, "C" + r), sequence: txt(BC, "D" + r), justifie: txt(BC, "E" + r), commentaire: txt(BC, "F" + r) }; })
+      raisons: txt(BC, "B" + ((findRow(BC, "B", "Raisons", 1, true) || 4) + 1)),
+      benefices: trows(BC, span(BC, "B", "Bénéfice", 20, 31, "B", "Atteinte moyenne"), "B", function (r) { return { benefice: txt(BC, "B" + r), indicateur: txt(BC, "C" + r), reference: txt(BC, "D" + r), cible: txt(BC, "E" + r), echeance: dt(BC, "F" + r), atteinte: num(BC, "G" + r), proprietaire: txt(BC, "H" + r) }; }),
+      revues: trows(BC, span(BC, "B", "Date", 41, 50, null, null, findRow(BC, "B", "Revues de justification", 1, true) || 1), "D", function (r) { return { date: dt(BC, "B" + r), instance: txt(BC, "C" + r), sequence: txt(BC, "D" + r), justifie: txt(BC, "E" + r), commentaire: txt(BC, "F" + r) }; })
     };
   }
   var RP = "Doc Rapport de point", EX = "Doc Exception", CR = "Doc Compte rendu";
