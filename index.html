@@ -149,6 +149,8 @@ input[type="range"] { accent-color: var(--accent); }
 /* Lit le classeur « Pilotage PRINCE2 PACS — version éditeur » et produit le modèle du projet.
    Utilisé tel quel dans le navigateur (import d'un classeur) et dans Node (génération des données). */
 function parseWorkbook(wb) {
+  if (wb.Sheets["Budget"] && !wb.Sheets["Ressources"] && !wb.Sheets["Facturation"])
+    throw new Error("Ce classeur est la version hôpital du pilotage PRINCE2 (sans marge, ressources ni facturation). Le cockpit lit la version éditeur : choisissez « Pilotage-PRINCE2-PACS-Editeur-Exemple.xlsx » ou l'un des deux scénarios « Scenario-Projet-… ».");
   var need = ["Accueil", "Tableau de bord", "Planning", "Risques", "Points", "Budget", "Ressources", "Facturation", "Tolérances"];
   need.forEach(function (n) {
     if (!wb.Sheets[n]) throw new Error("Onglet « " + n + " » introuvable : ce classeur n'est pas la version éditeur du pilotage PRINCE2.");
