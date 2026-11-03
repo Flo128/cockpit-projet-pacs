@@ -71,6 +71,12 @@ main .wrap { padding-block: 24px 48px; display: grid; gap: 20px; }
 .kpi .l { font-size: 12px; color: var(--muted); }
 .kpis.ot { background: none; border: 0; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
 .kpis.ot .kpi { border: 1px solid var(--line); border-radius: var(--radius); }
+.mflow { width: 100%; max-width: 720px; height: auto; display: block; margin: 0 auto 6px; }
+.mtext { margin: 8px 0 0; max-width: 80ch; }
+.mlist { margin: 0; padding-left: 18px; display: grid; gap: 8px; max-width: 90ch; }
+a.mlink { color: var(--accent); font-weight: 600; text-decoration: none; white-space: nowrap; }
+a.mlink:hover { text-decoration: underline; }
+select.demo { font: inherit; font-weight: 600; padding: 7px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); max-width: 100%; }
 .wbstate { align-self: center; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: var(--ok-soft); color: var(--ok); }
 .wbstate.todo { background: var(--warn-soft); color: var(--warn); }
 .tabs a.tab-ot { margin-left: auto; }
@@ -359,7 +365,7 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
 (function () {
   "use strict";
   var state = { ganttLW: (function () { try { var v = parseInt(localStorage.getItem("ganttLW"), 10); return v >= 160 && v <= 700 ? v : 330; } catch (e) { return 330; } })(), audience: (function () { try { return localStorage.getItem("audience") === "client" ? "client" : "interne"; } catch (e) { return "interne"; } })(), model: null, view: "synthese", deck: null, slide: 0, filtreRisques: "ouverts", filtrePoints: "ouverts", seqFiltre: "", source: "publie", banner: null };
-  var VIEWS = [["synthese", "Synthèse"], ["planning", "Planning"], ["risques", "Risques"], ["points", "Points et décisions"], ["finances", "Marge et facturation"], ["gouvernance", "Gouvernance"]];
+  var VIEWS = [["synthese", "Synthèse"], ["planning", "Planning"], ["risques", "Risques"], ["points", "Points et décisions"], ["finances", "Marge et facturation"], ["gouvernance", "Gouvernance"], ["methode", "Méthode"]];
   var app = document.getElementById("app");
 
   /* ---------- outils ---------- */
@@ -688,6 +694,50 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
       b.lignes.map(function (l) { return "<tr><td>" + esc(l.poste) + "</td><td>" + esc(l.categorie) + '</td><td class="num">' + eur(l.initial) + '</td><td class="num">' + eur(l.prevision) + '</td><td class="num">' + eur(l.engage) + '</td><td class="num" style="color:' + ((l.ecart || 0) > 0 ? "var(--warn)" : "inherit") + '">' + ((l.ecart || 0) > 0 ? "+" : "") + eur(l.ecart) + '</td><td class="note">' + esc(l.commentaire) + "</td></tr>"; }).join("") +
       '<tr><td><strong>Total</strong></td><td></td><td class="num"><strong>' + eur(b.total.initial) + '</strong></td><td class="num"><strong>' + eur(b.total.prevision) + '</strong></td><td class="num"><strong>' + eur(b.total.engage) + '</strong></td><td class="num"><strong>+' + eur(b.total.ecart) + "</strong></td><td></td></tr></tbody></table></div></section>";
   }
+  function viewMethode(m, x) {
+    var L = function (h, t) { return '<a class="mlink" href="#' + h + '">' + esc(t) + "</a>"; };
+    var row = function (a, b, c) { return "<tr><td><strong>" + a + "</strong></td><td>" + b + "</td><td>" + c + "</td></tr>"; };
+    var tbl = function (h, rows) { return '<div class="tablewrap"><table><thead><tr><th>' + h[0] + "</th><th>" + h[1] + "</th><th>" + h[2] + "</th></tr></thead><tbody>" + rows.join("") + "</tbody></table></div>"; };
+    var ot = OUTILS_URL === "#outils";
+    var flow = '<svg class="mflow" viewBox="0 0 720 170" role="img" aria-label="Le classeur Excel du projet alimente le cockpit et la boîte à outils">' +
+      '<rect x="250" y="10" width="220" height="60" rx="8" fill="var(--accent-soft)" stroke="var(--accent)"/><text x="360" y="36" text-anchor="middle" font-weight="700" fill="var(--fg)" font-size="14">Classeur Excel du projet</text><text x="360" y="56" text-anchor="middle" fill="var(--muted)" font-size="12">registres PRINCE2 + onglets OT</text>' +
+      '<rect x="40" y="110" width="250" height="52" rx="8" fill="var(--surface)" stroke="var(--line)"/><text x="165" y="132" text-anchor="middle" font-weight="700" fill="var(--fg)" font-size="13">Cockpit</text><text x="165" y="150" text-anchor="middle" fill="var(--muted)" font-size="11">gouvernance : COPIL, COPROJ, revue interne</text>' +
+      '<rect x="430" y="110" width="250" height="52" rx="8" fill="var(--surface)" stroke="var(--line)"/><text x="555" y="132" text-anchor="middle" font-weight="700" fill="var(--fg)" font-size="13">Boîte à outils</text><text x="555" y="150" text-anchor="middle" fill="var(--muted)" font-size="11">terrain : DICOM, migration, recette, bascule</text>' +
+      '<path d="M310 70 L190 108 M410 70 L530 108" stroke="var(--accent)" stroke-width="2" fill="none"/><path d="M470 40 C 650 40 650 100 600 108" stroke="var(--muted)" stroke-dasharray="4 4" fill="none"/><text x="640" y="60" fill="var(--muted)" font-size="11">enregistre</text></svg>';
+    return '<section class="panel"><h2>Le principe <small>un projet = un classeur</small></h2>' + flow +
+      '<p class="mtext">Chaque projet a <strong>un seul classeur Excel</strong> : c\'est la référence. Le <strong>cockpit</strong> le lit pour les comités et la gestion par exception ; la <strong>boîte à outils</strong> y lit et y écrit les données techniques du déploiement. Les deux affichent toujours le même projet.</p></section>' +
+      '<section class="panel"><h2>Les 7 principes PRINCE2 dans l\'outil</h2>' + tbl(["Principe", "Ce que ça veut dire ici", "Où le voir"], [
+        row("1. Justification continue", "L'affaire doit rester rentable et utile à chaque fin de séquence : marge, satisfaction, référence.", L("finances", "Marge et facturation") + " · onglet Business case"),
+        row("2. Tirer les leçons", "Les leçons des projets PACS précédents sont reprises dès le lancement (migration sous-estimée, prérequis tardifs).", "Onglet Leçons · " + L("gouvernance", "Gouvernance")),
+        row("3. Rôles définis", "Exécutif, utilisateur principal, fournisseur principal, chef de projet, côté éditeur et côté client, avec une matrice RACI.", L("gouvernance", "Gouvernance")),
+        row("4. Gestion par séquences", "Sept séquences, de l'élaboration à la clôture ; le COPIL autorise chaque séquence suivante.", L("planning", "Planning") + " · " + L("synthese", "Synthèse")),
+        row("5. Gestion par exception", "Six tolérances fixées avec le COPIL (délai, marge, charge, périmètre, qualité, risques). Au rouge : rapport d'exception.", L("synthese", "Synthèse") + " · onglet Doc Exception"),
+        row("6. Orientation produit", "Chaque livrable a ses critères qualité et son approbateur ; les PV d'installation, de VA et de VSR déclenchent la facturation.", "Onglet Produits · " + L("finances", "Facturation")),
+        row("7. Adaptation au contexte", "PRINCE2 adapté à un déploiement PACS chez un client : prérequis, migration d'archives, recette, bascule de week-end.", ot ? L("outils", "Boîte à outils") : "Boîte à outils")
+      ]) + "</section>" +
+      '<div class="grid g2"><section class="panel"><h2>Les thèmes</h2>' + tbl(["Thème", "Outil", "Où"], [
+        row("Business case", "Options, bénéfices, revues de justification", "Onglet Business case"),
+        row("Organisation", "Rôles, instances, RACI", L("gouvernance", "Gouvernance")),
+        row("Qualité", "Produits, cahier de recette, PV", "Onglet Produits · " + (ot ? L("outils/recette", "Cahier de recette") : "Cahier de recette")),
+        row("Plans", "Planning, Gantt, jalons, plan de charge", L("planning", "Planning")),
+        row("Risques", "Registre P × I, réponses, propriétaires", L("risques", "Risques")),
+        row("Changements", "Points, avenants chiffrés", L("points", "Points et décisions") + (ot ? " · " + L("outils/avenant", "Simulateur d'avenant") : "")),
+        row("Progression", "Tolérances, météo, rapports", L("synthese", "Synthèse"))
+      ]) + "</section>" +
+      '<section class="panel"><h2>Les instances et leurs supports</h2>' + tbl(["Instance", "Rythme", "Support"], [
+        row("COPROJ", "Chaque semaine", "Présentation COPROJ (vue client) · " + (ot ? L("outils/semaine", "Cette semaine") : "Cette semaine")),
+        row("COPIL", "Fin de séquence", "Présentation COPIL (vue client) · Doc Fin de séquence"),
+        row("Revue interne", "Chaque mois", "Présentation revue interne : marge, charge, facturation"),
+        row("Exception", "Dès qu'une tolérance passe au rouge", "Doc Exception : cause, options, recommandation"),
+        row("Comité technique", "Toutes les 2 semaines", ot ? L("outils/flux", "Matrice des flux") + ", " + L("outils/modalites", "inventaire des modalités") : "Boîte à outils")
+      ]) + "</section></div>" +
+      '<section class="panel"><h2>Le rôle du chef de projet éditeur</h2><ul class="mlist">' +
+        "<li><strong>Livrer dans les tolérances</strong> : délai, qualité et périmètre du CCTP, sans interrompre le service d'imagerie du client.</li>" +
+        "<li><strong>Protéger la marge</strong> : charge suivie chaque semaine, toute demande hors périmètre chiffrée en avenant.</li>" +
+        "<li><strong>Tenir le client sur ses prérequis</strong> : salle serveur, réseau, interfaces des autres éditeurs ; un prérequis en retard décale un PV.</li>" +
+        "<li><strong>Facturer à l'heure</strong> : chaque PV signé déclenche un jalon de facturation.</li>" +
+        "<li><strong>Dire les choses au bon niveau</strong> : la vue client montre l'avancement et les risques partagés ; la marge et les risques internes restent en revue interne.</li></ul></section>";
+  }
   function viewGouvernance(m, x) {
     var o = m.organisation || { roles: [], instances: [], raci: { roles: [], activites: [] } };
     var raciCls = { A: "crit", R: "info", C: "warn", I: "" };
@@ -817,15 +867,17 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
     var x = derive(m, aud);
     if (x.client && state.view === "finances") state.view = "synthese";
     var SUITE = OUTILS_URL === "#outils" && !locked, onOT = SUITE && state.onOutils;
-    var nav = VIEWS.filter(function (v) { return !(x.client && v[0] === "finances"); }).map(function (v) { return '<a href="#' + v[0] + '"' + (!onOT && state.view === v[0] ? ' aria-current="page"' : "") + ">" + v[1] + "</a>"; }).join("") +
+    if (locked && state.view === "methode") state.view = "synthese";
+    var nav = VIEWS.filter(function (v) { return !(x.client && v[0] === "finances") && !(locked && v[0] === "methode"); }).map(function (v) { return '<a href="#' + v[0] + '"' + (!onOT && state.view === v[0] ? ' aria-current="page"' : "") + ">" + v[1] + "</a>"; }).join("") +
       (SUITE ? '<a href="#outils" class="tab-ot"' + (onOT ? ' aria-current="page"' : "") + ">Boîte à outils</a>" : "");
-    var body = onOT ? "" : { synthese: viewSynthese, planning: viewPlanning, risques: viewRisques, points: viewPoints, finances: viewFinances, gouvernance: viewGouvernance }[state.view](m, x);
+    var body = onOT ? "" : { synthese: viewSynthese, planning: viewPlanning, risques: viewRisques, points: viewPoints, finances: viewFinances, gouvernance: viewGouvernance, methode: viewMethode }[state.view](m, x);
     var b = state.banner;
     var cur = SUITE && window.PACS ? window.PACS.current() : null;
     var wbCtl = SUITE
       ? (state.wbName ? '<span class="wbstate' + (cur && cur.dirty ? " todo" : "") + '" title="' + esc(state.wbName) + '">' + (cur && cur.dirty ? "Modifications à enregistrer" : "Classeur à jour") + "</span>" +
           (cur && cur.dirty ? '<button type="button" class="primary" data-savewb="1">Enregistrer dans le classeur</button>' : "") +
           '<button type="button" data-closewb="1">Fermer le classeur</button>' : "") +
+        (window.PACS_DEMOS ? '<select class="demo" data-demo="1" aria-label="Charger un projet d\'exemple"><option value="">Projet d\'exemple…</option>' + Object.keys(window.PACS_DEMOS).map(function (k) { return '<option value="' + k + '"' + (state.wbName === window.PACS_DEMOS[k].name ? " selected" : "") + ">" + esc(window.PACS_DEMOS[k].label) + "</option>"; }).join("") + "</select>" : "") +
         '<button type="button"' + (state.wbName ? "" : ' class="primary"') + ' data-import="1">' + (state.wbName ? "Ouvrir un autre classeur" : "Ouvrir le classeur du projet") + "</button>"
       : null;
     var banner = b ? '<div class="banner' + (b.err ? " err" : "") + '" role="status"><span>' + esc(b.text) + '</span><span class="actions">' + (b.actions || []).map(function (a) { return '<button type="button" class="' + (a.primary ? "primary" : "") + '" data-banner="' + a.id + '">' + esc(a.label) + "</button>"; }).join("") + "</span></div>" : "";
@@ -902,6 +954,18 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
     if (save) { try { localStorage.setItem("ganttLW", String(state.ganttLW)); } catch (e) {} }
   }
   app.addEventListener("input", function (e) { if (e.target.id === "lw") setLW(+e.target.value, true); });
+  app.addEventListener("change", function (e) { if (e.target.dataset && e.target.dataset.demo) { var k = e.target.value; if (k) loadDemo(k, false); } });
+  function loadDemo(k, force) {
+    var d = window.PACS_DEMOS && window.PACS_DEMOS[k]; if (!d) return;
+    var c0 = window.PACS && window.PACS.current();
+    if (c0 && c0.dirty && !force) { state.banner = { text: "La boîte à outils a des modifications pas encore enregistrées dans « " + c0.name + " ». Charger l'exemple quand même ?", actions: [{ id: "demo:" + k, label: "Charger quand même", primary: true }, { id: "dismiss", label: "Annuler" }] }; render(); return; }
+    var bin = atob(d.b64), bytes = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    state.banner = { text: "Chargement de l'exemple…" }; render();
+    loadBuffer(bytes, d.name, "cockpit").then(function () {
+      if (window.PACS) window.PACS.open(bytes, d.name, "cockpit");
+      state.banner = { text: "Projet d'exemple chargé : " + d.label + ". Le cockpit et la boîte à outils l'utilisent tous les deux.", actions: [{ id: "dismiss", label: "Fermer" }] }; render();
+    }).catch(function (err) { state.banner = { err: true, text: err.message || String(err), actions: [{ id: "dismiss", label: "Fermer" }] }; render(); });
+  }
   app.addEventListener("pointerdown", function (e) {
     if (!e.target.classList || !e.target.classList.contains("gantt-handle")) return;
     e.preventDefault();
@@ -947,6 +1011,7 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
   });
   function onBanner(id) {
     if (id === "dismiss") { state.banner = null; render(); return; }
+    if (id.indexOf("demo:") === 0) { state.banner = null; loadDemo(id.slice(5), true); return; }
     if (id === "importforce") { state.banner = null; render(); document.getElementById("xlsx-input").click(); return; }
     if (id === "closewb") { if (window.PACS) window.PACS.close("cockpit"); closeWorkbook(); }
   }
