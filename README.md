@@ -10,7 +10,7 @@ Une seule page pour piloter un déploiement de PACS côté éditeur (projet fict
 
 ## Boîte à outils PACS (`#outils`)
 
-Une vue « Cette semaine » (planning et actions du classeur, prérequis, formation, bascule, compte rendu, retards) et 13 outils pour un déploiement PACS : stockage (cache) et archivage, estimateur de migration, prérequis client, inventaire des modalités, plan d'adressage DICOM, matrice des flux, cahier de recette, chronogramme de bascule (mode jour J), suivi de migration, plan de formation, guides de démarrage, générateur de compte rendu, simulateur d'avenant. Chaque outil exporte un document Excel ou PDF (client ou interne). Les saisies sont enregistrées dans le navigateur, puis dans les onglets OT du classeur avec « Enregistrer dans le classeur ». L'ancienne adresse `outils/` redirige vers `#outils`.
+Une vue « Cette semaine » (planning et actions du classeur, prérequis, formation, bascule, compte rendu, retards) et 13 outils pour un déploiement PACS : stockage (cache) et archivage, estimateur de migration, prérequis client, inventaire des modalités, plan d'adressage DICOM, matrice des flux, cahier de recette, chronogramme de bascule (mode jour J), suivi de migration, plan de formation, guides de démarrage, plan d'assurance qualité (export Word, PDF, Excel), générateur de compte rendu, simulateur d'avenant. Chaque outil exporte un document Excel ou PDF (client ou interne). Les saisies sont enregistrées dans le navigateur, puis dans les onglets OT du classeur avec « Enregistrer dans le classeur ». L'ancienne adresse `outils/` redirige vers `#outils`.
 
 ## Un classeur Excel par projet (`classeurs/`)
 
