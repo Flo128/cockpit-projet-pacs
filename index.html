@@ -48,6 +48,7 @@ body { margin: 0; background: var(--shell-bg); }
 #app-ck .eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
 #app-ck .sub { color: var(--muted); margin-top: 2px; }
 #app-ck .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+#app-ck .themebtn { display: inline-flex; align-items: center; justify-content: center; width: 36px; padding: 0; }
 #app-ck button, #app-ck .btn { font: inherit; font-weight: 600; border-radius: 6px; padding: 8px 14px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; }
 #app-ck button:hover { border-color: var(--accent); }
 #app-ck button:focus-visible, #app-ck a:focus-visible, #app-ck input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -643,6 +644,15 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
 <script>
 (function () {
   "use strict";
+
+  function isDark() { var a = document.documentElement.getAttribute("data-theme"); return a ? a === "dark" : !!(window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches); }
+  (function () { try { var t0 = localStorage.getItem("pacs-theme"); if (t0 === "dark" || t0 === "light") document.documentElement.setAttribute("data-theme", t0); } catch (err) {} })();
+  function themeBtn() {
+    var d = isDark();
+    var sun = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>';
+    var moon = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7z"/></svg>';
+    return '<button type="button" class="themebtn" data-theme-toggle="1" data-theme="1" title="' + (d ? "Passer en mode clair" : "Passer en mode sombre") + '" aria-label="' + (d ? "Passer en mode clair" : "Passer en mode sombre") + '">' + (d ? sun : moon) + "</button>";
+  }
   var state = { ganttLW: (function () { try { var v = parseInt(localStorage.getItem("ganttLW"), 10); return v >= 160 && v <= 700 ? v : 330; } catch (e) { return 330; } })(), audience: (function () { try { return localStorage.getItem("audience") === "client" ? "client" : "interne"; } catch (e) { return "interne"; } })(), model: null, view: "synthese", deck: null, slide: 0, filtreRisques: "ouverts", filtrePoints: "ouverts", seqFiltre: "", source: "publie", banner: null };
   var VIEWS = [["synthese", "Synthèse"], ["planning", "Planning"], ["risques", "Risques"], ["points", "Points et décisions"], ["finances", "Marge et facturation"], ["gouvernance", "Gouvernance"], ["methode", "Méthode"]];
   var app = document.getElementById("app-ck");
@@ -1169,7 +1179,7 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
       : null;
     var banner = b ? '<div class="banner' + (b.err ? " err" : "") + '" role="status"><span>' + esc(b.text) + '</span><span class="actions">' + (b.actions || []).map(function (a) { return '<button type="button" class="' + (a.primary ? "primary" : "") + '" data-banner="' + a.id + '">' + esc(a.label) + "</button>"; }).join("") + "</span></div>" : "";
     app.innerHTML = '<header class="top"><div class="wrap"><div class="brand"><div><div class="eyebrow">Pilotage PRINCE2 · ' + esc(m.meta.client.split("|")[0].trim()) + '</div><h1>' + esc(m.meta.projet) + '</h1><div class="sub">Situation au ' + fd(x.sit) + " · chef de projet " + esc(m.meta.chefDeProjet) + " · fin contractuelle " + fd(m.meta.finContrat) + (state.wbName ? ' · <strong>classeur « ' + esc(state.wbName) + " »</strong>" : state.source === "local" ? ' · <strong>classeur importé (vue personnelle)</strong>' : "") + "</div></div>" +
-      '<div class="actions">' + (wbCtl !== null ? wbCtl : (OUTILS_URL && !locked ? '<a class="btnlink" href="' + esc(OUTILS_URL) + '"' + (OUTILS_URL.charAt(0) === "#" ? "" : ' target="_blank" rel="noopener"') + ">Boîte à outils</a>" : "") + (state.wbName && !locked ? '<button type="button" data-closewb="1">Fermer le classeur</button>' : "") + '<button type="button" data-import="1">' + (locked ? "Mettre à jour depuis Excel" : "Ouvrir le classeur du projet") + '</button>') + '</div></div>' +
+      '<div class="actions">' + (wbCtl !== null ? wbCtl : (OUTILS_URL && !locked ? '<a class="btnlink" href="' + esc(OUTILS_URL) + '"' + (OUTILS_URL.charAt(0) === "#" ? "" : ' target="_blank" rel="noopener"') + ">Boîte à outils</a>" : "") + (state.wbName && !locked ? '<button type="button" data-closewb="1">Fermer le classeur</button>' : "") + '<button type="button" data-import="1">' + (locked ? "Mettre à jour depuis Excel" : "Ouvrir le classeur du projet") + '</button>') + themeBtn() + '</div></div>' +
       (onOT ? "" : '<div class="filters audience" role="group" aria-label="Public et présentations">' +
       (locked ? "" : '<span class="seg"><button type="button" data-aud="interne" aria-pressed="' + (aud === "interne") + '">Vue interne</button><button type="button" data-aud="client" aria-pressed="' + (aud === "client") + '">Vue client</button></span>') +
       (x.client ? '<button type="button" class="primary" data-present="copil">Présenter le COPIL</button><button type="button" class="primary" data-present="coproj">Présenter le COPROJ</button>'
@@ -1212,6 +1222,7 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
       else if (a === "full") { try { var el = document.documentElement; if (document.fullscreenElement) document.exitFullscreen(); else if (el.requestFullscreen) el.requestFullscreen().then(fitSlide, function () {}); } catch (err) {} return; }
       render(); return;
     }
+    if (t.dataset.theme) { var nt = isDark() ? "light" : "dark"; document.documentElement.setAttribute("data-theme", nt); try { localStorage.setItem("pacs-theme", nt); } catch (err) {} render(); try { window.dispatchEvent(new HashChangeEvent("hashchange")); } catch (err) {} return; }
     if (t.dataset.aud) { state.audience = t.dataset.aud; try { localStorage.setItem("audience", state.audience); } catch (err) {} render(); return; }
     if (t.dataset.seq !== undefined) { state.seqFiltre = t.dataset.seq; render(); return; }
     if (t.dataset.rf) { state.filtreRisques = t.dataset.rf; render(); return; }
