@@ -89,6 +89,12 @@ select.demo { font: inherit; font-weight: 600; padding: 7px 10px; border-radius:
 .pt2 { font-weight: 700; font-size: 14px; }
 .ptile.ok .pt2 { color: var(--ok); } .ptile.warn .pt2 { color: var(--warn); } .ptile.crit .pt2 { color: var(--crit); } .ptile.info .pt2 { color: var(--accent); }
 .pt3 { font-size: 12px; color: var(--muted); }
+#dtip { position: fixed; z-index: 1000; max-width: min(460px, calc(100vw - 32px)); background: var(--surface); color: var(--fg); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 10px 30px rgba(0,0,0,.22); padding: 12px 14px; font-size: 13px; line-height: 1.45; pointer-events: none; display: none; }
+#dtip h4 { margin: 0 0 6px; font-size: 14px; } #dtip h5 { margin: 10px 0 4px; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+#dtip p { margin: 0 0 6px; } #dtip ul { margin: 0; padding-left: 16px; display: grid; gap: 2px; } #dtip .dk { color: var(--muted); } #dtip .dm { color: var(--muted); }
+#dtip .dlate { background: var(--crit-soft); color: var(--crit); font-weight: 600; border-radius: 5px; padding: 4px 8px; margin: 0 0 8px; }
+[data-dt] { cursor: help; } tr[data-dt]:hover td, .seqrow[data-dt]:hover { background: var(--sunk); } [data-dt]:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
 .pdeck { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
 .pdeck .ptile { padding: 12px 16px; gap: 4px; align-content: start; }
 .pdeck .pt1 { font-size: 19px; } .pdeck .pletter { width: 30px; height: 30px; font-size: 16px; }
@@ -168,6 +174,7 @@ input[type="range"] { accent-color: var(--accent); }
 .slide table td, .slide table th { padding: 10px 12px; }
 .slide table th { font-size: 13px; }
 .slide table { font-size: 17px; }
+.slide .seqrow { padding: 5px 0; grid-template-columns: minmax(250px, 1.7fr) 2fr auto; } .slide .seqrow strong { font-size: 17px; }
 .slide .foot { position: absolute; left: 64px; right: 64px; bottom: 24px; display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 10px; }
 .slide .kpis .v { font-size: 40px; } .slide .kpi .l { font-size: 15px; } .slide .kpi { padding: 20px 22px; }
 .slide.cover { grid-template-rows: 1fr auto; background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
@@ -485,6 +492,74 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
   function pct(v, d) { return v == null ? "–" : (v * 100).toLocaleString("fr-FR", { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }) + " %"; }
   function addDays(iso, n) { var d = D(iso); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
   function seqCode(s) { return (s || "").split(" ")[0]; }
+
+  /* ---------- info-bulles de détail (survol d'une ligne) ---------- */
+  var CTX = { m: null, x: null };
+  function daysBetween(a, b) { return Math.round((D(b) - D(a)) / 864e5); }
+  function tipAttr(html) { return html ? ' data-dt="' + esc(html) + '" tabindex="0"' : ""; }
+  function tl(k, v) { return v || v === 0 ? "<div><span class=\"dk\">" + esc(k) + "</span> " + v + "</div>" : ""; }
+  function tipList(title, items) { return items.length ? "<h5>" + esc(title) + "</h5><ul>" + items.join("") + "</ul>" : ""; }
+  function lateBadge(txt) { return '<div class="dlate">' + esc(txt) + "</div>"; }
+  function seqLinks(seq, exceptId) {
+    var m = CTX.m, x = CTX.x, sit = x.sit, sc = seqCode(seq), out = "";
+    if (!m || !sc) return "";
+    var tard = m.planning.filter(function (t) { return seqCode(t.sequence) === sc && t.id !== exceptId && (t.statut === "En retard" || (t.fin && t.fin < sit && (t.reel || 0) < 1)); });
+    out += tipList("Autres tâches en retard de " + sc, tard.slice(0, 4).map(function (t) { return "<li>" + esc(t.tache) + " <span class=\"dm\">(" + esc(t.responsable) + ", fin " + fd(t.fin) + ")</span></li>"; }));
+    var jal = m.planning.filter(function (t) { return seqCode(t.sequence) === sc && t.jalon && (t.reel || 0) < 1 && t.id !== exceptId; }).sort(function (a, b) { return a.fin < b.fin ? -1 : 1; })[0];
+    if (jal) out += tipList("Jalon exposé", ["<li>◆ " + esc(jal.tache) + " <span class=\"dm\">(" + fd(jal.fin) + ")</span></li>"]);
+    var pv = (m.facturation.jalons || []).filter(function (j) { return seqCode(j.sequence) === sc && !j.datePV && j.statut !== "Facturé" && j.statut !== "Payé"; });
+    out += tipList("PV contractuel concerné", pv.map(function (j) { return "<li>" + esc(j.jalon) + " <span class=\"dm\">(" + esc(j.declencheur) + ", prévu " + fd(j.datePrevue) + (x.client || !j.montant ? "" : ", " + eur(j.montant)) + ")</span></li>"; }));
+    var act = (x.actions || []).filter(function (d) { return seqCode(d.sequence) === sc; });
+    out += tipList("Actions en cours sur " + sc, act.slice(0, 4).map(function (d) { return "<li>" + esc(d.texte.replace(/^(Action|Décision)\s*(\(client\))?\s*:\s*/, "")) + " <span class=\"dm\">(" + esc(d.responsable) + ", " + fd(d.echeance) + (d.echeance && d.echeance < sit ? ", en retard" : "") + ")</span></li>"; }));
+    return out;
+  }
+  function taskTip(t) {
+    var sit = CTX.x ? CTX.x.sit : "", h = "<h4>" + (t.jalon ? "◆ " : "") + esc(t.tache) + "</h4>";
+    var late = t.fin && sit && t.fin < sit && (t.reel || 0) < 1, ec = t.reel != null && t.prevu != null ? Math.round((t.reel - t.prevu) * 100) : null;
+    if (late) h += lateBadge("Fin prévue dépassée de " + daysBetween(t.fin, sit) + " jours, réalisé à " + pct(t.reel));
+    else if (t.statut === "En retard" && ec != null) h += lateBadge("Retard de " + Math.abs(ec) + " points sur l'avancement prévu");
+    h += tl("Séquence", esc(t.sequence)) + tl("Responsable", esc(t.responsable)) + tl("Période", fd(t.debut) + " → " + fd(t.fin) + (t.duree ? " (" + t.duree + " j ouvrés)" : "")) +
+      tl("Avancement", (t.reel == null ? "–" : pct(t.reel)) + " réalisé pour " + (t.prevu == null ? "–" : pct(t.prevu)) + " prévu au " + fd(sit) + (ec ? " (" + (ec > 0 ? "+" : "") + ec + " pts)" : "")) + tl("Statut", esc(t.statut));
+    return h + seqLinks(t.sequence, t.id);
+  }
+  function gaugeTip(t) {
+    return "<h4>Tolérance " + esc(t.dimension) + " · " + esc(t.etat) + "</h4>" + (t.etat !== "Vert" ? lateBadge(pct(t.consommee) + " de la tolérance consommée" + (t.etat === "Rouge" ? " : hors tolérance, le comité doit décider" : " : seuil d'alerte de 80 % franchi")) : "") +
+      tl("Indicateur", esc(t.indicateur)) + tl("Valeur actuelle", esc(fmtTol(t, t.actuel))) + tl("Tolérance accordée", esc(fmtTol(t, t.tolerance))) +
+      '<p class="dm" style="margin:8px 0 0">Vert jusqu\'à 80 % consommés, orange de 80 à 100 %, rouge au-delà : le chef de projet remonte alors un rapport d\'exception.</p>';
+  }
+  function poldatTip(p) {
+    var src = { P: "Cahier de recette", O: "Plan de formation", L: "Prérequis client", D: "Suivi de migration", A: "Matrice des flux", T: "Inventaire des modalités" }[p.k];
+    return "<h4>" + esc(p.k) + " · " + esc(p.nom) + " · " + esc(p.libelle) + "</h4>" + (p.etat === "rouge" || p.etat === "orange" ? lateBadge(p.detail) : "") +
+      tl("Mesure", esc(p.mesure)) + tl("Détail", esc(p.detail)) + tl("Cible", esc(p.cible)) + tl("Commentaire", esc(p.commentaire)) +
+      tl("Calculé depuis", esc(src) + " (boîte à outils)") + (p.manuel ? '<p class="dm" style="margin:8px 0 0">État fixé par le chef de projet dans la grille POLDAT.</p>' : "");
+  }
+  function riskTip(r) {
+    var sit = CTX.x ? CTX.x.sit : "";
+    return "<h4>" + esc(r.id) + " · " + esc(r.description) + "</h4>" + (r.echeance && r.echeance < sit && r.statut !== "Clos" ? lateBadge("Échéance de la réponse dépassée de " + daysBetween(r.echeance, sit) + " jours") : "") +
+      tl("Catégorie", esc(r.categorie)) + tl("Identifié le", fd(r.date) + (r.date && sit ? " (il y a " + daysBetween(r.date, sit) + " jours)" : "")) + tl("Cotation", "probabilité " + (r.probabilite || "–") + " × impact " + (r.impact || "–") + " = " + (r.criticite || "–") + " · " + esc(r.niveau)) +
+      tl("Propriétaire", esc(r.proprietaire)) + tl("Réponse", "<strong>" + esc(r.reponse) + "</strong>") + tl("Actions", esc(r.actions)) + tl("Échéance", fd(r.echeance)) + tl("Statut", esc(r.statut));
+  }
+  function pointTip(p) {
+    var sit = CTX.x ? CTX.x.sit : "";
+    return "<h4>" + esc(p.id) + " · " + esc(p.type) + "</h4><p>" + esc(p.description) + "</p>" + (p.impactDelai ? lateBadge("Impact sur le délai : +" + p.impactDelai + " jours") : "") +
+      tl("Émis par", esc(p.emisPar) + (p.date ? " le " + fd(p.date) + (sit ? " (ouvert depuis " + daysBetween(p.date, sit) + " jours)" : "") : "")) + tl("Priorité", esc(p.priorite)) + tl("Décision attendue de", esc(p.niveau)) +
+      tl("Montant", p.montant ? eur(p.montant) : "") + tl("Décision ou commentaire", esc(p.decision)) + tl("Statut", esc(p.statut));
+  }
+  function actionTip(d) {
+    var sit = CTX.x ? CTX.x.sit : "";
+    return "<h4>" + esc(d.id) + " · " + esc(d.texte) + "</h4>" + (d.echeance && sit && d.echeance < sit && d.statut !== "Fait" ? lateBadge("Échéance dépassée de " + daysBetween(d.echeance, sit) + " jours") : "") +
+      tl("Décidée en", esc(d.instance) + (d.date ? " le " + fd(d.date) : "")) + tl("Séquence", esc(d.sequence)) + tl("Responsable", esc(d.responsable)) + tl("Échéance", fd(d.echeance)) + tl("Statut", esc(d.statut));
+  }
+  function pvTip(j, st) {
+    var sit = CTX.x ? CTX.x.sit : "";
+    return "<h4>" + esc(j.jalon) + "</h4>" + (st === "En retard" ? lateBadge("PV attendu depuis " + daysBetween(j.datePrevue, sit) + " jours") : "") +
+      tl("Déclencheur", esc(j.declencheur)) + tl("Séquence", esc(j.sequence)) + tl("Date prévue", fd(j.datePrevue)) + tl("Date du PV", j.datePV ? fd(j.datePV) : "") + tl("Montant", CTX.x && !CTX.x.client && j.montant ? eur(j.montant) : "") + seqLinks(j.sequence);
+  }
+  function seqTip(s, st) {
+    var sit = CTX.x ? CTX.x.sit : "", ec = s.reel != null && s.prevu != null ? Math.round((s.reel - s.prevu) * 100) : null;
+    return "<h4>" + esc(s.nom) + "</h4>" + (st === "En retard" ? lateBadge("Retard de " + Math.abs(ec) + " points sur l'avancement prévu") : "") +
+      tl("Période", fd(s.debut) + " → " + fd(s.fin)) + tl("Avancement", pct(s.reel) + " réalisé pour " + pct(s.prevu) + " prévu au " + fd(sit)) + seqLinks(s.nom);
+  }
   function etatClass(e) { return e === "Rouge" ? "crit" : e === "Orange" ? "warn" : e === "Vert" ? "ok" : ""; }
   function statutClass(s) {
     return ({ "Terminé": "ok", "Terminée": "ok", "Approuvé": "ok", "Payé": "ok", "Fait": "ok", "Clos": "", "En cours": "info", "Facturé": "info", "En analyse": "info", "En traitement": "info",
@@ -564,7 +639,7 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
   function seqRows(m) {
     return m.sequences.filter(function (s) { return s.nom; }).map(function (s) {
       var st = s.statut === "En cours" && s.reel != null && s.prevu != null && s.reel - s.prevu < -0.1 ? "En retard" : s.statut;
-      return '<div class="seqrow"><div><strong>' + esc(s.nom) + '</strong><div class="dates mono">' + fds(s.debut) + " → " + fds(s.fin) + '</div></div>' +
+      return '<div class="seqrow"' + tipAttr(seqTip(s, st)) + '><div><strong>' + esc(s.nom) + '</strong><div class="dates mono">' + fds(s.debut) + " → " + fds(s.fin) + '</div></div>' +
         '<div class="bars"><div class="bar" title="Réalisé ' + pct(s.reel) + '"><i style="width:' + Math.round((s.reel || 0) * 100) + '%"></i></div>' +
         '<div class="bar" title="Prévu ' + pct(s.prevu) + '"><i class="plan" style="width:' + Math.round((s.prevu || 0) * 100) + '%"></i></div></div>' +
         "<div>" + pill(st || "À venir", st ? null : "") + "</div></div>";
@@ -579,7 +654,7 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
   function gauges(list) {
     return list.map(function (t) {
       var c = Math.min(1.2, t.consommee || 0), col = t.etat === "Rouge" ? "var(--crit)" : t.etat === "Orange" ? "var(--warn)" : "var(--ok)";
-      return '<div class="gauge"><div class="head"><strong>' + esc(t.dimension) + "</strong>" + pill(t.etat, etatClass(t.etat)) + "</div>" +
+      return '<div class="gauge"' + tipAttr(gaugeTip(t)) + '><div class="head"><strong>' + esc(t.dimension) + "</strong>" + pill(t.etat, etatClass(t.etat)) + "</div>" +
         '<div class="track" role="img" aria-label="' + esc(t.dimension) + " : " + pct(t.consommee) + ' de la tolérance consommée"><div class="fill" style="width:' + (c / 1.2 * 100).toFixed(1) + "%;background:" + col + '"></div>' +
         '<div class="mark" style="left:' + (0.8 / 1.2 * 100).toFixed(1) + '%"></div><div class="mark" style="left:' + (1 / 1.2 * 100).toFixed(1) + '%;opacity:.9"></div></div>' +
         '<div class="meta">' + esc(t.indicateur) + " : " + esc(fmtTol(t, t.actuel)) + " pour " + esc(fmtTol(t, t.tolerance)) + " tolérés (" + pct(t.consommee) + ")</div></div>";
@@ -589,7 +664,7 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
     if (!list.length) return '<p class="empty">Aucun risque ouvert.</p>';
     return '<div class="tablewrap"><table><thead><tr><th>ID</th><th>Risque</th><th class="num">P × I</th><th>Niveau</th><th>Propriétaire</th>' + (compact ? "" : "<th>Réponse et actions</th><th>Statut</th>") + "</tr></thead><tbody>" +
       list.map(function (r) {
-        return '<tr><td class="id">' + esc(r.id) + "</td><td>" + esc(r.description) + '</td><td class="num mono">' + (r.probabilite || "–") + " × " + (r.impact || "–") + " = <strong>" + (r.criticite || "–") + "</strong></td><td>" + pill(r.niveau, niveauClass(r.niveau)) + "</td><td>" + esc(r.proprietaire) + "</td>" +
+        return '<tr' + tipAttr(riskTip(r)) + '><td class="id">' + esc(r.id) + "</td><td>" + esc(r.description) + '</td><td class="num mono">' + (r.probabilite || "–") + " × " + (r.impact || "–") + " = <strong>" + (r.criticite || "–") + "</strong></td><td>" + pill(r.niveau, niveauClass(r.niveau)) + "</td><td>" + esc(r.proprietaire) + "</td>" +
           (compact ? "" : "<td><strong>" + esc(r.reponse) + "</strong> · " + esc(r.actions) + (r.echeance ? ' <span class="note">(échéance ' + fd(r.echeance) + ")</span>" : "") + "</td><td>" + pill(r.statut) + "</td>") + "</tr>";
       }).join("") + "</tbody></table></div>";
   }
@@ -610,27 +685,27 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
     if (!list.length) return '<p class="empty">Aucune tâche sur cette période.</p>';
     return '<div class="tablewrap"><table><thead><tr><th>Tâche</th><th>Responsable</th><th>Début</th><th>Fin</th><th class="num">Réalisé</th><th>Statut</th></tr></thead><tbody>' +
       list.map(function (t) {
-        return "<tr><td>" + (t.jalon ? '<span class="ms" aria-label="Jalon">◆</span> ' : "") + esc(t.tache) + '<div class="note">' + esc(seqCode(t.sequence)) + "</div></td><td>" + esc(t.responsable) + '</td><td class="mono">' + fds(t.debut) + '</td><td class="mono">' + fds(t.fin) + '</td><td class="num">' + (t.reel == null ? "–" : pct(t.reel)) + "</td><td>" + pill(t.statut) + "</td></tr>";
+        return "<tr" + tipAttr(taskTip(t)) + "><td>" + (t.jalon ? '<span class="ms" aria-label="Jalon">◆</span> ' : "") + esc(t.tache) + '<div class="note">' + esc(seqCode(t.sequence)) + "</div></td><td>" + esc(t.responsable) + '</td><td class="mono">' + fds(t.debut) + '</td><td class="mono">' + fds(t.fin) + '</td><td class="num">' + (t.reel == null ? "–" : pct(t.reel)) + "</td><td>" + pill(t.statut) + "</td></tr>";
       }).join("") + "</tbody></table></div>";
   }
   function pointsTable(list) {
     if (!list.length) return '<p class="empty">Aucun point.</p>';
     return '<div class="tablewrap"><table><thead><tr><th>ID</th><th>Type</th><th>Description</th><th>Décision</th><th class="num">Délai</th><th class="num">Montant</th><th>Statut</th></tr></thead><tbody>' +
       list.map(function (p) {
-        return '<tr><td class="id">' + esc(p.id) + "</td><td>" + esc(p.type) + "</td><td>" + esc(p.description) + (p.decision ? '<div class="note">' + esc(p.decision) + "</div>" : "") + "</td><td>" + esc(p.niveau) + '</td><td class="num">' + (p.impactDelai ? "+" + p.impactDelai + " j" : "–") + '</td><td class="num">' + (p.montant ? eur(p.montant) : "–") + "</td><td>" + pill(p.statut) + "</td></tr>";
+        return '<tr' + tipAttr(pointTip(p)) + '><td class="id">' + esc(p.id) + "</td><td>" + esc(p.type) + "</td><td>" + esc(p.description) + (p.decision ? '<div class="note">' + esc(p.decision) + "</div>" : "") + "</td><td>" + esc(p.niveau) + '</td><td class="num">' + (p.impactDelai ? "+" + p.impactDelai + " j" : "–") + '</td><td class="num">' + (p.montant ? eur(p.montant) : "–") + "</td><td>" + pill(p.statut) + "</td></tr>";
       }).join("") + "</tbody></table></div>";
   }
   function actionsTable(list) {
     if (!list.length) return '<p class="empty">Aucune action en cours.</p>';
     return '<div class="tablewrap"><table><thead><tr><th>ID</th><th>Décision ou action</th><th>Instance</th><th>Responsable</th><th>Échéance</th><th>Statut</th></tr></thead><tbody>' +
       list.map(function (d) {
-        return '<tr><td class="id">' + esc(d.id) + "</td><td>" + esc(d.texte) + '<div class="note">' + fd(d.date) + "</div></td><td>" + esc(d.instance) + "</td><td>" + esc(d.responsable) + '</td><td class="mono">' + fd(d.echeance) + "</td><td>" + pill(d.statut) + "</td></tr>";
+        return '<tr' + tipAttr(actionTip(d)) + '><td class="id">' + esc(d.id) + "</td><td>" + esc(d.texte) + '<div class="note">' + fd(d.date) + "</div></td><td>" + esc(d.instance) + "</td><td>" + esc(d.responsable) + '</td><td class="mono">' + fd(d.echeance) + "</td><td>" + pill(d.statut) + "</td></tr>";
       }).join("") + "</tbody></table></div>";
   }
   function jalonsList(list, n) {
     if (!list.length) return '<p class="empty">Aucun jalon à venir.</p>';
     return '<div class="tablewrap"><table><tbody>' + list.slice(0, n || 6).map(function (t) {
-      return '<tr><td class="mono" style="width:96px">' + fd(t.fin) + '</td><td><span class="ms">◆</span> ' + esc(t.tache) + '</td><td class="note">' + esc(seqCode(t.sequence)) + "</td></tr>";
+      return '<tr' + tipAttr(taskTip(t)) + '><td class="mono" style="width:96px">' + fd(t.fin) + '</td><td><span class="ms">◆</span> ' + esc(t.tache) + '</td><td class="note">' + esc(seqCode(t.sequence)) + "</td></tr>";
     }).join("") + "</tbody></table></div>";
   }
   function chargeBars(m) {
@@ -866,12 +941,12 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
     return '<div class="tablewrap"><table><thead><tr><th>Jalon contractuel</th><th>PV ou événement</th><th>Date prévue</th><th>Date du PV</th><th>Statut</th></tr></thead><tbody>' +
       list.map(function (j) {
         var st = j.datePV || j.statut === "Facturé" || j.statut === "Payé" ? "PV signé" : (j.datePrevue && j.datePrevue < x.sit ? "En retard" : "À venir");
-        return "<tr><td>" + esc(j.jalon) + '<div class="note">' + esc(seqCode(j.sequence)) + "</div></td><td>" + esc(j.declencheur) + '</td><td class="mono">' + fd(j.datePrevue) + '</td><td class="mono">' + fd(j.datePV) + "</td><td>" + pill(st, st === "PV signé" ? "ok" : st === "En retard" ? "crit" : "") + "</td></tr>";
+        return "<tr" + tipAttr(pvTip(j, st)) + "><td>" + esc(j.jalon) + '<div class="note">' + esc(seqCode(j.sequence)) + "</div></td><td>" + esc(j.declencheur) + '</td><td class="mono">' + fd(j.datePrevue) + '</td><td class="mono">' + fd(j.datePV) + "</td><td>" + pill(st, st === "PV signé" ? "ok" : st === "En retard" ? "crit" : "") + "</td></tr>";
       }).join("") + "</tbody></table></div>";
   }
   function actionsShort(list, n) {
     if (!list.length) return '<p class="empty">Aucune action en cours.</p>';
-    return '<div class="tablewrap"><table><tbody>' + list.slice(0, n).map(function (d) { return "<tr><td>" + esc(d.texte.replace(/^(Action|Décision)\s*(\(client\))?\s*:\s*/, "")) + '<div class="note">' + esc(d.responsable) + " · " + fd(d.echeance) + "</div></td><td>" + pill(d.statut) + "</td></tr>"; }).join("") + "</tbody></table></div>";
+    return '<div class="tablewrap"><table><tbody>' + list.slice(0, n).map(function (d) { return "<tr" + tipAttr(actionTip(d)) + "><td>" + esc(d.texte.replace(/^(Action|Décision)\s*(\(client\))?\s*:\s*/, "")) + '<div class="note">' + esc(d.responsable) + " · " + fd(d.echeance) + "</div></td><td>" + pill(d.statut) + "</td></tr>"; }).join("") + "</tbody></table></div>";
   }
   function deckCopil(m, x) {
     var mt = METEO[x.meteo];
@@ -884,7 +959,7 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
       slide(no() + "Avancement", "Avancement par séquence et jalons", '<div class="grid" style="grid-template-columns:1.4fr 1fr;gap:32px"><div><div class="legend" style="margin:0 0 6px;font-size:15px"><span style="--c:var(--accent)">Réalisé</span><span style="--c:var(--plan)">Prévu</span></div>' + seqRows(m) + "</div><div><h4 style=\"margin:0 0 8px;font-size:18px\">Prochains jalons</h4>" + jalonsList(x.jalons, 5) + "</div></div>"),
       pol ? slide(no() + "Changement", "L'établissement est-il prêt ? Grille POLDAT", '<div class="pdeck">' + pol.map(function (p) {
         var cl = { vert: "ok", orange: "warn", rouge: "crit", encours: "info", gris: "" }[p.etat];
-        return '<div class="ptile ' + cl + '"><div class="pt1"><span class="pletter">' + p.k + "</span>" + esc(p.nom) + '</div><div class="pt2">' + esc(p.libelle) + (p.manuel ? " *" : "") + '</div><div class="pm">' + esc(p.mesure) + '</div><div class="pt3">' + esc(p.detail) + "</div>" +
+        return '<div class="ptile ' + cl + '"' + tipAttr(poldatTip(p)) + '><div class="pt1"><span class="pletter">' + p.k + "</span>" + esc(p.nom) + '</div><div class="pt2">' + esc(p.libelle) + (p.manuel ? " *" : "") + '</div><div class="pm">' + esc(p.mesure) + '</div><div class="pt3">' + esc(p.detail) + "</div>" +
           (p.commentaire ? '<div class="pcom">' + esc(p.commentaire) + "</div>" : "") + (p.cible ? '<div class="pt3"><strong>Cible :</strong> ' + esc(p.cible) + "</div>" : "") + "</div>";
       }).join("") + "</div>" + (pol.some(function (p) { return p.manuel; }) ? '<p class="note" style="font-size:14px;margin:0">* État fixé par le chef de projet.</p>' : "")) : null,
       slide(no() + "Gestion par exception", "Tolérances du projet", '<div class="grid" style="grid-template-columns:1fr 1fr;gap:4px 40px">' + gauges(x.tolerances) + "</div>"),
@@ -916,7 +991,7 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
     if (!o || !o.poldat) return "";
     var cls = { vert: "ok", orange: "warn", rouge: "crit", encours: "info", gris: "" };
     return '<h3 class="psub">Le changement par domaine <small>grille POLDAT (Catalyst)</small></h3><div class="pstrip">' + o.poldat.map(function (p) {
-      return '<div class="ptile ' + cls[p.etat] + '" title="' + esc(p.detail + (p.commentaire ? " · " + p.commentaire : "")) + '"><div class="pt1"><span class="pletter">' + p.k + "</span>" + esc(p.nom) + '</div><div class="pt2">' + esc(p.libelle) + (p.manuel ? " *" : "") + '</div><div class="pt3">' + esc(p.mesure) + "</div></div>";
+      return '<div class="ptile ' + cls[p.etat] + '"' + tipAttr(poldatTip(p)) + '><div class="pt1"><span class="pletter">' + p.k + "</span>" + esc(p.nom) + '</div><div class="pt2">' + esc(p.libelle) + (p.manuel ? " *" : "") + '</div><div class="pt3">' + esc(p.mesure) + "</div></div>";
     }).join("") + "</div>" + (o.poldat.some(function (p) { return p.manuel; }) ? '<p class="note" style="margin:6px 0 0">* état fixé par le chef de projet.</p>' : "");
   }
   function fmtNum(v) { return Number(v || 0).toLocaleString("fr-FR", { maximumFractionDigits: 1 }); }
@@ -932,7 +1007,7 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
       slide("6 · Jalons", "Jalons et PV à venir", '<div class="grid" style="grid-template-columns:1fr 1.2fr;gap:36px"><div><h4 style="margin:0 0 8px;font-size:18px">Jalons du planning</h4>' + jalonsList(x.jalons, 5) + '</div><div><h4 style="margin:0 0 8px;font-size:18px">PV contractuels attendus</h4>' + pvTable(pvAVenir, x) + "</div></div>"),
       m.outils ? slide("7 · Préparation technique", "Prérequis, modalités, interfaces, recette, migration et formation", outilsKpis(m.outils, true, true) + '<p class="note" style="font-size:15px;margin-top:14px">Source : boîte à outils du projet (onglets « OT » du classeur de pilotage).</p>') : null,
       slide((m.outils ? "8" : "7") + " · Attendus", "Attendus du client et livrables à venir", '<div class="grid" style="grid-template-columns:1fr 1fr;gap:36px"><div><h4 style="margin:0 0 8px;font-size:18px">Attendus du client</h4>' +
-        (x.attenduClient.length ? '<div class="tablewrap"><table><tbody>' + x.attenduClient.slice(0, 5).map(function (t) { return "<tr><td>" + esc(t.tache) + '<div class="note">' + esc(t.responsable) + " · " + fd(t.fin) + "</div></td><td>" + pill(t.statut) + "</td></tr>"; }).join("") + "</tbody></table></div>" : '<p class="empty">Aucun.</p>') +
+        (x.attenduClient.length ? '<div class="tablewrap"><table><tbody>' + x.attenduClient.slice(0, 5).map(function (t) { return "<tr" + tipAttr(taskTip(t)) + "><td>" + esc(t.tache) + '<div class="note">' + esc(t.responsable) + " · " + fd(t.fin) + "</div></td><td>" + pill(t.statut) + "</td></tr>"; }).join("") + "</tbody></table></div>" : '<p class="empty">Aucun.</p>') +
         '</div><div><h4 style="margin:0 0 8px;font-size:18px">Livrables attendus sous 30 jours</h4>' +
         (x.produits30.length ? '<div class="tablewrap"><table><tbody>' + x.produits30.map(function (p) { return "<tr><td>" + esc(p.produit) + '<div class="note">' + esc(p.approbateur) + " · " + fd(p.datePrevue) + "</div></td><td>" + pill(p.statut) + "</td></tr>"; }).join("") + "</tbody></table></div>" : '<p class="empty">Aucun.</p>') + "</div></div>")
     ].filter(Boolean);
@@ -960,7 +1035,7 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
     ];
   }
   function renderDeck() {
-    var m = state.model, x = derive(m, state.deck === "interne" ? "interne" : "client");
+    var m = state.model, x = derive(m, state.deck === "interne" ? "interne" : "client"); CTX = { m: m, x: x };
     var slides = state.deck === "copil" ? deckCopil(m, x) : state.deck === "interne" ? deckInterne(m, x) : deckCoproj(m, x);
     state.slide = Math.max(0, Math.min(state.slide, slides.length - 1));
     var s = slides[state.slide], name = { copil: "COPIL", coproj: "COPROJ", interne: "Revue interne" }[state.deck];
@@ -984,7 +1059,7 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
     var m = state.model;
     if (!m) return;
     var locked = !!m.clientOnly, aud = locked ? "client" : state.audience;
-    var x = derive(m, aud);
+    var x = derive(m, aud); CTX = { m: m, x: x };
     if (x.client && state.view === "finances") state.view = "synthese";
     var SUITE = OUTILS_URL === "#outils" && !locked, onOT = SUITE && state.onOutils;
     if (locked && state.view === "methode") state.view = "synthese";
@@ -1064,6 +1139,17 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
     if (t.dataset.banner) { onBanner(t.dataset.banner); return; }
   });
   document.addEventListener("fullscreenchange", function () { setTimeout(fitSlide, 50); });
+
+  (function () {
+    var tip = null, cur = null;
+    function el() { if (!tip || !tip.isConnected) { tip = document.createElement("div"); tip.id = "dtip"; tip.setAttribute("role", "tooltip"); (document.getElementById("app-ck") || document.body).appendChild(tip); } return tip; }
+    function place(x, y) { var t = el(), w = t.offsetWidth, h = t.offsetHeight, W = window.innerWidth, H = window.innerHeight; var l = x + 16, tp = y + 18; if (l + w > W - 12) l = Math.max(12, x - w - 16); if (tp + h > H - 12) tp = Math.max(12, y - h - 12); t.style.left = l + "px"; t.style.top = tp + "px"; }
+    function show(n, x, y) { var t = el(); if (cur !== n) { cur = n; t.innerHTML = n.getAttribute("data-dt"); } t.style.display = "block"; place(x, y); }
+    function hide() { cur = null; if (tip) tip.style.display = "none"; }
+    document.addEventListener("mousemove", function (e) { var n = e.target.closest && e.target.closest("[data-dt]"); if (n) show(n, e.clientX, e.clientY); else if (cur) hide(); });
+    document.addEventListener("focusin", function (e) { var n = e.target.closest && e.target.closest("[data-dt]"); if (n) { var r = n.getBoundingClientRect(); show(n, r.left + 20, r.bottom - 10); } else hide(); });
+    document.addEventListener("scroll", hide, true); window.addEventListener("hashchange", hide); document.addEventListener("keydown", function (e) { if (e.key === "Escape") hide(); });
+  })();
   function closeTips() { Array.prototype.forEach.call(document.querySelectorAll(".tip.open"), function (el) { el.classList.remove("open"); var b = el.querySelector(".tip-btn"); if (b) b.setAttribute("aria-expanded", "false"); }); }
   document.addEventListener("click", function (e) { if (!e.target.closest(".tip")) closeTips(); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeTips(); });
