@@ -96,6 +96,11 @@ body { margin: 0; background: var(--shell-bg); }
 #app-ck .pt2 { font-weight: 700; font-size: 14px; }
 #app-ck .ptile.ok .pt2 { color: var(--ok); } #app-ck .ptile.warn .pt2 { color: var(--warn); } #app-ck .ptile.crit .pt2 { color: var(--crit); } #app-ck .ptile.info .pt2 { color: var(--accent); }
 #app-ck .pt3 { font-size: 12px; color: var(--muted); }
+#app-ck .pdeck { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+#app-ck .pdeck .ptile { padding: 12px 16px; gap: 4px; align-content: start; }
+#app-ck .pdeck .pt1 { font-size: 19px; } #app-ck .pdeck .pletter { width: 30px; height: 30px; font-size: 16px; }
+#app-ck .pdeck .pt2 { font-size: 18px; } #app-ck .pdeck .pm { font-size: 17px; font-weight: 600; } #app-ck .pdeck .pt3 { font-size: 14px; }
+#app-ck .pdeck .pcom { font-size: 15px; border-left: 3px solid var(--line); padding-left: 8px; }
 @media (max-width: 1100px) { #app-ck .pstrip { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 560px) { #app-ck .pstrip { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 #app-ck .wbstate { align-self: center; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: var(--ok-soft); color: var(--ok); }
@@ -589,7 +594,7 @@ function parsePoldat(wb, ref) {
     poldat: { rows: rows("OT POLDAT", "A", function (r) { return { domaine: v("OT POLDAT", "A" + r), cible: v("OT POLDAT", "C" + r) || "", statut: v("OT POLDAT", "F" + r) || "Auto", commentaire: v("OT POLDAT", "G" + r) || "" }; }) }
   };
   var st = poldatAuto(D, ref);
-  return POLDAT_DOM.map(function (d) { var x = st[d.k]; return { k: d.k, nom: d.nom, etat: x.etat, libelle: POLDAT_ETATS[x.etat], mesure: x.mesure, detail: x.detail, manuel: !!x.manuel, commentaire: x.commentaire || "" }; });
+  return POLDAT_DOM.map(function (d) { var x = st[d.k]; return { k: d.k, nom: d.nom, etat: x.etat, libelle: POLDAT_ETATS[x.etat], mesure: x.mesure, detail: x.detail, manuel: !!x.manuel, cible: x.cible || "", commentaire: x.commentaire || "" }; });
 }
 /* Onglets « OT … » de la boîte à outils : indicateurs de préparation technique. */
 function parseOutils(wb) {
@@ -1062,18 +1067,24 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
     var mt = METEO[x.meteo];
     var dem = (m.recits.decisionsDemandees || "").split(/\n+/).filter(Boolean);
     var copilPoints = x.pointsOuverts.filter(function (p) { return p.niveau === "COPIL"; });
+    var pol = m.outils && m.outils.poldat, nn = 0, no = function () { return ++nn + " · "; };
     return [
-      slide("Comité de pilotage · " + fd(x.sit), m.meta.projet, '<ol class="agenda"><li>Météo et synthèse</li><li>Avancement et jalons</li><li>Tolérances</li><li>Risques majeurs</li><li>Jalons contractuels et PV</li><li>Décisions attendues</li><li>Prochaines étapes</li></ol>', "cover"),
-      slide("1 · Météo et synthèse", "Météo : " + mt.label.toLowerCase(), '<div class="weather">' + meteoIcon(x.meteo, 96) + '<div><div class="state" style="font-size:28px;color:var(--' + mt.cls + ')">' + mt.label + '</div><div style="font-size:20px">' + esc(mt.note) + "</div></div></div>" + kpiBlock(m, x).replace('class="kpis"', 'class="kpis" style="grid-template-columns:repeat(3,1fr)"') + (m.recits.commentaire ? '<div class="quote" style="font-size:18px">' + esc(m.recits.commentaire) + "</div>" : "")),
-      slide("2 · Avancement", "Avancement par séquence et jalons", '<div class="grid" style="grid-template-columns:1.4fr 1fr;gap:32px"><div><div class="legend" style="margin:0 0 6px;font-size:15px"><span style="--c:var(--accent)">Réalisé</span><span style="--c:var(--plan)">Prévu</span></div>' + seqRows(m) + "</div><div><h4 style=\"margin:0 0 8px;font-size:18px\">Prochains jalons</h4>" + jalonsList(x.jalons, 5) + "</div></div>"),
-      slide("3 · Gestion par exception", "Tolérances du projet", '<div class="grid" style="grid-template-columns:1fr 1fr;gap:4px 40px">' + gauges(x.tolerances) + "</div>"),
-      slide("4 · Risques", "Risques majeurs", '<div class="grid" style="grid-template-columns:1.8fr 1fr;gap:28px"><div>' + riskTable(x.risquesOuverts.slice(0, 4), true) + "</div><div>" + matrix(x.risquesOuverts) + "</div></div>"),
-      slide("5 · Contrat", "Jalons contractuels et PV", pvTable(m, x)),
-      slide("6 · Décisions", "Décisions attendues du comité", (dem.length ? '<ol style="font-size:22px;margin:0;padding-left:28px;display:grid;gap:12px">' + dem.map(function (d) { return "<li>" + esc(d.replace(/^\d+\.\s*/, "")) + "</li>"; }).join("") + "</ol>" : '<p class="empty">Aucune décision demandée.</p>') +
+      slide("Comité de pilotage · " + fd(x.sit), m.meta.projet, '<ol class="agenda"><li>Météo et synthèse</li><li>Avancement et jalons</li>' + (pol ? "<li>Préparation au changement (POLDAT)</li>" : "") + '<li>Tolérances</li><li>Risques majeurs</li><li>Jalons contractuels et PV</li><li>Décisions attendues</li><li>Prochaines étapes</li></ol>', "cover"),
+      slide(no() + "Météo et synthèse", "Météo : " + mt.label.toLowerCase(), '<div class="weather">' + meteoIcon(x.meteo, 96) + '<div><div class="state" style="font-size:28px;color:var(--' + mt.cls + ')">' + mt.label + '</div><div style="font-size:20px">' + esc(mt.note) + "</div></div></div>" + kpiBlock(m, x).replace('class="kpis"', 'class="kpis" style="grid-template-columns:repeat(3,1fr)"') + (m.recits.commentaire ? '<div class="quote" style="font-size:18px">' + esc(m.recits.commentaire) + "</div>" : "")),
+      slide(no() + "Avancement", "Avancement par séquence et jalons", '<div class="grid" style="grid-template-columns:1.4fr 1fr;gap:32px"><div><div class="legend" style="margin:0 0 6px;font-size:15px"><span style="--c:var(--accent)">Réalisé</span><span style="--c:var(--plan)">Prévu</span></div>' + seqRows(m) + "</div><div><h4 style=\"margin:0 0 8px;font-size:18px\">Prochains jalons</h4>" + jalonsList(x.jalons, 5) + "</div></div>"),
+      pol ? slide(no() + "Changement", "L'établissement est-il prêt ? Grille POLDAT", '<div class="pdeck">' + pol.map(function (p) {
+        var cl = { vert: "ok", orange: "warn", rouge: "crit", encours: "info", gris: "" }[p.etat];
+        return '<div class="ptile ' + cl + '"><div class="pt1"><span class="pletter">' + p.k + "</span>" + esc(p.nom) + '</div><div class="pt2">' + esc(p.libelle) + (p.manuel ? " *" : "") + '</div><div class="pm">' + esc(p.mesure) + '</div><div class="pt3">' + esc(p.detail) + "</div>" +
+          (p.commentaire ? '<div class="pcom">' + esc(p.commentaire) + "</div>" : "") + (p.cible ? '<div class="pt3"><strong>Cible :</strong> ' + esc(p.cible) + "</div>" : "") + "</div>";
+      }).join("") + "</div>" + (pol.some(function (p) { return p.manuel; }) ? '<p class="note" style="font-size:14px;margin:0">* État fixé par le chef de projet.</p>' : "")) : null,
+      slide(no() + "Gestion par exception", "Tolérances du projet", '<div class="grid" style="grid-template-columns:1fr 1fr;gap:4px 40px">' + gauges(x.tolerances) + "</div>"),
+      slide(no() + "Risques", "Risques majeurs", '<div class="grid" style="grid-template-columns:1.8fr 1fr;gap:28px"><div>' + riskTable(x.risquesOuverts.slice(0, 4), true) + "</div><div>" + matrix(x.risquesOuverts) + "</div></div>"),
+      slide(no() + "Contrat", "Jalons contractuels et PV", pvTable(m, x)),
+      slide(no() + "Décisions", "Décisions attendues du comité", (dem.length ? '<ol style="font-size:22px;margin:0;padding-left:28px;display:grid;gap:12px">' + dem.map(function (d) { return "<li>" + esc(d.replace(/^\d+\.\s*/, "")) + "</li>"; }).join("") + "</ol>" : '<p class="empty">Aucune décision demandée.</p>') +
         (copilPoints.length ? '<div><h4 style="margin:0 0 8px;font-size:18px">Points soumis au comité</h4>' + pointsTable(copilPoints) + "</div>" : "")),
-      slide("7 · Suite", "Prochaines étapes", '<div class="grid" style="grid-template-columns:1fr 1fr;gap:40px"><div><h4 style="margin:0 0 8px;font-size:18px">Jalons</h4>' + jalonsList(x.jalons, 5) + "</div><div><h4 style=\"margin:0 0 8px;font-size:18px\">Actions en cours</h4>" + actionsShort(x.actions, 5) + "</div></div>" +
+      slide(no() + "Suite", "Prochaines étapes", '<div class="grid" style="grid-template-columns:1fr 1fr;gap:40px"><div><h4 style="margin:0 0 8px;font-size:18px">Jalons</h4>' + jalonsList(x.jalons, 5) + "</div><div><h4 style=\"margin:0 0 8px;font-size:18px\">Actions en cours</h4>" + actionsShort(x.actions, 5) + "</div></div>" +
         (m.recits.prochainComite.date ? '<p style="font-size:22px;margin:0"><strong>Prochain comité de pilotage :</strong> ' + fd(m.recits.prochainComite.date) + " · " + esc(m.recits.prochainComite.objet) + "</p>" : ""))
-    ];
+    ].filter(Boolean);
   }
   var OUTILS_URL = "#outils";
   function outilsKpis(o, client, big) {
