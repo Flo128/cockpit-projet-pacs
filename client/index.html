@@ -77,6 +77,18 @@ main .wrap { padding-block: 24px 48px; display: grid; gap: 20px; }
 a.mlink { color: var(--accent); font-weight: 600; text-decoration: none; white-space: nowrap; }
 a.mlink:hover { text-decoration: underline; }
 select.demo { font: inherit; font-weight: 600; padding: 7px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); max-width: 100%; }
+.psub { font-size: 13px; font-weight: 600; color: var(--muted); margin: 4px 0 8px; text-transform: none; }
+.psub small { font-weight: 500; }
+.pstrip { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin-bottom: 16px; }
+.ptile { border: 1px solid var(--line); border-top: 4px solid var(--line); border-radius: var(--radius); padding: 10px 12px; display: grid; gap: 4px; background: var(--surface); }
+.ptile.ok { border-top-color: var(--ok); } .ptile.warn { border-top-color: var(--warn); } .ptile.crit { border-top-color: var(--crit); } .ptile.info { border-top-color: var(--accent); }
+.pt1 { display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; }
+.pletter { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 5px; background: var(--accent-soft); color: var(--accent); font-weight: 700; font-size: 12px; }
+.pt2 { font-weight: 700; font-size: 14px; }
+.ptile.ok .pt2 { color: var(--ok); } .ptile.warn .pt2 { color: var(--warn); } .ptile.crit .pt2 { color: var(--crit); } .ptile.info .pt2 { color: var(--accent); }
+.pt3 { font-size: 12px; color: var(--muted); }
+@media (max-width: 1100px) { .pstrip { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .pstrip { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .wbstate { align-self: center; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: var(--ok-soft); color: var(--ok); }
 .wbstate.todo { background: var(--warn-soft); color: var(--warn); }
 .tabs a.tab-ot { margin-left: auto; }
@@ -166,6 +178,63 @@ input[type="range"] { accent-color: var(--accent); }
 <input type="file" id="xlsx-input" accept=".xlsx" hidden>
 
 <script>
+/* Grille POLDAT (Catalyst) : état de chaque domaine du changement, calculé à partir des données des outils.
+   Partagé par la boîte à outils et le cockpit. D = données au format de la boîte à outils, ref = date de situation (AAAA-MM-JJ). */
+var POLDAT_DOM = [
+  { k: "P", nom: "Processus", outil: "recette", outilNom: "Cahier de recette" },
+  { k: "O", nom: "Organisation", outil: "formation", outilNom: "Plan de formation" },
+  { k: "L", nom: "Localisation", outil: "prerequis", outilNom: "Prérequis client" },
+  { k: "D", nom: "Données", outil: "suivi", outilNom: "Suivi de migration" },
+  { k: "A", nom: "Applications", outil: "flux", outilNom: "Matrice des flux" },
+  { k: "T", nom: "Technologie", outil: "modalites", outilNom: "Inventaire des modalités" }
+];
+var POLDAT_ETATS = { vert: "Atteint", encours: "En cours", orange: "Vigilance", rouge: "Bloqué", gris: "À venir" };
+function poldatAuto(D, ref) {
+  function n(x) { x = Number(x); return isNaN(x) ? 0 : x; }
+  function pc(a, b) { return b ? Math.round(a / b * 100) + " %" : "–"; }
+  function arr(x) { return Array.isArray(x) ? x : []; }
+  var out = {};
+  // P · Processus : la recette
+  var rc = arr(D.recette && D.recette.rows), ok = 0, res = 0, ko = 0, blKO = 0, nt = 0, blNT = 0;
+  rc.forEach(function (r) { var s = r.statut || "Non testé"; if (s === "OK") ok++; else if (s === "Réserve") res++; else if (s === "KO") { ko++; if (r.bloquant) blKO++; } else { nt++; if (r.bloquant) blNT++; } });
+  out.P = { etat: !rc.length || nt === rc.length ? "gris" : blKO ? "rouge" : ko || res ? "orange" : !blNT && !nt ? "vert" : "encours",
+    mesure: rc.length ? pc(ok + res, rc.length) + " des scénarios passés" : "Aucun scénario", detail: blKO ? blKO + " scénario(s) bloquant(s) KO" : ko ? ko + " KO, " + res + " réserve(s)" : nt + " à tester" };
+  // O · Organisation : la formation
+  var fo = D.formation || {}, eff = 0, pres = 0;
+  arr(fo.profils).forEach(function (p) { arr(p.effectifs).forEach(function (e) { eff += n(e); }); });
+  arr(fo.sessions).forEach(function (s) { pres += n(s.presents); });
+  var cov = eff ? Math.min(1, pres / eff) : 0, seuil = n(fo.seuil) || 0.9;
+  out.O = { etat: !eff || !pres ? "gris" : cov >= seuil ? "vert" : "encours", mesure: eff ? pc(Math.min(pres, eff), eff) + " des utilisateurs formés" : "Aucun effectif", detail: "Seuil du Go : " + Math.round(seuil * 100) + " %" };
+  // L · Localisation : les prérequis des sites
+  var pr = arr(D.prerequis && D.prerequis.rows), fait = 0, bloq = 0, retard = 0;
+  pr.forEach(function (r) { if (r.statut === "Fait") fait++; else { if (r.statut === "Bloquant") bloq++; if (r.echeance && ref && r.echeance < ref) retard++; } });
+  out.L = { etat: !pr.length ? "gris" : bloq ? "rouge" : retard ? "orange" : fait === pr.length ? "vert" : "encours", mesure: pr.length ? fait + " / " + pr.length + " prérequis faits" : "Aucun prérequis", detail: bloq ? bloq + " bloquant(s)" : retard ? retard + " en retard" : "Aucun retard" };
+  // D · Données : la migration des archives
+  var su = D.suivi || {}, vol = n(su.volume), migr = 0;
+  arr(su.jours).forEach(function (j) { migr += n(j.to); });
+  var att = 0;
+  if (su.debut && su.fin && ref && ref > su.debut) { var t0 = Date.parse(su.debut), t1 = Date.parse(su.fin), tr = Date.parse(ref); att = t1 > t0 ? Math.min(1, (tr - t0) / (t1 - t0)) : 0; }
+  var avc = vol ? migr / vol : 0;
+  out.D = { etat: !vol || !migr ? "gris" : avc >= 1 ? "vert" : att && avc < att * 0.7 ? "rouge" : att && avc < att * 0.9 ? "orange" : "encours",
+    mesure: vol ? pc(Math.min(migr, vol), vol) + " des archives migrées" : "Pas de migration", detail: vol ? (att ? "Attendu à date : " + pc(att, 1) : "Migration à venir") : "Sans objet" };
+  // A · Applications : les interfaces
+  var fl = arr(D.flux && D.flux.rows), rec = 0, fko = 0;
+  fl.forEach(function (f) { if (f.statut === "Recetté") rec++; if (f.statut === "KO") fko++; });
+  out.A = { etat: !fl.length ? "gris" : fko ? "rouge" : rec === fl.length ? "vert" : "encours", mesure: fl.length ? rec + " / " + fl.length + " flux recettés" : "Aucun flux", detail: fko ? fko + " flux en échec" : "Aucun échec" };
+  // T · Technologie : modalités connectées et prérequis d'infrastructure
+  var mo = arr(D.modalites && D.modalites.rows), tst = 0, con = 0, prob = 0;
+  mo.forEach(function (m) { if (m.statut === "Testée") tst++; else if (m.statut === "Connectée") con++; else if (m.statut === "Problème") prob++; });
+  out.T = { etat: !mo.length ? "gris" : prob * 4 > mo.length ? "rouge" : prob ? "orange" : tst === mo.length ? "vert" : !tst && !con ? "gris" : "encours",
+    mesure: mo.length ? tst + " / " + mo.length + " modalités testées" : "Aucune modalité", detail: prob ? prob + " modalité(s) en problème" : con + " connectée(s) à tester" };
+  // statut forcé dans la grille
+  arr(D.poldat && D.poldat.rows).forEach(function (r) {
+    var k = String(r.domaine || "").trim().charAt(0).toUpperCase(), f = { Vert: "vert", Orange: "orange", Rouge: "rouge" }[r.statut];
+    if (out[k]) { out[k].auto = out[k].etat; if (f) { out[k].etat = f; out[k].manuel = true; } out[k].cible = r.cible || ""; out[k].commentaire = r.commentaire || ""; }
+  });
+  return out;
+}
+
+
 /* Lit le classeur « Pilotage PRINCE2 PACS — version éditeur » et produit le modèle du projet.
    Utilisé tel quel dans le navigateur (import d'un classeur) et dans Node (génération des données). */
 function parseWorkbook(wb) {
@@ -307,7 +376,28 @@ function parseWorkbook(wb) {
     prochainComite: { date: dt(CR, "C46"), objet: txt(CR, "E46") }
   };
   m.outils = parseOutils(wb);
+  if (m.outils) m.outils.poldat = parsePoldat(wb, m.meta.situation);
   return m;
+}
+/* Grille POLDAT (Catalyst) : relit les onglets OT au format de la boîte à outils, puis applique le même calcul. */
+if (typeof poldatAuto === "undefined" && typeof require !== "undefined") { var _pd = require("/home/claude/outilsbuild/poldat.js"); poldatAuto = _pd.poldatAuto; POLDAT_DOM = _pd.POLDAT_DOM; POLDAT_ETATS = _pd.POLDAT_ETATS; }
+function parsePoldat(wb, ref) {
+  function v(sh, a) { var ws = wb.Sheets[sh], c = ws && ws[a]; return c ? c.v : null; }
+  function f(x) { return x !== null && x !== undefined && String(x).trim() !== ""; }
+  function day(x) { return typeof x === "number" && x > 20000 ? new Date(Date.UTC(1899, 11, 30) + Math.round(x) * 864e5).toISOString().slice(0, 10) : (f(x) ? String(x).slice(0, 10) : ""); }
+  function rows(sh, keyCol, fn) { var out = []; for (var r = 5; r <= 204; r++) if (f(v(sh, keyCol + r))) out.push(fn(r)); return out; }
+  var P = {}; for (var r = 5; r <= 120; r++) { var k = v("OT Paramètres", "B" + r); if (f(k)) P[String(k).trim()] = v("OT Paramètres", "D" + r); }
+  var D = {
+    recette: { rows: rows("OT Recette", "C", function (r) { return { bloquant: v("OT Recette", "E" + r) === "Oui", statut: v("OT Recette", "F" + r) || "Non testé" }; }) },
+    formation: { seuil: Number(P["formation.seuil"]) || 0.9, profils: rows("OT Formation profils", "A", function (r) { return { effectifs: "CDEFGH".split("").map(function (c) { return Number(v("OT Formation profils", c + r)) || 0; }) }; }), sessions: rows("OT Formation sessions", "C", function (r) { return { presents: Number(v("OT Formation sessions", "F" + r)) || 0 }; }) },
+    prerequis: { rows: rows("OT Prérequis", "B", function (r) { return { categorie: v("OT Prérequis", "A" + r) || "", echeance: day(v("OT Prérequis", "E" + r)), statut: v("OT Prérequis", "G" + r) || "" }; }) },
+    suivi: { volume: Number(P["suivi.volume"]) || 0, debut: day(P["suivi.debut"]), fin: day(P["suivi.fin"]), jours: rows("OT Suivi migration", "A", function (r) { return { to: Number(v("OT Suivi migration", "B" + r)) || 0 }; }) },
+    flux: { rows: rows("OT Flux", "A", function (r) { return { statut: v("OT Flux", "E" + r) || "" }; }) },
+    modalites: { rows: rows("OT Modalités", "D", function (r) { return { statut: v("OT Modalités", "J" + r) || "" }; }) },
+    poldat: { rows: rows("OT POLDAT", "A", function (r) { return { domaine: v("OT POLDAT", "A" + r), cible: v("OT POLDAT", "C" + r) || "", statut: v("OT POLDAT", "F" + r) || "Auto", commentaire: v("OT POLDAT", "G" + r) || "" }; }) }
+  };
+  var st = poldatAuto(D, ref);
+  return POLDAT_DOM.map(function (d) { var x = st[d.k]; return { k: d.k, nom: d.nom, etat: x.etat, libelle: POLDAT_ETATS[x.etat], mesure: x.mesure, detail: x.detail, manuel: !!x.manuel, commentaire: x.commentaire || "" }; });
 }
 /* Onglets « OT … » de la boîte à outils : indicateurs de préparation technique. */
 function parseOutils(wb) {
@@ -657,7 +747,7 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
       kpiBlock(m, x) +
       '<div class="grid g2"><section class="panel"><h2>Avancement par séquence</h2><div class="legend" style="margin:-4px 0 6px"><span style="--c:var(--accent)">Réalisé</span><span style="--c:var(--plan)">Prévu</span></div>' + seqRows(m) + "</section>" +
       '<section class="panel"><h2>Prochains jalons</h2>' + jalonsList(x.jalons, 6) + '<h2 style="margin-top:18px">Risques à surveiller <small>' + x.risquesOuverts.length + " ouverts</small></h2>" + riskTable(x.risquesOuverts.slice(0, 3), true) + "</section></div>" +
-      (m.outils ? '<section class="panel"><h2><span>Préparation technique <small>boîte à outils du projet</small></span>' + (OUTILS_URL && !m.clientOnly ? '<a class="btnlink" href="' + esc(OUTILS_URL) + '"' + (OUTILS_URL.charAt(0) === "#" ? "" : ' target="_blank" rel="noopener"') + ">Ouvrir la boîte à outils</a>" : "") + "</h2>" + outilsKpis(m.outils, x.client) + "</section>" : "");
+      (m.outils ? '<section class="panel"><h2><span>Préparation technique <small>boîte à outils du projet</small></span>' + (OUTILS_URL && !m.clientOnly ? '<a class="btnlink" href="' + esc(OUTILS_URL) + '"' + (OUTILS_URL.charAt(0) === "#" ? "" : ' target="_blank" rel="noopener"') + ">Ouvrir la boîte à outils</a>" : "") + "</h2>" + poldatStrip(m.outils) + '<h3 class="psub">Indicateurs des outils</h3>' + outilsKpis(m.outils, x.client) + "</section>" : "");
   }
   function viewPlanning(m) {
     var opts = ['<button type="button" data-seq="" aria-pressed="' + (state.seqFiltre === "") + '">Tout le projet</button>'].concat(m.sequences.filter(function (s) { return s.nom; }).map(function (s) {
@@ -731,6 +821,7 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
         row("Exception", "Dès qu'une tolérance passe au rouge", "Doc Exception : cause, options, recommandation"),
         row("Comité technique", "Toutes les 2 semaines", ot ? L("outils/flux", "Matrice des flux") + ", " + L("outils/modalites", "inventaire des modalités") : "Boîte à outils")
       ]) + "</section></div>" +
+      '<section class="panel"><h2>Et Catalyst ? <small>la grille POLDAT</small></h2><p class="mtext">PRINCE2 dit <strong>comment piloter</strong> ; la méthode Catalyst (CSC, aujourd\'hui DXC) aide à voir <strong>ce qui change</strong>. Sa grille POLDAT examine six domaines : processus, organisation, localisation, données, applications, technologie. Dans l\'outil, l\'état de chaque domaine est calculé à partir de la boîte à outils et affiché dans la synthèse.</p>' + (ot ? '<p class="mtext">' + L("outils/poldat", "Ouvrir la grille POLDAT") + "</p>" : "") + "</section>" +
       '<section class="panel"><h2>Le rôle du chef de projet éditeur</h2><ul class="mlist">' +
         "<li><strong>Livrer dans les tolérances</strong> : délai, qualité et périmètre du CCTP, sans interrompre le service d'imagerie du client.</li>" +
         "<li><strong>Protéger la marge</strong> : charge suivie chaque semaine, toute demande hors périmètre chiffrée en avenant.</li>" +
@@ -798,6 +889,13 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
     ];
     var av = !client && o.avenant && (o.avenant.prix || o.avenant.intitule) ? '<p class="note" style="margin:12px 0 0">Interne · avenant en préparation : <strong>' + esc(eur(o.avenant.prix)) + "</strong> au prix catalogue (coût " + esc(eur(o.avenant.cout)) + ")" + (o.avenant.intitule ? " pour « " + esc(o.avenant.intitule) + " »" : "") + ". Prix final et marge dans la boîte à outils.</p>" : "";
     return '<div class="kpis ot">' + items.map(function (i) { return '<div class="kpi' + (i[3] === "internal" ? " internal-k" : "") + '"><div class="v"' + (i[3] && i[3] !== "internal" ? ' style="color:var(--' + i[3] + ')"' : "") + ">" + esc(i[0]) + '</div><div class="l">' + esc(i[1]) + "</div>" + (i[2] ? '<div class="l" style="font-weight:600">' + esc(i[2]) + "</div>" : "") + "</div>"; }).join("") + "</div>" + av;
+  }
+  function poldatStrip(o) {
+    if (!o || !o.poldat) return "";
+    var cls = { vert: "ok", orange: "warn", rouge: "crit", encours: "info", gris: "" };
+    return '<h3 class="psub">Le changement par domaine <small>grille POLDAT (Catalyst)</small></h3><div class="pstrip">' + o.poldat.map(function (p) {
+      return '<div class="ptile ' + cls[p.etat] + '" title="' + esc(p.detail + (p.commentaire ? " · " + p.commentaire : "")) + '"><div class="pt1"><span class="pletter">' + p.k + "</span>" + esc(p.nom) + '</div><div class="pt2">' + esc(p.libelle) + (p.manuel ? " *" : "") + '</div><div class="pt3">' + esc(p.mesure) + "</div></div>";
+    }).join("") + "</div>" + (o.poldat.some(function (p) { return p.manuel; }) ? '<p class="note" style="margin:6px 0 0">* état fixé par le chef de projet.</p>' : "");
   }
   function fmtNum(v) { return Number(v || 0).toLocaleString("fr-FR", { maximumFractionDigits: 1 }); }
   function deckCoproj(m, x) {

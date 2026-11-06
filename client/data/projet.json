@@ -1321,7 +1321,69 @@
   "gonogo": {
    "ok": 0,
    "total": 7
-  }
+  },
+  "poldat": [
+   {
+    "k": "P",
+    "nom": "Processus",
+    "etat": "orange",
+    "libelle": "Vigilance",
+    "mesure": "55 % des scénarios passés",
+    "detail": "1 KO, 2 réserve(s)",
+    "manuel": false,
+    "commentaire": ""
+   },
+   {
+    "k": "O",
+    "nom": "Organisation",
+    "etat": "encours",
+    "libelle": "En cours",
+    "mesure": "54 % des utilisateurs formés",
+    "detail": "Seuil du Go : 90 %",
+    "manuel": false,
+    "commentaire": ""
+   },
+   {
+    "k": "L",
+    "nom": "Localisation",
+    "etat": "rouge",
+    "libelle": "Bloqué",
+    "mesure": "3 / 14 prérequis faits",
+    "detail": "1 bloquant(s)",
+    "manuel": false,
+    "commentaire": ""
+   },
+   {
+    "k": "D",
+    "nom": "Données",
+    "etat": "encours",
+    "libelle": "En cours",
+    "mesure": "19 % des archives migrées",
+    "detail": "Migration à venir",
+    "manuel": false,
+    "commentaire": ""
+   },
+   {
+    "k": "A",
+    "nom": "Applications",
+    "etat": "rouge",
+    "libelle": "Bloqué",
+    "mesure": "3 / 11 flux recettés",
+    "detail": "1 flux en échec",
+    "manuel": false,
+    "commentaire": ""
+   },
+   {
+    "k": "T",
+    "nom": "Technologie",
+    "etat": "orange",
+    "libelle": "Vigilance",
+    "mesure": "5 / 20 modalités testées",
+    "detail": "3 modalité(s) en problème",
+    "manuel": false,
+    "commentaire": ""
+   }
+  ]
  },
  "clientOnly": true
 }
