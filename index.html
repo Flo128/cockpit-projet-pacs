@@ -5,8 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 </head>
-<body>
-<title>Pilotage PACS</title>
+<body><title>Pilotage PACS</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -324,8 +323,7 @@ body { margin: 0; background: var(--shell-bg); }
   #app-ot main { padding-left: max(16px, env(safe-area-inset-left, 0px)); }
   #app-ot .step { grid-template-columns: 1fr; }
 }
-
-#app-ot{font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#15212E}#app-ot h1{font-size:20pt;color:#1F5F8B;margin:0 0 4pt}#app-ot h2{font-size:14pt;color:#1F5F8B;margin:16pt 0 6pt}#app-ot p{margin:0 0 6pt}#app-ot table{border-collapse:collapse;width:100%;margin:4pt 0 10pt}#app-ot th{background:#1F5F8B;color:#fff;text-align:left;padding:4pt;font-size:10pt}#app-ot td{border:1px solid #D9DFE7;padding:4pt;font-size:10pt;vertical-align:top}#app-ot .meta{color:#5B6878}</style>
+</style>
 <style>
 #app-ck { min-height: 0; }
 #app-ot .layout { max-width: 1880px; margin: 0 auto; padding: 0 max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px)); grid-template-columns: 200px minmax(0, 1fr); gap: 24px; min-height: 0; }
@@ -2672,7 +2670,7 @@ function poldatAuto(D, ref) {
   }
   function buildDoc(specs) {
     var e = function (t) { return String(t == null ? "" : t).replace(/[&<>]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]; }); };
-    var h = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><title>' + e(specs[0].title) + '</title></head><body>';
+    var h = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><title>' + e(specs[0].title) + '</title><style>body{font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#15212E}h1{font-size:20pt;color:#1F5F8B;margin:0 0 4pt}h2{font-size:14pt;color:#1F5F8B;margin:16pt 0 6pt}p{margin:0 0 6pt}table{border-collapse:collapse;width:100%;margin:4pt 0 10pt}th{background:#1F5F8B;color:#fff;text-align:left;padding:4pt;font-size:10pt}td{border:1px solid #D9DFE7;padding:4pt;font-size:10pt;vertical-align:top}.meta{color:#5B6878}</style></head><body>';
     specs.forEach(function (sp) {
       h += "<h1>" + e(sp.title) + "</h1>" + (sp.subtitle ? '<p class="meta">' + e(sp.subtitle) + "</p>" : "");
       (sp.sections || []).forEach(function (sec) {
@@ -3232,6 +3230,5 @@ function pilotSnapshot(wb, source) {
   function sw() { var o = /^#outils/.test(location.hash || ""); document.getElementById("app-ot").hidden = !o; }
   window.addEventListener("hashchange", sw); sw();
 })();
-</script>
-</body>
+</script></body>
 </html>
