@@ -10,9 +10,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-:root { --shell-bg: #F3F5F8; color-scheme: light dark; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --shell-bg: #0E141B; } }
-:root[data-theme="dark"] { --shell-bg: #0E141B; }
+:root { --shell-bg: #F3F5F8; color-scheme: light; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --shell-bg: #0E141B; color-scheme: dark; } }
+:root[data-theme="dark"] { --shell-bg: #0E141B; color-scheme: dark; }
 body { margin: 0; background: var(--shell-bg); }
 #app-ck, #app-ot { min-height: 100vh; }
 #app-ck[hidden], #app-ot[hidden] { display: none !important; }
@@ -26,7 +26,7 @@ body { margin: 0; background: var(--shell-bg); }
   --mile: #C9741B; --today: #D2453C;
   --font-ui: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
   --font-data: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
-  --radius: 8px;
+  --radius: 8px; color-scheme: light;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) #app-ck {
   --bg: #0E151D; --surface: #151F2A; --sunk: #1B2734; --line: #283646; --fg: #E4EAF1; --muted: #93A2B2;
@@ -39,6 +39,7 @@ body { margin: 0; background: var(--shell-bg); }
   --ok: #5FBF8A; --ok-soft: #1D3A2B; --warn: #E3A447; --warn-soft: #43321A; --crit: #EE7A71; --crit-soft: #4A2523;
   --mile: #E39A4E; --today: #F07A70; color-scheme: dark }
 #app-ck * { box-sizing: border-box; }
+#app-ck option, #app-ck optgroup { background: var(--surface); color: var(--fg); }
 #app-ck { background: var(--bg); color: var(--fg); font-family: var(--font-ui); font-size: 14px; line-height: 1.45; }
 #app-ck .wrap { max-width: 1880px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 #app-ck header.top { background: var(--surface); border-bottom: 1px solid var(--line); }
@@ -189,7 +190,7 @@ body { margin: 0; background: var(--shell-bg); }
   --ok: #2F7D53; --ok-soft: #DCEFE3; --warn: #B8700F; --warn-soft: #FBEBD2; --crit: #B93A33; --crit-soft: #F7DCDA; --mile: #C9741B;
   --font-ui: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
   --font-data: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
-  --radius: 8px;
+  --radius: 8px; color-scheme: light;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) #app-ot {
   --bg: #0E151D; --surface: #151F2A; --sunk: #1B2734; --line: #283646; --fg: #E4EAF1; --muted: #93A2B2;
@@ -200,6 +201,7 @@ body { margin: 0; background: var(--shell-bg); }
   --accent: #6BA6D6; --accent-soft: #23415B; --accent-ink: #0E151D; --plan: #3C5A75;
   --ok: #5FBF8A; --ok-soft: #1D3A2B; --warn: #E3A447; --warn-soft: #43321A; --crit: #EE7A71; --crit-soft: #4A2523; --mile: #E39A4E; color-scheme: dark }
 #app-ot * { box-sizing: border-box; }
+#app-ot option, #app-ot optgroup { background: var(--surface); color: var(--fg); }
 #app-ot { background: var(--bg); color: var(--fg); font-family: var(--font-ui); font-size: 14px; line-height: 1.45; }
 #app-ot header.top { background: var(--surface); border-bottom: 1px solid var(--line); }
 #app-ot header.top .in { padding: 14px max(16px, env(safe-area-inset-right, 0px)) 14px max(16px, env(safe-area-inset-left, 0px)); display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: center; justify-content: space-between; }
