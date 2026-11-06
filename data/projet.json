@@ -145,7 +145,8 @@
    "jalon": false,
    "reel": 1,
    "prevu": 1,
-   "statut": "Terminé"
+   "statut": "Terminé",
+   "cause": ""
   },
   {
    "id": "T02",
@@ -158,7 +159,8 @@
    "jalon": false,
    "reel": 1,
    "prevu": 1,
-   "statut": "Terminé"
+   "statut": "Terminé",
+   "cause": ""
   },
   {
    "id": "T03",
@@ -171,7 +173,8 @@
    "jalon": true,
    "reel": 1,
    "prevu": 1,
-   "statut": "Terminé"
+   "statut": "Terminé",
+   "cause": ""
   },
   {
    "id": "T04",
@@ -184,7 +187,8 @@
    "jalon": true,
    "reel": 1,
    "prevu": 1,
-   "statut": "Terminé"
+   "statut": "Terminé",
+   "cause": ""
   },
   {
    "id": "T05",
@@ -197,7 +201,8 @@
    "jalon": false,
    "reel": 1,
    "prevu": 1,
-   "statut": "Terminé"
+   "statut": "Terminé",
+   "cause": ""
   },
   {
    "id": "T06",
@@ -210,7 +215,8 @@
    "jalon": false,
    "reel": 1,
    "prevu": 1,
-   "statut": "Terminé"
+   "statut": "Terminé",
+   "cause": ""
   },
   {
    "id": "T07",
@@ -223,7 +229,8 @@
    "jalon": false,
    "reel": 1,
    "prevu": 1,
-   "statut": "Terminé"
+   "statut": "Terminé",
+   "cause": ""
   },
   {
    "id": "T08",
@@ -236,7 +243,8 @@
    "jalon": false,
    "reel": 1,
    "prevu": 1,
-   "statut": "Terminé"
+   "statut": "Terminé",
+   "cause": ""
   },
   {
    "id": "T09",
@@ -249,7 +257,8 @@
    "jalon": true,
    "reel": 1,
    "prevu": 1,
-   "statut": "Terminé"
+   "statut": "Terminé",
+   "cause": ""
   },
   {
    "id": "T10",
@@ -262,7 +271,8 @@
    "jalon": false,
    "reel": 0.6,
    "prevu": 0.8,
-   "statut": "En retard"
+   "statut": "En retard",
+   "cause": "Choix du PRA (site de secours ou cloud HDS) non arbitré par la DSI ; arbitrage demandé au COPROJ du 05/11, rédaction reprise sous 3 jours après décision."
   },
   {
    "id": "T11",
@@ -275,7 +285,8 @@
    "jalon": false,
    "reel": 0.4,
    "prevu": 0.466666666666667,
-   "statut": "En cours"
+   "statut": "En cours",
+   "cause": ""
   },
   {
    "id": "T12",
@@ -288,7 +299,8 @@
    "jalon": false,
    "reel": 0.3,
    "prevu": 0.466666666666667,
-   "statut": "En retard"
+   "statut": "En retard",
+   "cause": "Comptes de service AD et ouverture des flux pare-feu en attente côté DSI ; relance écrite le 02/11, sans impact sur l'installation si levé avant le 20/11."
   },
   {
    "id": "T13",
@@ -301,7 +313,8 @@
    "jalon": false,
    "reel": 0,
    "prevu": 0.133333333333333,
-   "statut": "En cours"
+   "statut": "En cours",
+   "cause": ""
   },
   {
    "id": "T14",
@@ -314,7 +327,8 @@
    "jalon": false,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T15",
@@ -327,7 +341,8 @@
    "jalon": true,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T16",
@@ -340,7 +355,8 @@
    "jalon": false,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T17",
@@ -353,7 +369,8 @@
    "jalon": false,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T18",
@@ -366,7 +383,8 @@
    "jalon": false,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T19",
@@ -379,7 +397,8 @@
    "jalon": false,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T20",
@@ -392,7 +411,8 @@
    "jalon": true,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T21",
@@ -405,7 +425,8 @@
    "jalon": false,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T22",
@@ -418,7 +439,8 @@
    "jalon": false,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T23",
@@ -431,7 +453,8 @@
    "jalon": false,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T24",
@@ -444,7 +467,8 @@
    "jalon": false,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T25",
@@ -457,7 +481,8 @@
    "jalon": true,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T26",
@@ -470,7 +495,8 @@
    "jalon": false,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T27",
@@ -483,7 +509,8 @@
    "jalon": false,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T28",
@@ -496,7 +523,8 @@
    "jalon": true,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T29",
@@ -509,7 +537,8 @@
    "jalon": false,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T30",
@@ -522,7 +551,8 @@
    "jalon": false,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T31",
@@ -535,7 +565,8 @@
    "jalon": false,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T32",
@@ -548,7 +579,8 @@
    "jalon": false,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T33",
@@ -561,7 +593,8 @@
    "jalon": false,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T34",
@@ -574,7 +607,8 @@
    "jalon": true,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   }
  ],
  "risques": [
@@ -1849,6 +1883,7 @@
     "mesure": "55 % des scénarios passés",
     "detail": "1 KO, 2 réserve(s)",
     "manuel": false,
+    "cible": "Circuit numérique de bout en bout : demande, worklist, examen, interprétation, diffusion au DPI",
     "commentaire": ""
    },
    {
@@ -1859,6 +1894,7 @@
     "mesure": "54 % des utilisateurs formés",
     "detail": "Seuil du Go : 90 %",
     "manuel": false,
+    "cible": "Un administrateur PACS, des référents par modalité, un support de niveau 1 au CH",
     "commentaire": ""
    },
    {
@@ -1869,6 +1905,7 @@
     "mesure": "3 / 14 prérequis faits",
     "detail": "1 bloquant(s)",
     "manuel": false,
+    "cible": "Une plateforme commune, une salle principale et une salle de secours",
     "commentaire": ""
    },
    {
@@ -1879,6 +1916,7 @@
     "mesure": "19 % des archives migrées",
     "detail": "Migration à venir",
     "manuel": false,
+    "cible": "Archives migrées et contrôlées, identité patient unique, conservation 20 ans",
     "commentaire": ""
    },
    {
@@ -1889,6 +1927,7 @@
     "mesure": "3 / 11 flux recettés",
     "detail": "1 flux en échec",
     "manuel": false,
+    "cible": "PACS interfacé avec le RIS (HL7), le DPI (lien contextuel) et les modalités (DICOM, worklist)",
     "commentaire": ""
    },
    {
@@ -1899,6 +1938,7 @@
     "mesure": "5 / 20 modalités testées",
     "detail": "3 modalité(s) en problème",
     "manuel": false,
+    "cible": "Stockage dimensionné à 10 ans, haute disponibilité, PRA, supervision",
     "commentaire": ""
    }
   ]

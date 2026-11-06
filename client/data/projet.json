@@ -12,7 +12,11 @@
  },
  "tiles": {
   "reel": 0.167506297229219,
-  "prevu": 0.188916876574307
+  "prevu": 0.188916876574307,
+  "marge": 0.408488228004957,
+  "tolRouge": 0,
+  "risquesCritiques": 1,
+  "pointsOuverts": 4
  },
  "sequences": [
   {
@@ -83,6 +87,24 @@
    "action": "Vigilance : signaler dans le rapport de point"
   },
   {
+   "dimension": "Marge",
+   "indicateur": "Points de marge perdus par rapport à l'offre",
+   "tolerance": 0.03,
+   "actuel": 0.0201281241963012,
+   "consommee": 0.670937473210041,
+   "etat": "Vert",
+   "action": "Aucune : géré par le chef de projet"
+  },
+  {
+   "dimension": "Charge",
+   "indicateur": "Jours au-delà du vendu (prévision à terminaison)",
+   "tolerance": 10,
+   "actuel": 6,
+   "consommee": 0.6,
+   "etat": "Vert",
+   "action": "Aucune : géré par le chef de projet"
+  },
+  {
    "dimension": "Périmètre",
    "indicateur": "Demandes de changement approuvées",
    "tolerance": 3,
@@ -102,7 +124,7 @@
   },
   {
    "dimension": "Risques",
-   "indicateur": "Risques critiques partagés non clos (criticité ≥ 15)",
+   "indicateur": "Risques critiques non clos (criticité ≥ 15)",
    "tolerance": 2,
    "actuel": 1,
    "consommee": 0.5,
@@ -123,7 +145,8 @@
    "jalon": false,
    "reel": 1,
    "prevu": 1,
-   "statut": "Terminé"
+   "statut": "Terminé",
+   "cause": ""
   },
   {
    "id": "T02",
@@ -136,7 +159,8 @@
    "jalon": false,
    "reel": 1,
    "prevu": 1,
-   "statut": "Terminé"
+   "statut": "Terminé",
+   "cause": ""
   },
   {
    "id": "T03",
@@ -149,7 +173,8 @@
    "jalon": true,
    "reel": 1,
    "prevu": 1,
-   "statut": "Terminé"
+   "statut": "Terminé",
+   "cause": ""
   },
   {
    "id": "T04",
@@ -162,7 +187,8 @@
    "jalon": true,
    "reel": 1,
    "prevu": 1,
-   "statut": "Terminé"
+   "statut": "Terminé",
+   "cause": ""
   },
   {
    "id": "T05",
@@ -175,7 +201,8 @@
    "jalon": false,
    "reel": 1,
    "prevu": 1,
-   "statut": "Terminé"
+   "statut": "Terminé",
+   "cause": ""
   },
   {
    "id": "T06",
@@ -188,7 +215,8 @@
    "jalon": false,
    "reel": 1,
    "prevu": 1,
-   "statut": "Terminé"
+   "statut": "Terminé",
+   "cause": ""
   },
   {
    "id": "T07",
@@ -201,7 +229,8 @@
    "jalon": false,
    "reel": 1,
    "prevu": 1,
-   "statut": "Terminé"
+   "statut": "Terminé",
+   "cause": ""
   },
   {
    "id": "T08",
@@ -214,7 +243,8 @@
    "jalon": false,
    "reel": 1,
    "prevu": 1,
-   "statut": "Terminé"
+   "statut": "Terminé",
+   "cause": ""
   },
   {
    "id": "T09",
@@ -227,7 +257,8 @@
    "jalon": true,
    "reel": 1,
    "prevu": 1,
-   "statut": "Terminé"
+   "statut": "Terminé",
+   "cause": ""
   },
   {
    "id": "T10",
@@ -240,7 +271,8 @@
    "jalon": false,
    "reel": 0.6,
    "prevu": 0.8,
-   "statut": "En retard"
+   "statut": "En retard",
+   "cause": "Choix du PRA (site de secours ou cloud HDS) non arbitré par la DSI ; arbitrage demandé au COPROJ du 05/11, rédaction reprise sous 3 jours après décision."
   },
   {
    "id": "T11",
@@ -253,7 +285,8 @@
    "jalon": false,
    "reel": 0.4,
    "prevu": 0.466666666666667,
-   "statut": "En cours"
+   "statut": "En cours",
+   "cause": ""
   },
   {
    "id": "T12",
@@ -266,7 +299,8 @@
    "jalon": false,
    "reel": 0.3,
    "prevu": 0.466666666666667,
-   "statut": "En retard"
+   "statut": "En retard",
+   "cause": "Comptes de service AD et ouverture des flux pare-feu en attente côté DSI ; relance écrite le 02/11, sans impact sur l'installation si levé avant le 20/11."
   },
   {
    "id": "T13",
@@ -279,7 +313,8 @@
    "jalon": false,
    "reel": 0,
    "prevu": 0.133333333333333,
-   "statut": "En cours"
+   "statut": "En cours",
+   "cause": ""
   },
   {
    "id": "T14",
@@ -292,7 +327,8 @@
    "jalon": false,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T15",
@@ -305,7 +341,8 @@
    "jalon": true,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T16",
@@ -318,7 +355,8 @@
    "jalon": false,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T17",
@@ -331,7 +369,8 @@
    "jalon": false,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T18",
@@ -344,7 +383,8 @@
    "jalon": false,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T19",
@@ -357,7 +397,8 @@
    "jalon": false,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T20",
@@ -370,7 +411,8 @@
    "jalon": true,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T21",
@@ -383,7 +425,8 @@
    "jalon": false,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T22",
@@ -396,7 +439,8 @@
    "jalon": false,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T23",
@@ -409,7 +453,8 @@
    "jalon": false,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T24",
@@ -422,7 +467,8 @@
    "jalon": false,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T25",
@@ -435,7 +481,8 @@
    "jalon": true,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T26",
@@ -448,7 +495,8 @@
    "jalon": false,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T27",
@@ -461,7 +509,8 @@
    "jalon": false,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T28",
@@ -474,7 +523,8 @@
    "jalon": true,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T29",
@@ -487,7 +537,8 @@
    "jalon": false,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T30",
@@ -500,7 +551,8 @@
    "jalon": false,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T31",
@@ -513,7 +565,8 @@
    "jalon": false,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T32",
@@ -526,7 +579,8 @@
    "jalon": false,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T33",
@@ -539,7 +593,8 @@
    "jalon": false,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   },
   {
    "id": "T34",
@@ -552,7 +607,8 @@
    "jalon": true,
    "reel": null,
    "prevu": 0,
-   "statut": "À venir"
+   "statut": "À venir",
+   "cause": ""
   }
  ],
  "risques": [
@@ -637,6 +693,54 @@
    "diffusion": "Partagé"
   },
   {
+   "id": "R06",
+   "date": "2026-10-02",
+   "description": "Ingénieurs partagés avec deux autres projets : manque de disponibilité en séquence 3.",
+   "categorie": "Organisation",
+   "probabilite": 3,
+   "impact": 3,
+   "criticite": 9,
+   "niveau": "Élevé",
+   "proprietaire": "Fournisseur principal",
+   "reponse": "Réduire",
+   "actions": "Renfort d'un troisième ingénieur en janvier (décision de la revue interne).",
+   "echeance": "2027-01-04",
+   "statut": "En traitement",
+   "diffusion": "Interne"
+  },
+  {
+   "id": "R07",
+   "date": "2026-10-02",
+   "description": "Demandes hors périmètre en recette sans avenant : dérive de charge et perte de marge.",
+   "categorie": "Financier",
+   "probabilite": 3,
+   "impact": 3,
+   "criticite": 9,
+   "niveau": "Élevé",
+   "proprietaire": "Chef de projet",
+   "reponse": "Éviter",
+   "actions": "Toute demande hors CCTP chiffrée et proposée en avenant ; validation par le directeur de compte.",
+   "echeance": null,
+   "statut": "Ouvert",
+   "diffusion": "Interne"
+  },
+  {
+   "id": "R08",
+   "date": "2026-09-24",
+   "description": "Pénalités de retard du CCAP si la VA dépasse la date contractuelle.",
+   "categorie": "Financier",
+   "probabilite": 2,
+   "impact": 4,
+   "criticite": 8,
+   "niveau": "Élevé",
+   "proprietaire": "Exécutif",
+   "reponse": "Réduire",
+   "actions": "Suivi hebdomadaire de la tolérance de délai, rapport d'exception anticipé.",
+   "echeance": "2027-04-23",
+   "statut": "Ouvert",
+   "diffusion": "Interne"
+  },
+  {
    "id": "R09",
    "date": "2026-10-02",
    "description": "Exigences de sécurité du client (HDS, PGSSI-S) découvertes tardivement : reprise de l'architecture.",
@@ -653,6 +757,22 @@
    "diffusion": "Partagé"
   },
   {
+   "id": "R10",
+   "date": "2026-09-30",
+   "description": "Départ d'un ingénieur clé en cours de projet.",
+   "categorie": "Organisation",
+   "probabilite": 2,
+   "impact": 3,
+   "criticite": 6,
+   "niveau": "Modéré",
+   "proprietaire": "Fournisseur principal",
+   "reponse": "Accepter",
+   "actions": "Documentation à jour, binôme sur les interfaces.",
+   "echeance": null,
+   "statut": "Ouvert",
+   "diffusion": "Interne"
+  },
+  {
    "id": "R11",
    "date": "2026-09-24",
    "description": "Perte ou corruption de données lors de la migration.",
@@ -667,6 +787,22 @@
    "echeance": "2027-05-28",
    "statut": "Ouvert",
    "diffusion": "Partagé"
+  },
+  {
+   "id": "R12",
+   "date": "2026-09-24",
+   "description": "Insatisfaction du client compromettant l'extension aux autres établissements du GHT.",
+   "categorie": "Métier / clinique",
+   "probabilite": 2,
+   "impact": 4,
+   "criticite": 8,
+   "niveau": "Élevé",
+   "proprietaire": "Exécutif",
+   "reponse": "Réduire",
+   "actions": "Comité de pilotage mensuel, enquête de satisfaction intermédiaire après la VA.",
+   "echeance": "2027-05-07",
+   "statut": "Ouvert",
+   "diffusion": "Interne"
   },
   {
    "id": "R13",
@@ -755,6 +891,20 @@
    "statut": "Ouvert",
    "decision": "Action du client attendue avant le 20/11 ; risque d'immobilisation des ingénieurs.",
    "diffusion": "Partagé"
+  },
+  {
+   "id": "P06",
+   "date": "2026-10-12",
+   "type": "Problème / préoccupation",
+   "description": "Ingénieur intégration réaffecté 2 semaines sur un autre projet.",
+   "emisPar": "Chef de projet",
+   "priorite": "Moyenne",
+   "niveau": "Chef de projet",
+   "impactDelai": 0,
+   "montant": 0,
+   "statut": "Clos",
+   "decision": "Arbitrage de la revue interne : retour le 19/10.",
+   "diffusion": "Interne"
   }
  ],
  "produits": [
@@ -954,74 +1104,325 @@
    "approuveLe": null
   }
  ],
+ "budget": {
+  "lignes": [
+   {
+    "poste": "Main-d'œuvre interne (onglet Ressources)",
+    "categorie": "Main-d'œuvre",
+    "sequence": "Toutes",
+    "initial": 174250,
+    "prevision": 177850,
+    "engage": 37900,
+    "realise": 37900,
+    "ecart": 3600,
+    "commentaire": "Calculé : jours × coût journalier."
+   },
+   {
+    "poste": "Matériel revendu (serveurs et stockage)",
+    "categorie": "Matériel revendu",
+    "sequence": "S2",
+    "initial": 150000,
+    "prevision": 158000,
+    "engage": 158000,
+    "realise": 0,
+    "ecart": 8000,
+    "commentaire": "Hausse du prix des composants chez le distributeur (+8 k€)."
+   },
+   {
+    "poste": "Migration des archives (partenaire)",
+    "categorie": "Sous-traitance",
+    "sequence": "S4",
+    "initial": 55000,
+    "prevision": 61000,
+    "engage": 55000,
+    "realise": 0,
+    "ecart": 6000,
+    "commentaire": "Volumétrie +15 % après audit : avenant du partenaire de 6 k€."
+   },
+   {
+    "poste": "Licences tiers (base de données, systèmes)",
+    "categorie": "Licences tiers",
+    "sequence": "S2",
+    "initial": 32000,
+    "prevision": 32000,
+    "engage": 32000,
+    "realise": 0,
+    "ecart": 0,
+    "commentaire": ""
+   },
+   {
+    "poste": "Frais de déplacement",
+    "categorie": "Frais",
+    "sequence": "Toutes",
+    "initial": 18000,
+    "prevision": 18000,
+    "engage": 4200,
+    "realise": 4200,
+    "ecart": 0,
+    "commentaire": ""
+   },
+   {
+    "poste": "Tablettes et licences de l'avenant n°1",
+    "categorie": "Matériel revendu",
+    "sequence": "S3",
+    "initial": 0,
+    "prevision": 5500,
+    "engage": 0,
+    "realise": 0,
+    "ecart": 5500,
+    "commentaire": "Coût de l'avenant n°1 (vendu 12 k€)."
+   },
+   {
+    "poste": "Provision pour risques",
+    "categorie": "Provision",
+    "sequence": "Toutes",
+    "initial": 25000,
+    "prevision": 25000,
+    "engage": 0,
+    "realise": 0,
+    "ecart": 0,
+    "commentaire": "Mobilisable sur décision de l'exécutif."
+   }
+  ],
+  "total": {
+   "initial": 454250,
+   "prevision": 477350,
+   "engage": 287100,
+   "realise": 42100,
+   "ecart": 23100
+  },
+  "marge": {
+   "ca": 807000,
+   "marche": 795000,
+   "coutInitial": 454250,
+   "coutPrevu": 477350,
+   "initiale": 0.428616352201258,
+   "prevue": 0.408488228004957,
+   "ecart": 0.0201281241963012,
+   "cible": 0.4
+  }
+ },
+ "ressources": {
+  "mois": [
+   "2026-11-01",
+   "2026-12-01",
+   "2027-01-01",
+   "2027-02-01",
+   "2027-03-01",
+   "2027-04-01",
+   "2027-05-01",
+   "2027-06-01"
+  ],
+  "lignes": [
+   {
+    "ressource": "Chef de projet",
+    "profil": "Chef de projet PACS",
+    "cout": 650,
+    "vendus": 95,
+    "consommes": 38,
+    "reste": 57,
+    "prevision": 95,
+    "ecart": 0,
+    "plan": [
+     7,
+     7,
+     7,
+     8,
+     7,
+     7,
+     8,
+     6
+    ]
+   },
+   {
+    "ressource": "Ingénieurs d'installation et d'intégration",
+    "profil": "2 ingénieurs (+1 en renfort)",
+    "cout": 600,
+    "vendus": 140,
+    "consommes": 22,
+    "reste": 124,
+    "prevision": 146,
+    "ecart": 6,
+    "plan": [
+     14,
+     16,
+     18,
+     20,
+     18,
+     16,
+     13,
+     9
+    ]
+   },
+   {
+    "ressource": "Spécialistes applicatifs et formateurs",
+    "profil": "Spécialiste applicatif",
+    "cout": 550,
+    "vendus": 30,
+    "consommes": 0,
+    "reste": 30,
+    "prevision": 30,
+    "ecart": 0,
+    "plan": [
+     0,
+     0,
+     0,
+     2,
+     4,
+     8,
+     12,
+     4
+    ]
+   },
+   {
+    "ressource": "Support post-démarrage",
+    "profil": "Support niveau 2",
+    "cout": 600,
+    "vendus": 20,
+    "consommes": 0,
+    "reste": 20,
+    "prevision": 20,
+    "ecart": 0,
+    "plan": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     8,
+     12
+    ]
+   }
+  ],
+  "total": {
+   "vendus": 285,
+   "consommes": 60,
+   "reste": 231,
+   "prevision": 291,
+   "ecart": 6,
+   "coutInitial": 174250,
+   "coutPrevu": 177850
+  }
+ },
  "facturation": {
+  "marche": 795000,
   "jalons": [
    {
     "id": "F01",
     "jalon": "Avance à la notification du marché",
     "declencheur": "Acte d'engagement notifié",
     "sequence": "S0 Élaboration",
+    "montant": 159000,
+    "part": 0.2,
     "datePrevue": "2026-09-07",
     "datePV": "2026-09-07",
-    "statut": "Payé"
+    "statut": "Payé",
+    "factureLe": "2026-09-15",
+    "payeLe": "2026-10-20",
+    "retard": null
    },
    {
     "id": "F02",
     "jalon": "Livraison du matériel",
     "declencheur": "PV de livraison",
     "sequence": "S2 Conception & infrastructure",
+    "montant": 159000,
+    "part": 0.2,
     "datePrevue": "2026-11-20",
     "datePV": null,
-    "statut": "Prévu"
+    "statut": "Prévu",
+    "factureLe": null,
+    "payeLe": null,
+    "retard": null
    },
    {
     "id": "F03",
     "jalon": "Installation de la plateforme",
     "declencheur": "PV d'installation",
     "sequence": "S2 Conception & infrastructure",
+    "montant": 79500,
+    "part": 0.1,
     "datePrevue": "2026-12-04",
     "datePV": null,
-    "statut": "Prévu"
+    "statut": "Prévu",
+    "factureLe": null,
+    "payeLe": null,
+    "retard": null
    },
    {
     "id": "F04",
     "jalon": "Avenant n°1 : tablettes pour les urgences",
     "declencheur": "PV de recette de l'avenant",
     "sequence": "S4 Migration & recette",
+    "montant": 12000,
+    "part": 0.0150943396226415,
     "datePrevue": "2027-04-23",
     "datePV": null,
-    "statut": "Prévu"
+    "statut": "Prévu",
+    "factureLe": null,
+    "payeLe": null,
+    "retard": null
    },
    {
     "id": "F05",
     "jalon": "Vérification d'aptitude (VA)",
     "declencheur": "PV de VA",
     "sequence": "S4 Migration & recette",
+    "montant": 198750,
+    "part": 0.25,
     "datePrevue": "2027-04-23",
     "datePV": null,
-    "statut": "Prévu"
+    "statut": "Prévu",
+    "factureLe": null,
+    "payeLe": null,
+    "retard": null
    },
    {
     "id": "F06",
     "jalon": "Vérification de service régulier (VSR)",
     "declencheur": "PV de VSR",
     "sequence": "S6 Clôture",
+    "montant": 159000,
+    "part": 0.2,
     "datePrevue": "2027-06-18",
     "datePV": null,
-    "statut": "Prévu"
+    "statut": "Prévu",
+    "factureLe": null,
+    "payeLe": null,
+    "retard": null
    },
    {
     "id": "F07",
     "jalon": "Levée des réserves et clôture",
     "declencheur": "PV de clôture",
     "sequence": "S6 Clôture",
+    "montant": 39750,
+    "part": 0.05,
     "datePrevue": "2027-06-25",
     "datePV": null,
-    "statut": "Prévu"
+    "statut": "Prévu",
+    "factureLe": null,
+    "payeLe": null,
+    "retard": null
    }
-  ]
+  ],
+  "total": 807000,
+  "facture": 159000,
+  "encaisse": 159000,
+  "reste": 648000
  },
  "decisions": [
+  {
+   "id": "D01",
+   "date": "2026-09-18",
+   "instance": "Revue interne",
+   "sequence": "S0 Élaboration",
+   "texte": "Décision : lancement de l'initialisation ; ressources affectées (chef de projet, 2 ingénieurs, partenaire de migration).",
+   "responsable": "Exécutif",
+   "echeance": null,
+   "statut": "Fait"
+  },
   {
    "id": "D02",
    "date": "2026-10-16",
@@ -1081,6 +1482,58 @@
    "responsable": "Client (DSI)",
    "echeance": "2026-11-20",
    "statut": "À faire"
+  },
+  {
+   "id": "D08",
+   "date": "2026-10-30",
+   "instance": "Revue interne",
+   "sequence": "S2 Conception & infrastructure",
+   "texte": "Décision : renfort d'un troisième ingénieur en janvier pour sécuriser la séquence 3.",
+   "responsable": "Exécutif",
+   "echeance": "2027-01-04",
+   "statut": "À faire"
+  }
+ ],
+ "lecons": [
+  {
+   "id": "E01",
+   "date": "2026-09-10",
+   "source": "Projet précédent",
+   "sequence": "S4 Migration & recette",
+   "constat": "La migration des archives, sous-estimée en avant-vente, a consommé 30 % de jours en plus.",
+   "recommandation": "Qualifier volumétrie et formats dès l'avant-vente ; migration à blanc avant la recette."
+  },
+  {
+   "id": "E02",
+   "date": "2026-09-10",
+   "source": "Projet précédent",
+   "sequence": "S2 Conception & infrastructure",
+   "constat": "Les prérequis client n'étaient pas prêts à l'arrivée des ingénieurs.",
+   "recommandation": "Envoyer la check-list des prérequis à la notification et la vérifier 3 semaines avant l'installation."
+  },
+  {
+   "id": "E03",
+   "date": "2026-09-10",
+   "source": "Projet précédent",
+   "sequence": "S3 Paramétrage & intégration",
+   "constat": "Le paramétrage réalisé sans les manipulateurs a dû être refait.",
+   "recommandation": "Associer un référent par modalité dès le paramétrage."
+  },
+  {
+   "id": "E04",
+   "date": "2026-10-14",
+   "source": "Projet en cours",
+   "sequence": "S1 Initialisation",
+   "constat": "Volumétrie réelle des archives supérieure de 15 % à celle du CCTP.",
+   "recommandation": "Prévoir une clause de révision liée à la volumétrie dans les offres."
+  },
+  {
+   "id": "E05",
+   "date": "2026-10-30",
+   "source": "Projet en cours",
+   "sequence": "S2 Conception & infrastructure",
+   "constat": "Délai de livraison du distributeur non garanti.",
+   "recommandation": "Négocier des dates fermes et des pénalités avec le distributeur dès la commande."
   }
  ],
  "organisation": {
@@ -1276,9 +1729,103 @@
    ]
   }
  },
+ "businessCase": {
+  "raisons": "Marché public remporté pour le remplacement du PACS du CH de Saint-Aubert (fin de support de la solution en place en 2027). Affaire stratégique : première référence de la solution dans le GHT, avec un potentiel d'extension à 3 autres établissements.",
+  "benefices": [
+   {
+    "benefice": "Rentabilité de l'affaire",
+    "indicateur": "Marge du projet",
+    "reference": "42,9 % (offre)",
+    "cible": "≥ 40 %",
+    "echeance": "2027-06-01",
+    "atteinte": 1,
+    "proprietaire": "Exécutif"
+   },
+   {
+    "benefice": "Satisfaction du client",
+    "indicateur": "Note de l'enquête de fin de projet",
+    "reference": "-",
+    "cible": "≥ 8 / 10",
+    "echeance": "2027-07-01",
+    "atteinte": 0.9,
+    "proprietaire": "Chef de projet"
+   },
+   {
+    "benefice": "Extension dans le GHT",
+    "indicateur": "Établissements supplémentaires équipés",
+    "reference": "0",
+    "cible": "3",
+    "echeance": "2028-12-01",
+    "atteinte": 0.7,
+    "proprietaire": "Directeur de compte"
+   },
+   {
+    "benefice": "Référence commerciale",
+    "indicateur": "Visites de site et témoignage client",
+    "reference": "0",
+    "cible": "2",
+    "echeance": "2027-12-01",
+    "atteinte": 1,
+    "proprietaire": "Directeur de compte"
+   },
+   {
+    "benefice": "Facturation dans les délais",
+    "indicateur": "Retard moyen de facturation des jalons",
+    "reference": "-",
+    "cible": "< 15 j",
+    "echeance": "2027-06-01",
+    "atteinte": 1,
+    "proprietaire": "Chef de projet / ADV"
+   }
+  ],
+  "revues": [
+   {
+    "date": "2026-09-18",
+    "instance": "Revue interne",
+    "sequence": "S0 Élaboration",
+    "justifie": "Oui",
+    "commentaire": "Revue de passation : périmètre et engagements clairs, chiffrage de l'offre confirmé."
+   },
+   {
+    "date": "2026-10-16",
+    "instance": "COPIL",
+    "sequence": "S1 Initialisation",
+    "justifie": "Oui",
+    "commentaire": "Volumétrie +15 % : surcoût de 6 k€ chez le partenaire ; marge prévue toujours au-dessus de 40 %."
+   }
+  ]
+ },
  "recits": {
   "commentaire": "Séquence 2 en cours. Le dossier d'architecture v1 a été refusé par le RSSI (PRA absent) ; la v2 est attendue le 06/11. Le distributeur annonce deux semaines de retard sur le stockage : un plan de rattrapage est demandé et une installation sur stockage temporaire est à l'étude pour tenir la date d'installation.",
   "decisionsDemandees": "1. Valider l'installation sur un stockage temporaire si le plan de rattrapage du distributeur est insuffisant.\n2. Climatiser la salle serveur du site secondaire avant le 20/11, prérequis à l'installation (action client).",
+  "exception": {
+   "cause": "Le distributeur annonce deux semaines de retard sur la livraison des baies de stockage (tension sur les composants). Le dossier d'architecture v1 a en outre été refusé par le RSSI du client car le plan de reprise d'activité n'y figurait pas.",
+   "consequences": "Installation décalée de 9 jours ouvrés : jalons « livraison » et « installation » (238,5 k€) repoussés, fin de projet au 08/07/2027 et exposition aux pénalités du CCAP. Ingénieurs immobilisés : la tolérance de charge serait dépassée.",
+   "recommandation": "Option B, imputée sur la provision pour risques (−0,7 point de marge) : elle tient la date d'installation, préserve les jalons de facturation et évite les pénalités. Demander au distributeur une compensation commerciale.",
+   "options": [
+    {
+     "option": "A. Attendre",
+     "description": "Attendre la livraison et décaler la séquence 2.",
+     "delai": "+9 j",
+     "cout": "0 €",
+     "risque": "Pénalités possibles"
+    },
+    {
+     "option": "B. Stockage temporaire",
+     "description": "Installer la plateforme sur un stockage temporaire prêté, puis migrer à réception du matériel.",
+     "delai": "0 j",
+     "cout": "6 000 €",
+     "risque": "Faible"
+    },
+    {
+     "option": "C. Renfort d'ingénieur",
+     "description": "Absorber le retard en séquence 3 avec un ingénieur supplémentaire.",
+     "delai": "+3 j",
+     "cout": "9 000 €",
+     "risque": "Moyen"
+    }
+   ]
+  },
   "prochainComite": {
    "date": "2026-12-11",
    "objet": "Revue de fin de séquence 2 et PV d'installation"
@@ -1322,6 +1869,11 @@
    "ok": 0,
    "total": 7
   },
+  "avenant": {
+   "intitule": "Connexion à la plateforme régionale de partage d'images (point P04)",
+   "prix": 23250,
+   "cout": 14850
+  },
   "poldat": [
    {
     "k": "P",
@@ -1331,6 +1883,7 @@
     "mesure": "55 % des scénarios passés",
     "detail": "1 KO, 2 réserve(s)",
     "manuel": false,
+    "cible": "Circuit numérique de bout en bout : demande, worklist, examen, interprétation, diffusion au DPI",
     "commentaire": ""
    },
    {
@@ -1341,6 +1894,7 @@
     "mesure": "54 % des utilisateurs formés",
     "detail": "Seuil du Go : 90 %",
     "manuel": false,
+    "cible": "Un administrateur PACS, des référents par modalité, un support de niveau 1 au CH",
     "commentaire": ""
    },
    {
@@ -1351,6 +1905,7 @@
     "mesure": "3 / 14 prérequis faits",
     "detail": "1 bloquant(s)",
     "manuel": false,
+    "cible": "Une plateforme commune, une salle principale et une salle de secours",
     "commentaire": ""
    },
    {
@@ -1361,6 +1916,7 @@
     "mesure": "19 % des archives migrées",
     "detail": "Migration à venir",
     "manuel": false,
+    "cible": "Archives migrées et contrôlées, identité patient unique, conservation 20 ans",
     "commentaire": ""
    },
    {
@@ -1371,6 +1927,7 @@
     "mesure": "3 / 11 flux recettés",
     "detail": "1 flux en échec",
     "manuel": false,
+    "cible": "PACS interfacé avec le RIS (HL7), le DPI (lien contextuel) et les modalités (DICOM, worklist)",
     "commentaire": ""
    },
    {
@@ -1381,9 +1938,9 @@
     "mesure": "5 / 20 modalités testées",
     "detail": "3 modalité(s) en problème",
     "manuel": false,
+    "cible": "Stockage dimensionné à 10 ans, haute disponibilité, PRA, supervision",
     "commentaire": ""
    }
   ]
- },
- "clientOnly": true
+ }
 }

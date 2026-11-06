@@ -89,9 +89,14 @@ select.demo { font: inherit; font-weight: 600; padding: 7px 10px; border-radius:
 .pt2 { font-weight: 700; font-size: 14px; }
 .ptile.ok .pt2 { color: var(--ok); } .ptile.warn .pt2 { color: var(--warn); } .ptile.crit .pt2 { color: var(--crit); } .ptile.info .pt2 { color: var(--accent); }
 .pt3 { font-size: 12px; color: var(--muted); }
+.tourcard { position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: max(16px, env(safe-area-inset-bottom, 0px)); z-index: 900; width: min(400px, calc(100vw - 32px)); background: var(--surface); color: var(--fg); border: 1px solid var(--line); border-top: 4px solid #E8833A; border-radius: var(--radius); box-shadow: 0 14px 40px rgba(0,0,0,.25); padding: 14px 16px; display: grid; gap: 8px; }
+.tourcard .tc-k { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.tourcard h4 { margin: 0; font-size: 17px; } .tourcard p { margin: 0; font-size: 14px; line-height: 1.5; } .tourcard .tc-say { font-style: italic; }
+.tourcard .tc-b { display: flex; gap: 8px; flex-wrap: wrap; } .tourcard .tc-h { font-size: 11px; color: var(--muted); }
 #dtip { position: fixed; z-index: 1000; max-width: min(460px, calc(100vw - 32px)); background: var(--surface); color: var(--fg); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 10px 30px rgba(0,0,0,.22); padding: 12px 14px; font-size: 13px; line-height: 1.45; pointer-events: none; display: none; }
 #dtip h4 { margin: 0 0 6px; font-size: 14px; } #dtip h5 { margin: 10px 0 4px; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
 #dtip p { margin: 0 0 6px; } #dtip ul { margin: 0; padding-left: 16px; display: grid; gap: 2px; } #dtip .dk { color: var(--muted); } #dtip .dm { color: var(--muted); }
+#dtip .dcause { border-left: 3px solid var(--warn); padding: 2px 0 2px 8px; margin: 0 0 8px; }
 #dtip .dlate { background: var(--crit-soft); color: var(--crit); font-weight: 600; border-radius: 5px; padding: 4px 8px; margin: 0 0 8px; }
 [data-dt] { cursor: help; } tr[data-dt]:hover td, .seqrow[data-dt]:hover { background: var(--sunk); } [data-dt]:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 
@@ -306,7 +311,7 @@ function parseWorkbook(wb) {
   m.planning = trows("Planning", span("Planning", "A", "ID", 6, 85), "C", function (r) {
     var P = "Planning";
     return { id: txt(P, "A" + r), sequence: txt(P, "B" + r), tache: txt(P, "C" + r), responsable: txt(P, "D" + r), debut: dt(P, "E" + r), fin: dt(P, "F" + r),
-      duree: num(P, "G" + r), jalon: txt(P, "H" + r) === "Oui", reel: num(P, "I" + r), prevu: num(P, "J" + r), statut: txt(P, "L" + r) };
+      duree: num(P, "G" + r), jalon: txt(P, "H" + r) === "Oui", reel: num(P, "I" + r), prevu: num(P, "J" + r), statut: txt(P, "L" + r), cause: txt(P, "N" + r) };
   });
   m.risques = trows("Risques", span("Risques", "A", "ID", 6, 65), "C", function (r) {
     var R = "Risques";
@@ -518,6 +523,7 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
     var late = t.fin && sit && t.fin < sit && (t.reel || 0) < 1, ec = t.reel != null && t.prevu != null ? Math.round((t.reel - t.prevu) * 100) : null;
     if (late) h += lateBadge("Fin prévue dépassée de " + daysBetween(t.fin, sit) + " jours, réalisé à " + pct(t.reel));
     else if (t.statut === "En retard" && ec != null) h += lateBadge("Retard de " + Math.abs(ec) + " points sur l'avancement prévu");
+    if (t.cause) h += '<div class="dcause"><span class="dk">' + (late || t.statut === "En retard" ? "Cause et plan de rattrapage" : "Commentaire") + "</span><br>" + esc(t.cause) + "</div>";
     h += tl("Séquence", esc(t.sequence)) + tl("Responsable", esc(t.responsable)) + tl("Période", fd(t.debut) + " → " + fd(t.fin) + (t.duree ? " (" + t.duree + " j ouvrés)" : "")) +
       tl("Avancement", (t.reel == null ? "–" : pct(t.reel)) + " réalisé pour " + (t.prevu == null ? "–" : pct(t.prevu)) + " prévu au " + fd(sit) + (ec ? " (" + (ec > 0 ? "+" : "") + ec + " pts)" : "")) + tl("Statut", esc(t.statut));
     return h + seqLinks(t.sequence, t.id);
@@ -1055,6 +1061,58 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
   }
 
   /* ---------- rendu principal ---------- */
+
+  /* ---------- visite guidée (mode entretien) ---------- */
+  var TOUR = [
+    { h: "synthese", aud: "interne", sel: ".brand", t: "Un projet, un classeur", say: "Tout part d'un seul classeur Excel par projet, structuré selon PRINCE2. Le cockpit le lit : je ne ressaisis rien, et le client peut garder le même fichier." },
+    { h: "synthese", aud: "interne", panel: "Météo", t: "La météo : gestion par exception", say: "La météo n'est pas un ressenti : elle découle des tolérances fixées par le COPIL. Ici l'orage veut dire qu'une tolérance est dépassée, donc je remonte un rapport d'exception au comité." },
+    { h: "synthese", aud: "interne", sel: ".pstrip", t: "Le changement, pas seulement la technique", say: "La grille POLDAT, issue de Catalyst, montre si l'établissement est prêt : processus, organisation, sites, données, applications, technologie. Ici la technique avance, mais l'organisation et les données bloquent." },
+    { h: "planning", aud: "interne", panel: "Tâches", t: "Un retard expliqué", say: "Au survol d'une tâche en retard, j'ai la cause, le plan de rattrapage, le jalon exposé et le PV contractuel concerné. C'est exactement ce que je dis en COPROJ." },
+    { h: "risques", aud: "interne", panel: "Matrice", t: "Les risques", say: "Chaque risque est coté probabilité × impact, avec un propriétaire et une réponse. Pour la bascule, la réponse est un plan de repli : on sait revenir en arrière." },
+    { h: "finances", aud: "interne", panel: "Facturation", t: "L'économie de l'affaire", say: "Côté éditeur, je pilote aussi la rentabilité : marge à terminaison, charge des ressources, facturation par jalon. Ici, le PV d'installation non signé bloque une part de la facturation." },
+    { h: "synthese", aud: "interne", sel: ".audience .seg", t: "Une vue pour le client", say: "Un clic sur « Vue client » : marge, coûts et risques internes disparaissent. Je présente le COPIL sans risque de fuite d'information." },
+    { h: "synthese", aud: "client", sel: "[data-present=copil]", t: "Le COPIL en un clic", say: "Les présentations COPIL et COPROJ sont générées depuis le classeur : aucune diapositive à préparer, des chiffres toujours à jour. (Cliquez pour la lancer, Échap pour revenir.)" },
+    { h: "outils", sel: "#app-ot main", t: "La boîte à outils de terrain", say: "Les outils du quotidien : prérequis, modalités, flux, recette, bascule, migration, formation. Leurs données vivent dans les onglets OT du même classeur, et alimentent le cockpit." },
+    { h: "outils/prerequis", sel: "#app-ot main .panel", t: "Exemple : les prérequis client", say: "Je l'envoie dès la notification du marché. Chaque prérequis indique le PV qu'il bloque : je vois les bloquants avant qu'ils coûtent un PV." },
+    { h: "methode", aud: "interne", panel: "Le principe", t: "La méthode", say: "PRINCE2 adapté au côté éditeur : séquences de S0 à S6, rôles, instances, complétées par Catalyst. C'est ma façon de travailler, formalisée dans un outil." }
+  ];
+  var tourEl = null, tourStyle = "";
+  function tourTarget(s) {
+    if (s.panel) { var hs = document.querySelectorAll("#app-ck main h2"); for (var i = 0; i < hs.length; i++) if (hs[i].textContent.trim().indexOf(s.panel) === 0) return hs[i].closest("section") || hs[i]; return null; }
+    return document.querySelector(s.sel);
+  }
+  function tourClear() { if (tourEl && tourEl.isConnected) tourEl.setAttribute("style", tourStyle); tourEl = null; }
+  function tourShow() {
+    tourClear();
+    if (state.tour == null || state.deck || !TOUR[state.tour]) return;
+    var el = tourTarget(TOUR[state.tour]); if (!el) return;
+    tourEl = el; tourStyle = el.getAttribute("style") || "";
+    el.style.outline = "3px solid #E8833A"; el.style.outlineOffset = "4px"; el.style.borderRadius = el.style.borderRadius || "8px"; el.style.scrollMarginTop = "90px";
+    try { el.scrollIntoView({ behavior: "smooth", block: el.offsetHeight > window.innerHeight * 0.6 ? "start" : "center" }); } catch (err) { el.scrollIntoView(); }
+  }
+  function tourGo(i) {
+    if (i < 0) i = 0;
+    if (i >= TOUR.length) { state.tour = TOUR.length; render(); return; }
+    var s = TOUR[i]; state.tour = i;
+    if (s.aud && !(state.model && state.model.clientOnly)) { state.audience = s.aud; }
+    if ((location.hash || "").replace("#", "") !== s.h) location.hash = s.h; else render();
+    setTimeout(tourShow, 250);
+  }
+  function tourStart() {
+    var p = state.wbName && /Complexe/i.test(state.wbName) ? Promise.resolve(true) : loadDemo("complexe", false);
+    if (!p || !p.then) return;
+    p.then(function (ok) { if (ok !== false) { state.banner = null; tourGo(0); } });
+  }
+  function tourCard() {
+    if (state.tour == null || state.deck) return "";
+    var end = state.tour >= TOUR.length, s = TOUR[state.tour];
+    return '<div class="tourcard" role="dialog" aria-label="Visite guidée"><div class="tc-k">Visite guidée · ' + (end ? "terminée" : (state.tour + 1) + " / " + TOUR.length) + "</div>" +
+      (end ? '<h4>Fin de la visite</h4><p>Le classeur, le cockpit, les présentations et la boîte à outils forment un seul système. À vous les questions.</p>'
+           : "<h4>" + esc(s.t) + '</h4><p class="tc-say">« ' + esc(s.say) + " »</p>") +
+      '<div class="tc-b">' + (state.tour > 0 ? '<button type="button" data-tour="prev">Précédent</button>' : "") +
+      (end ? '<button type="button" class="primary" data-tour="end">Fermer</button>' : '<button type="button" class="primary" data-tour="next">' + (state.tour === TOUR.length - 1 ? "Terminer" : "Suivant") + '</button><button type="button" data-tour="end">Quitter</button>') +
+      '</div><div class="tc-h">Flèches ← → pour naviguer, Échap pour quitter.</div></div>';
+  }
   function render() {
     var m = state.model;
     if (!m) return;
@@ -1073,7 +1131,7 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
           (cur && cur.dirty ? '<button type="button" class="primary" data-savewb="1">Enregistrer dans le classeur</button>' : "") +
           '<button type="button" data-closewb="1">Fermer le classeur</button>' : "") +
         (window.PACS_DEMOS ? '<select class="demo" data-demo="1" aria-label="Charger un projet d\'exemple"><option value="">Projet d\'exemple…</option>' + Object.keys(window.PACS_DEMOS).map(function (k) { return '<option value="' + k + '"' + (state.wbName === window.PACS_DEMOS[k].name ? " selected" : "") + ">" + esc(window.PACS_DEMOS[k].label) + "</option>"; }).join("") + "</select>" : "") +
-        '<button type="button"' + (state.wbName ? "" : ' class="primary"') + ' data-import="1">' + (state.wbName ? "Ouvrir un autre classeur" : "Ouvrir le classeur du projet") + "</button>"
+        (window.PACS_DEMOS ? '<button type="button" data-tour="start" title="Démonstration pas à pas pour un entretien ou une soutenance">Visite guidée</button>' : "") + '<button type="button"' + (state.wbName ? "" : ' class="primary"') + ' data-import="1">' + (state.wbName ? "Ouvrir un autre classeur" : "Ouvrir le classeur du projet") + "</button>"
       : null;
     var banner = b ? '<div class="banner' + (b.err ? " err" : "") + '" role="status"><span>' + esc(b.text) + '</span><span class="actions">' + (b.actions || []).map(function (a) { return '<button type="button" class="' + (a.primary ? "primary" : "") + '" data-banner="' + a.id + '">' + esc(a.label) + "</button>"; }).join("") + "</span></div>" : "";
     app.innerHTML = '<header class="top"><div class="wrap"><div class="brand"><div><div class="eyebrow">Pilotage PRINCE2 · ' + esc(m.meta.client.split("|")[0].trim()) + '</div><h1>' + esc(m.meta.projet) + '</h1><div class="sub">Situation au ' + fd(x.sit) + " · chef de projet " + esc(m.meta.chefDeProjet) + " · fin contractuelle " + fd(m.meta.finContrat) + (state.wbName ? ' · <strong>classeur « ' + esc(state.wbName) + " »</strong>" : state.source === "local" ? ' · <strong>classeur importé (vue personnelle)</strong>' : "") + "</div></div>" +
@@ -1084,7 +1142,8 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
                 : '<button type="button" class="primary internal" data-present="interne">Présenter la revue interne</button>') +
       '<span class="note" style="align-self:center">' + (locked ? "Édition client." : aud === "client" ? "Marge, coûts, charge et éléments internes masqués." : "Toutes les données de l'éditeur sont visibles. Passez en vue client pour présenter le COPIL ou le COPROJ.") + "</span></div>") +
       '<nav class="tabs" aria-label="Vues">' + nav + "</nav></div></header>" + (onOT ? "" : '<main><div class="wrap">' + banner + body + '<p class="note">' + (locked ? "Édition client : les données internes à l'éditeur ne figurent pas dans cette version. " : x.client ? "Vue client : affichage seulement, les données internes restent présentes dans la page. Pour transmettre au client, utilisez l'édition client. " : "") + 'Données issues du classeur « Pilotage PRINCE2 PACS, version éditeur ». Projet fictif présenté à titre d\'exemple.</p></div></main>') +
-      (state.deck ? renderDeck() : "");
+      (state.deck ? renderDeck() : "") + tourCard();
+    if (state.tour != null) setTimeout(tourShow, 60);
     var tabCur = app.querySelector("nav.tabs a[aria-current]"), tabs = app.querySelector("nav.tabs");
     if (tabCur && tabs && tabs.scrollWidth > tabs.clientWidth) tabs.scrollLeft = Math.max(0, tabCur.offsetLeft - tabs.clientWidth + tabCur.offsetWidth + 16);
     if (state.deck) { fitSlide(); var dk = document.getElementById("deck"); if (dk) dk.focus && dk.setAttribute("tabindex", "-1"); }
@@ -1103,6 +1162,12 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
   window.addEventListener("hashchange", fromHash);
   window.addEventListener("resize", fitSlide);
   document.addEventListener("keydown", function (e) {
+    if (state.tour != null && !state.deck) {
+      var tg = e.target && e.target.tagName; if (/INPUT|SELECT|TEXTAREA/.test(tg)) return;
+      if (e.key === "ArrowRight") { e.preventDefault(); tourGo(state.tour + 1); return; }
+      if (e.key === "ArrowLeft") { e.preventDefault(); tourGo(state.tour - 1); return; }
+      if (e.key === "Escape") { state.tour = null; tourClear(); render(); return; }
+    }
     if (!state.deck) return;
     if (["ArrowRight", "PageDown", " "].indexOf(e.key) >= 0) { e.preventDefault(); state.slide++; render(); }
     else if (["ArrowLeft", "PageUp"].indexOf(e.key) >= 0) { e.preventDefault(); state.slide--; render(); }
@@ -1112,6 +1177,7 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
     var t = e.target.closest("button");
     if (!t) return;
     if (t.dataset.tip) { var tp = t.parentNode, op = !tp.classList.contains("open"); closeTips(); if (op) { tp.classList.add("open"); t.setAttribute("aria-expanded", "true"); } return; }
+    if (t.dataset.tour) { var tv = t.dataset.tour; if (tv === "start") tourStart(); else if (tv === "next") tourGo(state.tour + 1); else if (tv === "prev") tourGo(state.tour - 1); else { state.tour = null; tourClear(); render(); } return; }
     if (t.dataset.present) { location.hash = t.dataset.present; return; }
     if (t.dataset.deck) {
       var a = t.dataset.deck;
@@ -1165,13 +1231,14 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
   function loadDemo(k, force) {
     var d = window.PACS_DEMOS && window.PACS_DEMOS[k]; if (!d) return;
     var c0 = window.PACS && window.PACS.current();
-    if (c0 && c0.dirty && !force) { state.banner = { text: "La boîte à outils a des modifications pas encore enregistrées dans « " + c0.name + " ». Charger l'exemple quand même ?", actions: [{ id: "demo:" + k, label: "Charger quand même", primary: true }, { id: "dismiss", label: "Annuler" }] }; render(); return; }
+    if (c0 && c0.dirty && !force) { state.banner = { text: "La boîte à outils a des modifications pas encore enregistrées dans « " + c0.name + " ». Charger l'exemple quand même ?", actions: [{ id: "demo:" + k, label: "Charger quand même", primary: true }, { id: "dismiss", label: "Annuler" }] }; render(); return false; }
     var bin = atob(d.b64), bytes = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
     state.banner = { text: "Chargement de l'exemple…" }; render();
-    loadBuffer(bytes, d.name, "cockpit").then(function () {
+    return loadBuffer(bytes, d.name, "cockpit").then(function () {
       if (window.PACS) window.PACS.open(bytes, d.name, "cockpit");
       state.banner = { text: "Projet d'exemple chargé : " + d.label + ". Le cockpit et la boîte à outils l'utilisent tous les deux.", actions: [{ id: "dismiss", label: "Fermer" }] }; render();
-    }).catch(function (err) { state.banner = { err: true, text: err.message || String(err), actions: [{ id: "dismiss", label: "Fermer" }] }; render(); });
+      return true;
+    }).catch(function (err) { state.banner = { err: true, text: err.message || String(err), actions: [{ id: "dismiss", label: "Fermer" }] }; render(); return false; });
   }
   app.addEventListener("pointerdown", function (e) {
     if (!e.target.classList || !e.target.classList.contains("gantt-handle")) return;

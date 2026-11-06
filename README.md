@@ -23,3 +23,7 @@ Chaque projet a son classeur de pilotage PRINCE2 (version éditeur). Ses onglets
 Fichiers : `Pilotage-PRINCE2-PACS-Editeur-Modele.xlsx` (vide), `…-Exemple.xlsx` (CH de Saint-Aubert), deux scénarios (`Scenario-Projet-Simple-Ensoleille.xlsx`, `Scenario-Projet-Complexe-Orageux.xlsx`).
 
 Auteur : Florian CROSES
+
+## Version hors ligne
+
+`hors-ligne/Pilotage-PACS-hors-ligne.html` : la même application en un seul fichier (bibliothèques, polices et projets d'exemple intégrés). À ouvrir dans Chrome ou Edge, sans connexion internet.
