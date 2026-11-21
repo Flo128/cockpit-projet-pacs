@@ -2420,7 +2420,7 @@ body { margin: 0; background: var(--shell-bg); }
 /* Mise en page : bandeau projet, onglets de vues, panneaux ; mode présentation en surimpression 16:9. */
 :root #app-ck {
   --bg: #F3F5F8; --surface: #FFFFFF; --sunk: #EAEEF3; --line: #D9DFE7; --fg: #15212E; --muted: #5B6878;
-  --accent: #1F5F8B; --accent-soft: #CFE0EE; --accent-ink: #FFFFFF; --plan: #9FBBD3;
+  --accent: #1D4F91; --accent-soft: #CFE0EE; --accent-ink: #FFFFFF; --plan: #9FBBD3;
   --ok: #2F7D53; --ok-soft: #DCEFE3; --warn: #B8700F; --warn-soft: #FBEBD2; --crit: #B93A33; --crit-soft: #F7DCDA;
   --mile: #C9741B; --today: #D2453C;
   --font-ui: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
@@ -2612,7 +2612,7 @@ body { margin: 0; background: var(--shell-bg); }
 /* Mise en page : bandeau, colonne de navigation par phase du projet, zone de travail de l'outil. */
 :root #app-ot {
   --bg: #F3F5F8; --surface: #FFFFFF; --sunk: #EAEEF3; --line: #D9DFE7; --fg: #15212E; --muted: #5B6878;
-  --accent: #1F5F8B; --accent-soft: #CFE0EE; --accent-ink: #FFFFFF; --plan: #9FBBD3;
+  --accent: #1D4F91; --accent-soft: #CFE0EE; --accent-ink: #FFFFFF; --plan: #9FBBD3;
   --ok: #2F7D53; --ok-soft: #DCEFE3; --warn: #B8700F; --warn-soft: #FBEBD2; --crit: #B93A33; --crit-soft: #F7DCDA; --mile: #C9741B;
   --font-ui: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
   --font-data: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
@@ -4250,6 +4250,8 @@ DEFAULTS.poldat = { rows: [
 ] };
 if (typeof module !== "undefined") module.exports = DEFAULTS;
 
+DEFAULTS.pv = { type: "installation", site: "Site principal", clientNom: "", clientFonction: "Directeur du système d'information", editeurNom: "", editeurFonction: "Chef de projet", docs: {}, points: {},
+  reserves: [{ pv: "PV d'installation", libelle: "Plan de reprise d'activité (PRA) absent du dossier d'architecture", gravite: "Bloquante", responsable: "Éditeur", echeance: "2026-11-27", statut: "Ouverte" }] };
 DEFAULTS.pilotage = {"source":"Pilotage-PRINCE2-PACS-Editeur-Exemple.xlsx","situation":"2026-11-03","debut":"2026-09-07","fin":"2027-06-25","projet":"Déploiement de la solution PACS au CH de Saint-Aubert","client":"Centre hospitalier de Saint-Aubert (fictif) | 450 lits, 2 sites","taches":[{"id":"T01","sequence":"S0 Élaboration","tache":"Revue de passation avant-vente / projet (contrat, CCTP, engagements)","responsable":"Chef de projet","debut":"2026-09-07","fin":"2026-09-09","jalon":false,"pct":1},{"id":"T02","sequence":"S0 Élaboration","tache":"Lancement interne et affectation des ressources","responsable":"Exécutif","debut":"2026-09-09","fin":"2026-09-11","jalon":false,"pct":1},{"id":"T03","sequence":"S0 Élaboration","tache":"Réunion de lancement avec le client","responsable":"Chef de projet","debut":"2026-09-14","fin":"2026-09-14","jalon":true,"pct":1},{"id":"T04","sequence":"S0 Élaboration","tache":"Décision de lancer l'initialisation (revue interne)","responsable":"Exécutif","debut":"2026-09-18","fin":"2026-09-18","jalon":true,"pct":1},{"id":"T05","sequence":"S1 Initialisation","tache":"Audit des prérequis et de l'existant chez le client","responsable":"Ingénieur intégration","debut":"2026-09-21","fin":"2026-10-02","jalon":false,"pct":1},{"id":"T06","sequence":"S1 Initialisation","tache":"Inventaire des modalités et des flux avec le biomédical","responsable":"Ingénieur intégration","debut":"2026-09-21","fin":"2026-10-02","jalon":false,"pct":1},{"id":"T07","sequence":"S1 Initialisation","tache":"Plan d'assurance qualité (PAQ) et plan projet","responsable":"Chef de projet","debut":"2026-09-28","fin":"2026-10-09","jalon":false,"pct":1},{"id":"T08","sequence":"S1 Initialisation","tache":"Plan de charge et planning des ressources","responsable":"Chef de projet","debut":"2026-10-05","fin":"2026-10-14","jalon":false,"pct":1},{"id":"T09","sequence":"S1 Initialisation","tache":"Validation du PID et du PAQ en comité de pilotage","responsable":"Comité de pilotage","debut":"2026-10-16","fin":"2026-10-16","jalon":true,"pct":1},{"id":"T10","sequence":"S2 Conception & infrastructure","tache":"Dossier d'architecture technique (haute disponibilité, PRA)","responsable":"Ingénieur intégration","debut":"2026-10-19","fin":"2026-11-06","jalon":false,"pct":0.6},{"id":"T11","sequence":"S2 Conception & infrastructure","tache":"Validation sécurité avec le RSSI du client","responsable":"Chef de projet","debut":"2026-10-26","fin":"2026-11-13","jalon":false,"pct":0.4},{"id":"T12","sequence":"S2 Conception & infrastructure","tache":"Vérification des prérequis client (salle serveur, réseau, comptes)","responsable":"Client (DSI)","debut":"2026-10-26","fin":"2026-11-13","jalon":false,"pct":0.3},{"id":"T13","sequence":"S2 Conception & infrastructure","tache":"Commande et livraison du matériel (jalon de facturation)","responsable":"Distributeur / ADV","debut":"2026-11-02","fin":"2026-11-20","jalon":false,"pct":0},{"id":"T14","sequence":"S2 Conception & infrastructure","tache":"Installation de la plateforme et PV d'installation","responsable":"Ingénieurs d'installation","debut":"2026-11-23","fin":"2026-12-04","jalon":false,"pct":0},{"id":"T15","sequence":"S2 Conception & infrastructure","tache":"Revue de fin de séquence 2 (comité de pilotage)","responsable":"Comité de pilotage","debut":"2026-12-11","fin":"2026-12-11","jalon":true,"pct":0},{"id":"T16","sequence":"S3 Paramétrage & intégration","tache":"Interface RIS ↔ PACS avec l'éditeur du RIS (HL7, worklist)","responsable":"Ingénieur intégration","debut":"2026-12-14","fin":"2027-01-22","jalon":false,"pct":0},{"id":"T17","sequence":"S3 Paramétrage & intégration","tache":"Connexion des modalités (scanner, IRM, radio, écho, mammographie)","responsable":"Ingénieurs d'installation","debut":"2027-01-04","fin":"2027-02-05","jalon":false,"pct":0},{"id":"T18","sequence":"S3 Paramétrage & intégration","tache":"Intégration au DPI du client","responsable":"Ingénieur intégration","debut":"2027-01-11","fin":"2027-02-12","jalon":false,"pct":0},{"id":"T19","sequence":"S3 Paramétrage & intégration","tache":"Paramétrage des workflows avec les référents du client","responsable":"Spécialiste applicatif","debut":"2027-01-18","fin":"2027-02-19","jalon":false,"pct":0},{"id":"T20","sequence":"S3 Paramétrage & intégration","tache":"Revue de fin de séquence 3 (comité de pilotage)","responsable":"Comité de pilotage","debut":"2027-02-26","fin":"2027-02-26","jalon":true,"pct":0},{"id":"T21","sequence":"S4 Migration & recette","tache":"Migration à blanc d'un échantillon d'archives","responsable":"Partenaire migration","debut":"2027-03-01","fin":"2027-03-12","jalon":false,"pct":0},{"id":"T22","sequence":"S4 Migration & recette","tache":"Accompagnement de la recette fonctionnelle du client","responsable":"Spécialiste applicatif","debut":"2027-03-08","fin":"2027-04-02","jalon":false,"pct":0},{"id":"T23","sequence":"S4 Migration & recette","tache":"Tests de bascule HA / PRA","responsable":"Ingénieurs d'installation","debut":"2027-03-22","fin":"2027-04-09","jalon":false,"pct":0},{"id":"T24","sequence":"S4 Migration & recette","tache":"Migration des archives historiques (85 To)","responsable":"Partenaire migration","debut":"2027-03-15","fin":"2027-05-28","jalon":false,"pct":0},{"id":"T25","sequence":"S4 Migration & recette","tache":"PV de vérification d'aptitude (VA), jalon de facturation","responsable":"Comité de pilotage","debut":"2027-04-23","fin":"2027-04-23","jalon":true,"pct":0},{"id":"T26","sequence":"S5 Formation & bascule","tache":"Formation des référents et des administrateurs","responsable":"Formateur","debut":"2027-04-26","fin":"2027-05-07","jalon":false,"pct":0},{"id":"T27","sequence":"S5 Formation & bascule","tache":"Formation des utilisateurs (radiologues, manipulateurs)","responsable":"Formateur","debut":"2027-05-03","fin":"2027-05-18","jalon":false,"pct":0},{"id":"T28","sequence":"S5 Formation & bascule","tache":"Comité Go / No-Go de bascule","responsable":"Comité de pilotage","debut":"2027-05-19","fin":"2027-05-19","jalon":true,"pct":0},{"id":"T29","sequence":"S5 Formation & bascule","tache":"Bascule en production (week-end)","responsable":"Ingénieurs d'installation","debut":"2027-05-21","fin":"2027-05-24","jalon":false,"pct":0},{"id":"T30","sequence":"S5 Formation & bascule","tache":"Accompagnement post-démarrage","responsable":"Support / chef de projet","debut":"2027-05-25","fin":"2027-06-11","jalon":false,"pct":0},{"id":"T31","sequence":"S6 Clôture","tache":"PV de vérification de service régulier (VSR), jalon de facturation","responsable":"Client","debut":"2027-05-25","fin":"2027-06-18","jalon":false,"pct":0},{"id":"T32","sequence":"S6 Clôture","tache":"Passation au support (dossier d'exploitation)","responsable":"Chef de projet","debut":"2027-06-14","fin":"2027-06-18","jalon":false,"pct":0},{"id":"T33","sequence":"S6 Clôture","tache":"Rapport de fin de projet et retour d'expérience interne","responsable":"Chef de projet","debut":"2027-06-14","fin":"2027-06-23","jalon":false,"pct":0},{"id":"T34","sequence":"S6 Clôture","tache":"Clôture et enquête de satisfaction client","responsable":"Comité de pilotage","debut":"2027-06-25","fin":"2027-06-25","jalon":true,"pct":0}],"actions":[{"id":"D01","date":"2026-09-18","instance":"Revue interne","texte":"Décision : lancement de l'initialisation ; ressources affectées (chef de projet, 2 ingénieurs, partenaire de migration).","responsable":"Exécutif","echeance":"","statut":"Fait"},{"id":"D02","date":"2026-10-16","instance":"COPIL","texte":"Décision : PID et PAQ validés par le client ; tolérances fixées (délai 10 j, marge 3 points, charge 10 j).","responsable":"Exécutif","echeance":"","statut":"Fait"},{"id":"D03","date":"2026-10-16","instance":"COPIL","texte":"Décision : demande P01 acceptée par l'avenant n°1 (12 000 € HT, +5 jours).","responsable":"Directeur de compte","echeance":"","statut":"Fait"},{"id":"D04","date":"2026-10-16","instance":"COPIL","texte":"Décision : séquence 2 autorisée, commande du matériel lancée.","responsable":"Exécutif","echeance":"","statut":"Fait"},{"id":"D05","date":"2026-10-30","instance":"Comité technique","texte":"Action : intégrer le PRA au dossier d'architecture (v2) après le refus du RSSI du client.","responsable":"Ingénieur intégration","echeance":"2026-11-06","statut":"En cours"},{"id":"D06","date":"2026-10-30","instance":"COPROJ","texte":"Action : obtenir du distributeur une date de livraison ferme et un plan de rattrapage.","responsable":"Chef de projet","echeance":"2026-11-06","statut":"En cours"},{"id":"D07","date":"2026-10-30","instance":"COPROJ","texte":"Action (client) : climatiser la salle serveur du site secondaire.","responsable":"Client (DSI)","echeance":"2026-11-20","statut":"À faire"},{"id":"D08","date":"2026-10-30","instance":"Revue interne","texte":"Décision : renfort d'un troisième ingénieur en janvier pour sécuriser la séquence 3.","responsable":"Exécutif","echeance":"2027-01-04","statut":"À faire"}],"produits":[{"id":"L01","produit":"Fiche de passation avant-vente / projet","type":"Management","sequence":"S0 Élaboration","criteres":"Périmètre, engagements, hypothèses de chiffrage et risques connus","methode":"Revue","producteur":"Chef de projet","approbateur":"Exécutif","date":"2026-09-09","statut":"Approuvé"},{"id":"L02","produit":"Rapport d'audit des prérequis","type":"Spécialiste","sequence":"S1 Initialisation","criteres":"Volumétrie, inventaire des modalités et des interfaces, écarts aux prérequis","methode":"Inspection","producteur":"Ingénieur intégration","approbateur":"Client (DSI)","date":"2026-10-02","statut":"Approuvé"},{"id":"L03","produit":"Plan d'assurance qualité (PAQ)","type":"Management","sequence":"S1 Initialisation","criteres":"Conforme au CCTP ; livrables, contrôles et PV identifiés","methode":"Revue","producteur":"Chef de projet","approbateur":"Client (DSI)","date":"2026-10-16","statut":"Approuvé"},{"id":"L04","produit":"Document d'initialisation du projet (PID)","type":"Management","sequence":"S1 Initialisation","criteres":"Plan, organisation, tolérances et stratégies validés","methode":"Revue","producteur":"Chef de projet","approbateur":"Comité de pilotage","date":"2026-10-16","statut":"Approuvé"},{"id":"L05","produit":"Dossier d'architecture technique","type":"Spécialiste","sequence":"S2 Conception & infrastructure","criteres":"Haute disponibilité, PRA, sauvegarde, dimensionnement à 10 ans","methode":"Revue","producteur":"Ingénieur intégration","approbateur":"Client (DSI / RSSI)","date":"2026-11-06","statut":"Non conforme"},{"id":"L06","produit":"PV de livraison du matériel","type":"Spécialiste","sequence":"S2 Conception & infrastructure","criteres":"Matériel conforme au bon de commande, sans réserve","methode":"Inspection","producteur":"ADV","approbateur":"Client (DSI)","date":"2026-11-20","statut":"Non démarré"},{"id":"L07","produit":"PV d'installation","type":"Spécialiste","sequence":"S2 Conception & infrastructure","criteres":"Tests d'installation passés, supervision active","methode":"Test","producteur":"Ingénieurs d'installation","approbateur":"Client (DSI)","date":"2026-12-04","statut":"Non démarré"},{"id":"L08","produit":"Spécifications des interfaces (HL7, DICOM)","type":"Spécialiste","sequence":"S3 Paramétrage & intégration","criteres":"Messages et flux validés avec l'éditeur du RIS et le client","methode":"Revue","producteur":"Ingénieur intégration","approbateur":"Client (DSI)","date":"2026-12-18","statut":"Non démarré"},{"id":"L09","produit":"Plan de migration des archives","type":"Spécialiste","sequence":"S4 Migration & recette","criteres":"Ordre de migration, contrôles d'intégrité, plan de retour arrière","methode":"Revue","producteur":"Partenaire migration","approbateur":"Chef de projet","date":"2027-03-01","statut":"Non démarré"},{"id":"L10","produit":"Cahier de recette et PV de VA","type":"Spécialiste","sequence":"S4 Migration & recette","criteres":"100 % des scénarios bloquants passés, réserves levées ou planifiées","methode":"Test","producteur":"Spécialiste applicatif","approbateur":"Comité de pilotage","date":"2027-04-23","statut":"Non démarré"},{"id":"L11","produit":"Supports de formation","type":"Spécialiste","sequence":"S5 Formation & bascule","criteres":"Un support par profil, validé par les référents du client","methode":"Inspection","producteur":"Formateur","approbateur":"Client (cadre imagerie)","date":"2027-04-30","statut":"Non démarré"},{"id":"L12","produit":"Plan de bascule et de retour arrière","type":"Spécialiste","sequence":"S5 Formation & bascule","criteres":"Chronogramme, mode dégradé, critères Go / No-Go","methode":"Revue","producteur":"Chef de projet","approbateur":"Comité de pilotage","date":"2027-05-19","statut":"Non démarré"},{"id":"L13","produit":"PV de vérification de service régulier (VSR)","type":"Spécialiste","sequence":"S6 Clôture","criteres":"Disponibilité ≥ 99,9 % sur la période de VSR","methode":"Inspection","producteur":"Chef de projet","approbateur":"Client (DSI)","date":"2027-06-18","statut":"Non démarré"},{"id":"L14","produit":"Dossier de passation au support","type":"Spécialiste","sequence":"S6 Clôture","criteres":"Architecture, paramétrage, contacts, points ouverts transmis","methode":"Revue","producteur":"Chef de projet","approbateur":"Responsable support","date":"2027-06-18","statut":"Non démarré"},{"id":"L15","produit":"Rapport de fin de projet et retour d'expérience","type":"Management","sequence":"S6 Clôture","criteres":"Bilan délai, marge, charge, satisfaction ; leçons consignées","methode":"Revue","producteur":"Chef de projet","approbateur":"Exécutif","date":"2027-06-25","statut":"Non démarré"}],"roles":[{"role":"Exécutif","instance":"Comité de pilotage (éditeur)","titulaire":"Directeur des services professionnels","responsabilites":"Porte le business case de l'affaire (marge, satisfaction, référence), arbitre les ressources, décide en cas d'exception."},{"role":"Utilisateur principal","instance":"Comité de pilotage (client)","titulaire":"DSI et chef de pôle imagerie du client","responsabilites":"Expriment les besoins, valident la recette et signent les PV contractuels (installation, VA, VSR)."},{"role":"Fournisseur principal","instance":"Comité de pilotage (éditeur)","titulaire":"Responsable delivery (équipes techniques)","responsabilites":"Engage les ingénieurs et le partenaire de migration, garantit la qualité technique."},{"role":"Assurance projet","instance":"Indépendante du chef de projet","titulaire":"PMO et contrôle de gestion ; RSSI du client","responsabilites":"Contrôle indépendant : respect du contrat, marge, conformité sécurité."},{"role":"Autorité de changement","instance":"Déléguée par le comité de pilotage","titulaire":"Chef de projet et directeur de compte","responsabilites":"Évalue les demandes, propose un avenant ou un geste commercial dans la limite fixée."},{"role":"Chef de projet","instance":"COPROJ","titulaire":"Chef de projet PACS (Florian CROSES)","responsabilites":"Pilote dans les tolérances : planning, charge, marge, facturation, risques, relation client."},{"role":"Chef d'équipe","instance":"Équipes","titulaire":"Lead ingénieur intégration, partenaire migration, formateur","responsabilites":"Réalisent les lots de travaux, rendent compte de l'avancement et des jours consommés."},{"role":"Support projet","instance":"PMO / ADV","titulaire":"PMO et administration des ventes","responsabilites":"Tient les registres, prépare les comités, émet les factures sur PV signé."}],"instances":[{"instance":"Comité de pilotage","membres":"Exécutif, directeur de compte, DSI et chef de pôle imagerie du client","frequence":"Fin de séquence et mensuel","role":"Valide le PID, les PV et les avenants, autorise les séquences."},{"instance":"COPROJ","membres":"Chefs de projet éditeur et client, chefs d'équipe","frequence":"Hebdomadaire","role":"Avancement, prérequis client, risques, points."},{"instance":"Comité technique","membres":"Ingénieurs, DSI et RSSI du client, éditeur du RIS","frequence":"Toutes les 2 semaines","role":"Architecture, interfaces, sécurité, migration."},{"instance":"Revue interne","membres":"Direction des services, contrôle de gestion, chef de projet","frequence":"Mensuelle","role":"Marge, plan de charge, facturation, risques de l'affaire."},{"instance":"Rapport d'exception","membres":"Chef de projet → exécutif","frequence":"Dès qu'une tolérance passe au rouge","role":"Cause, impacts, options et recommandation."}],"facturation":[{"jalon":"Avance à la notification du marché","declencheur":"Acte d'engagement notifié","sequence":"S0 Élaboration","part":0.2,"date":"2026-09-07"},{"jalon":"Livraison du matériel","declencheur":"PV de livraison","sequence":"S2 Conception & infrastructure","part":0.2,"date":"2026-11-20"},{"jalon":"Installation de la plateforme","declencheur":"PV d'installation","sequence":"S2 Conception & infrastructure","part":0.1,"date":"2026-12-04"},{"jalon":"Avenant n°1 : tablettes pour les urgences","declencheur":"PV de recette de l'avenant","sequence":"S4 Migration & recette","part":0.0150943396226415,"date":"2027-04-23"},{"jalon":"Vérification d'aptitude (VA)","declencheur":"PV de VA","sequence":"S4 Migration & recette","part":0.25,"date":"2027-04-23"},{"jalon":"Vérification de service régulier (VSR)","declencheur":"PV de VSR","sequence":"S6 Clôture","part":0.2,"date":"2027-06-18"},{"jalon":"Levée des réserves et clôture","declencheur":"PV de clôture","sequence":"S6 Clôture","part":0.05,"date":"2027-06-25"}]};
 </script>
 <script>
@@ -4526,6 +4528,7 @@ DEFAULTS.pilotage = {"source":"Pilotage-PRINCE2-PACS-Editeur-Exemple.xlsx","situ
     { id: "formation", g: "Conduite du changement", l: "Plan de formation", d: "Effectifs par profil et par site, sessions et présence. Un site n'est prêt que si chaque profil atteint le seuil de formation." },
     { id: "guides", g: "Conduite du changement", l: "Guides de démarrage", d: "Une page par profil d'utilisateur, à distribuer avant la bascule. Le contenu est à adapter au paramétrage réel." },
     { id: "paq", g: "Pilotage", l: "Plan d'assurance qualité", d: "Génère le plan d'assurance qualité (PAQ) du projet : livrables et critères d'acceptation, rôles, jalons et PV repris du classeur de pilotage, plus les règles qualité réglées ici. Export Word, PDF ou Excel." },
+    { id: "pv", g: "Pilotage", l: "Générateur de PV", d: "Prépare les procès-verbaux du projet : livraison, installation, vérification d'aptitude, mise en production, VSR, levée de réserves et formation. Les constats sont repris des autres outils, les réserves sont suivies dans un registre commun et l'outil propose une décision." },
     { id: "cr", g: "Pilotage", l: "Générateur de compte rendu", d: "Colle tes notes de réunion : décisions, actions, points et risques sont extraits et mis en forme, prêts à coller dans le classeur." },
     { id: "avenant", g: "Pilotage", l: "Simulateur d'avenant", d: "Chiffre une demande hors CCTP : coût, prix plancher et prix catalogue, impact sur la marge du projet et texte de proposition." }
   ];
@@ -4550,6 +4553,7 @@ DEFAULTS.pilotage = {"source":"Pilotage-PRINCE2-PACS-Editeur-Exemple.xlsx","situ
       card("aet", aetPropose().filter(function (a, i) { return a !== S.modalites.rows[i].aet; }).length + " à renommer", "AE Titles hors convention") +
       card("flux", fx + " / " + S.flux.rows.length, "Flux recettés") +
       card("recette", pct(rc.total ? (rc.ok + rc.res) / rc.total : 0), rc.pret ? "Prêt pour le PV de VA" : (rc.blKO.length + rc.blNT.length) + " scénarios bloquants en attente") +
+      card("pv", (function (n) { return n + " réserve" + (n > 1 ? "s" : ""); })(pvEnsure().reserves.filter(function (r) { return r.statut !== "Levée"; }).length), "Ouvertes au registre des PV, 7 modèles de PV") +
       card("bascule", go + " / " + S.bascule.criteres.length, "Critères Go / No-Go remplis") +
       card("suivi", pct(cum / Math.max(1, N(S.suivi.volume))), nf(cum, 1) + " To migrés sur " + nf(S.suivi.volume) + " To") +
       card("formation", fo.sites.map(function (s) { return pct(s.taux); }).join(" · "), "Utilisateurs formés par site") +
@@ -5057,6 +5061,192 @@ function poldatAuto(D, ref) {
     }
   };
 
+  /* ================= générateur de PV ================= */
+  var PV_DEC = ["Prononcé sans réserve", "Prononcé avec réserves", "Ajourné", "Rejeté"];
+  var PV_CONST = ["À vérifier", "Conforme", "Non conforme", "Sans objet"];
+  var PV_INTRO = "Le présent procès-verbal ";
+  var PV_TYPES = [
+    { id: "livraison", nom: "la livraison du matériel", l: "PV de livraison du matériel", fac: "PV de livraison", pre: "",
+      objet: PV_INTRO + "constate la livraison, sur le site du client, du matériel prévu au marché : serveurs, stockage, postes et accessoires.",
+      effet: "La signature transfère la garde du matériel au client. Elle ne vaut pas vérification du bon fonctionnement, qui est constatée par le PV d'installation." },
+    { id: "installation", nom: "l'installation de la plateforme", l: "PV d'installation", fac: "PV d'installation", pre: "PV d'installation",
+      objet: PV_INTRO + "constate l'installation de la plateforme PACS dans l'environnement du client et sa mise en ordre de marche technique, avant le paramétrage et la recette fonctionnelle.",
+      effet: "La signature autorise le démarrage du paramétrage, de la connexion des modalités et de la migration à blanc." },
+    { id: "va", nom: "la vérification d'aptitude", l: "PV de vérification d'aptitude (VA)", fac: "PV de VA", pre: "PV de VA",
+      objet: PV_INTRO + "constate que la solution installée et paramétrée remplit les fonctions prévues au marché, sur la base du cahier de recette exécuté avec les référents du client.",
+      effet: "La signature autorise la bascule en production. Les réserves non bloquantes sont inscrites au registre avec un responsable et une date de levée." },
+    { id: "bascule", nom: "la mise en production", l: "PV de mise en production (bascule)", fac: "", pre: "Bascule",
+      objet: PV_INTRO + "constate la mise en production de la solution PACS à l'issue de la bascule et le passage de l'ancien système en lecture seule.",
+      effet: "La signature ouvre la période de vérification de service régulier (VSR)." },
+    { id: "vsr", nom: "la vérification de service régulier", l: "PV de vérification de service régulier (VSR)", fac: "PV de VSR", pre: "PV de VSR",
+      objet: PV_INTRO + "constate le fonctionnement régulier de la solution en conditions réelles d'exploitation pendant la période de VSR.",
+      effet: "La signature vaut admission de la solution. Selon les termes du marché, elle fait courir la garantie et ouvre la maintenance." },
+    { id: "levee", nom: "la levée des réserves et la clôture du projet", l: "PV de levée de réserves et de clôture", fac: "PV de clôture", pre: "",
+      objet: PV_INTRO + "constate la levée des réserves émises lors des vérifications précédentes et la clôture du projet.",
+      effet: "La signature clôt le projet et acte le transfert au support de l'éditeur." },
+    { id: "formation", nom: "le service fait de la formation", l: "PV de formation", fac: "", pre: "",
+      objet: PV_INTRO + "atteste la réalisation des sessions prévues au plan de formation et la présence des utilisateurs.",
+      effet: "La signature atteste le service fait pour la prestation de formation. Les feuilles d'émargement sont annexées." }
+  ];
+  var PV_POINTS = {
+    livraison: ["Matériel livré conforme au bon de commande", "Colis intacts, sans dommage apparent", "Numéros de série relevés, inventaire annexé", "Matériel entreposé dans le local prévu"],
+    installation: ["Serveurs applicatifs, base de données et stockage installés", "Haute disponibilité : bascule testée", "Sauvegarde et restauration testées", "Supervision et télémaintenance opérationnelles", "Dossier d'installation remis"],
+    va: ["Migration à blanc réalisée et contrôlée", "Documentation d'exploitation et d'administration remise", "Comptes et habilitations créés"],
+    bascule: ["Ancien PACS passé en lecture seule", "Plan de retour arrière non déclenché", "Contrôles de production du premier jour conformes"],
+    vsr: ["Disponibilité mesurée sur la période conforme à l'engagement", "Aucune anomalie bloquante ouverte", "Transfert au support réalisé"],
+    levee: ["Preuve de correction remise pour chaque réserve", "Tests de non-régression réalisés", "Documentation mise à jour"],
+    formation: ["Feuilles d'émargement remises", "Supports de formation et guides de démarrage remis", "Évaluations de fin de session recueillies"]
+  };
+  function pvType(id) { return PV_TYPES.filter(function (t) { return t.id === id; })[0] || PV_TYPES[0]; }
+  function pvEnsure() {
+    if (!S.pv || typeof S.pv !== "object") S.pv = clone(DEFAULTS.pv);
+    var p = S.pv;
+    if (!pvType(p.type) || pvType(p.type).id !== p.type) p.type = "installation";
+    if (!p.docs) p.docs = {}; if (!p.points) p.points = {}; if (!Array.isArray(p.reserves)) p.reserves = [];
+    PV_TYPES.forEach(function (t) {
+      if (!p.docs[t.id]) p.docs[t.id] = { date: "", lieu: "", decision: "", observations: "" };
+      if (!Array.isArray(p.points[t.id])) p.points[t.id] = PV_POINTS[t.id].map(function (x) { return { point: x, constat: "À vérifier", commentaire: "" }; });
+    });
+    if (p.editeurNom == null || p.editeurNom === "") p.editeurNom = S.meta.chefDeProjet || "";
+    return p;
+  }
+  /* Constats calculés en direct depuis les autres outils. constat : Conforme, Non conforme ou Information (non compté dans la décision). */
+  function pvAuto(id) {
+    var out = [], ann = [], annIdx = {};
+    var annex = function (key, name, cols, rows) { if (annIdx[key] == null && rows.length) { ann.push({ name: "Annexe " + (ann.length + 1) + " : " + name, cols: cols, rows: rows }); annIdx[key] = ann.length; } return annIdx[key] || 0; };
+    var add = function (point, ok, detail, tool, an) { out.push({ point: point, constat: ok === null ? "Information" : ok ? "Conforme" : "Non conforme", detail: detail + (an ? " Liste en annexe " + an + "." : ""), tool: tool }); };
+    var t = pvType(id), pr = S.prerequis.rows.filter(function (r) { return t.pre && r.pv === t.pre; });
+    var plur = function (n, s) { return n + " " + s + (n > 1 ? "s" : ""); };
+    var preCols = ["Prérequis", "Catégorie", "Site", "À la charge de", "Échéance", "Statut"], preRows = function (l) { return l.map(function (r) { return [r.libelle || "", r.categorie || "", r.site || "", r.responsable || "", r.echeance ? fd(r.echeance) : "", r.statut || ""]; }); };
+    var resCols = ["Émise au", "Réserve", "Gravité", "À lever par", "Échéance", "Statut"], resRows = function (l) { return l.map(function (r) { return [r.pv || "", r.libelle || "", r.gravite || "Non bloquante", r.responsable || "", r.echeance ? fd(r.echeance) : "", r.statut || "Ouverte"]; }); };
+    var formAnnex = function () {
+      var f = S.formation, fm = formationStats().m, rows = [];
+      f.sites.forEach(function (s) { f.profils.forEach(function (q) { var c = fm[q.profil + "|" + s]; if (c && c.eff) rows.push([s, q.profil, nf(c.eff), nf(Math.min(c.forme, c.eff)), pct(Math.min(c.forme, c.eff) / c.eff)]); }); });
+      return annex("formation", "Formation par site et par profil (seuil " + pct(f.seuil) + ")", ["Site", "Profil", "Effectif", "Formés", "Taux"], rows);
+    };
+    if (id === "livraison") {
+      var st = calcStockage();
+      add("Capacité de stockage attendue", null, "Cache " + nf(st.last.cacheTotal) + " To et archive " + nf(st.last.archTotal) + " To à " + S.stockage.horizon + " ans : à rapprocher du bon de livraison.", "stockage");
+      var hb = S.prerequis.rows.filter(function (r) { return /h[ée]bergement/i.test(r.categorie || ""); });
+      if (hb.length) { var hf = hb.filter(function (r) { return r.statut === "Fait"; }).length; add("Local d'hébergement prêt à recevoir le matériel", hf === hb.length, hf + " prérequis d'hébergement faits sur " + hb.length + ".", "prerequis", annex("heberg", "Prérequis d'hébergement", preCols, preRows(hb))); }
+    }
+    if (pr.length) {
+      var f = pr.filter(function (r) { return r.statut === "Fait"; }).length, bl = pr.filter(function (r) { return r.statut === "Bloquant"; }).length;
+      add("Prérequis conditionnant ce PV levés", f === pr.length, f + " faits sur " + pr.length + (bl ? ", dont " + plur(bl, "bloquant") : "") + ".", "prerequis", annex("pre", "Prérequis conditionnant ce PV", preCols, preRows(pr)));
+    }
+    if (id === "va") {
+      var rc = recetteStats(), fx = S.flux.rows, fr = fx.filter(function (x) { return x.statut === "Recetté"; }).length, md = S.modalites.rows, mt = md.filter(function (x) { return x.statut === "Testée"; }).length;
+      var aRec = annex("recette", "Scénarios du cahier de recette", ["N°", "Domaine", "Profil", "Scénario", "Bloquant", "Statut", "Commentaire"], S.recette.rows.map(function (r, i) { return [String(i + 1), r.domaine || "", r.profil || "", r.intitule || "", r.bloquant ? "Oui" : "Non", r.statut || "", r.commentaire || ""]; }));
+      add("Scénarios de recette exécutés", rc.nt === 0, (rc.total - rc.nt) + " exécutés sur " + rc.total + " : " + rc.ok + " conformes, " + rc.res + " avec réserve, " + rc.ko + " non conforme" + (rc.ko > 1 ? "s" : "") + ".", "recette", aRec);
+      add("Scénarios bloquants conformes", rc.pret, rc.pret ? "Aucun scénario bloquant en échec ou non testé." : rc.blKO.length + " en échec et " + rc.blNT.length + " non testés sur " + rc.bl + " bloquants.", "recette", aRec);
+      add("Flux HL7 et DICOM recettés", fr === fx.length, fr + " recettés sur " + fx.length + ".", "flux", annex("flux", "Flux HL7 et DICOM", ["Source", "Cible", "Protocole", "Description", "Statut"], fx.map(function (x) { return [x.source || "", x.cible || "", x.protocole || "", x.description || "", x.statut || ""]; })));
+      add("Modalités connectées et testées", mt === md.length, mt + " testées sur " + md.length + ".", "modalites", annex("modal", "Modalités", ["Site", "Type", "Modèle", "AE Title", "Statut", "Testée le"], md.map(function (x) { return [x.site || "", x.type || "", x.modele || "", x.aet || "", x.statut || "", x.test ? fd(x.test) : ""]; })));
+    }
+    if (id === "bascule") {
+      var cr = S.bascule.criteres, go = cr.filter(function (x) { return x.ok === "Oui"; }).length, et = S.bascule.etapes, ef = et.filter(function (x) { return x.statut === "Fait"; }).length, ek = et.filter(function (x) { return x.statut === "KO"; }).length;
+      var fs = formationStats().sites, fp = fs.filter(function (x) { return x.pret; }).length;
+      add("Critères Go / No-Go remplis", go === cr.length, go + " remplis sur " + cr.length + ".", "bascule", annex("go", "Critères Go / No-Go", ["Critère", "Rempli"], cr.map(function (x) { return [x.critere || "", x.ok || "Non"]; })));
+      add("Étapes du chronogramme réalisées", ef === et.length, ef + " faites sur " + et.length + (ek ? ", " + ek + " en échec" : "") + ".", "bascule", annex("etapes", "Étapes du chronogramme de bascule", ["Phase", "Action", "Responsable", "Prévu", "Réalisé", "Statut"], et.map(function (x) { return [x.phase || "", x.action || "", x.responsable || "", x.prevu ? fdt(x.prevu) : "", x.reel ? fdt(x.reel) : "", x.statut || ""]; })));
+      add("Utilisateurs formés au seuil requis", fp === fs.length, fp + " sites prêts sur " + fs.length + " (seuil " + pct(S.formation.seuil) + " par profil).", "formation", formAnnex());
+    }
+    if (id === "vsr") {
+      var cum = S.suivi.jours.reduce(function (a, j) { return a + N(j.to); }, 0), vol = N(S.suivi.volume);
+      add("Engagement de service sur la période", null, "VSR de " + nf(S.paq.dureeVSR) + " jours, disponibilité exigée " + pct(S.paq.dispoVSR, 1) + ".", "paq");
+      add("Migration des archives terminée", vol > 0 && cum >= vol, nf(cum, 1) + " To migrés sur " + nf(vol) + " To.", "suivi");
+    }
+    if (id === "vsr" || id === "levee") {
+      var all = S.pv.reserves, ouv = all.filter(function (r) { return r.statut !== "Levée"; }), ob = ouv.filter(function (r) { return r.gravite === "Bloquante"; });
+      if (id === "vsr") add("Aucune réserve bloquante ouverte", ob.length === 0, ob.length ? plur(ob.length, "réserve") + " bloquante" + (ob.length > 1 ? "s" : "") + " encore ouverte" + (ob.length > 1 ? "s" : "") + "." : "Aucune réserve bloquante ouverte au registre.", "pv", annex("resouv", "Réserves encore ouvertes au registre", resCols, resRows(ouv)));
+      else add("Réserves du registre levées", all.length ? ouv.length === 0 : null, all.length ? (all.length - ouv.length) + " levées sur " + all.length + ". Liste à la section 3." : "Aucune réserve inscrite au registre.", "pv");
+    }
+    if (id === "formation") {
+      var fo = formationStats(), ses = S.formation.sessions, aF = formAnnex();
+      fo.sites.forEach(function (s) { add("Formation, " + s.site, s.pret, pct(s.taux) + " des utilisateurs formés ; profil le moins couvert à " + pct(s.min) + " pour un seuil de " + pct(S.formation.seuil) + ".", "formation", aF); });
+      add("Sessions réalisées", null, plur(ses.filter(function (x) { return N(x.presents) > 0; }).length, "session") + " avec présents sur " + ses.length + " planifiées, " + nf(fo.heures) + " heures stagiaires.", "formation");
+    }
+    out.annexes = ann;
+    return out;
+  }
+  function pvReserves(id) {
+    var t = pvType(id);
+    return id === "levee" ? S.pv.reserves.slice() : S.pv.reserves.filter(function (r) { return r.pv === t.l; });
+  }
+  function pvModel() {
+    var p = pvEnsure(), t = pvType(p.type), d = p.docs[t.id], auto = pvAuto(t.id), man = p.points[t.id], res = pvReserves(t.id);
+    var ouv = res.filter(function (r) { return r.statut !== "Levée"; }), bloq = ouv.filter(function (r) { return r.gravite === "Bloquante"; });
+    var nc = auto.filter(function (a) { return a.constat === "Non conforme"; }).length + man.filter(function (a) { return a.constat === "Non conforme"; }).length;
+    var av = man.filter(function (a) { return a.constat === "À vérifier" || !a.constat; }).length;
+    var compt = auto.filter(function (a) { return a.constat !== "Information"; }).length + man.filter(function (a) { return a.constat !== "Sans objet"; }).length;
+    var conf = auto.filter(function (a) { return a.constat === "Conforme"; }).length + man.filter(function (a) { return a.constat === "Conforme"; }).length;
+    var prop = nc || bloq.length || av ? "Ajourné" : ouv.length ? "Prononcé avec réserves" : "Prononcé sans réserve";
+    var why = nc ? nc + " point" + (nc > 1 ? "s" : "") + " non conforme" + (nc > 1 ? "s" : "") : bloq.length ? bloq.length + " réserve" + (bloq.length > 1 ? "s" : "") + " bloquante" + (bloq.length > 1 ? "s" : "") + " ouverte" + (bloq.length > 1 ? "s" : "") : av ? av + " point" + (av > 1 ? "s" : "") + " restant à vérifier" : ouv.length ? ouv.length + " réserve" + (ouv.length > 1 ? "s" : "") + " non bloquante" + (ouv.length > 1 ? "s" : "") + " ouverte" + (ouv.length > 1 ? "s" : "") : "tous les points sont conformes, aucune réserve ouverte";
+    var dec = d.decision || prop, rank = function (x) { return PV_DEC.indexOf(x); };
+    var fac = t.fac ? ((S.pilotage || {}).facturation || []).filter(function (x) { return x.declencheur === t.fac; })[0] : null;
+    var client = String(S.meta.client || "le client").split("|")[0].trim();
+    return { p: p, t: t, d: d, auto: auto, man: man, res: res, ouv: ouv, bloq: bloq, nc: nc, av: av, compt: compt, conf: conf, annexes: auto.annexes || [], prop: prop, why: why, dec: dec, tropFavorable: rank(dec) < rank(prop), fac: fac, client: client,
+      sessions: t.id === "formation" ? S.formation.sessions : [] };
+  }
+  function pvDecisionText(m) {
+    var o = m.t.nom;
+    if (m.dec === "Prononcé sans réserve") return "Au vu des constats ci-dessus, les parties prononcent sans réserve " + o + ".";
+    if (m.dec === "Prononcé avec réserves") return "Au vu des constats ci-dessus, les parties prononcent " + o + ", avec les réserves listées ci-dessus. Chaque réserve est levée à la date indiquée par son responsable.";
+    if (m.dec === "Ajourné") return "Au vu des constats ci-dessus, la décision est ajournée. Une nouvelle vérification est organisée après correction des points non conformes et des réserves bloquantes.";
+    return "Au vu des constats ci-dessus, le client rejette " + o + ". Les motifs figurent dans les constats et les observations.";
+  }
+  function pvEffets(m) {
+    var ok = /^Prononcé/.test(m.dec);
+    return [pvDecisionText(m)].concat(ok ? [m.t.effet] : []).concat(m.fac ? [ok ? "Ce procès-verbal déclenche le jalon de facturation « " + m.fac.jalon + " »." : "Le jalon de facturation « " + m.fac.jalon + " » n'est pas déclenché."] : []);
+  }
+  function pvBlank(v) { return v ? v : "……………………"; }
+  function pvText(m) {
+    var L = [], d = m.d, p = m.p;
+    L.push("PROCÈS-VERBAL" + m.t.l.slice(2).toUpperCase());
+    L.push(S.meta.projet); L.push("");
+    L.push("Client : " + m.client); L.push("Site : " + pvBlank(p.site)); L.push("Date : " + (d.date ? fd(d.date) : pvBlank("")) + "    Lieu : " + pvBlank(d.lieu));
+    if (m.fac) L.push("Jalon contractuel : " + m.fac.jalon + " (" + pct(m.fac.part, 1) + " du marché, prévu le " + fd(m.fac.date) + ")");
+    L.push(""); L.push("1. OBJET"); L.push(m.t.objet);
+    L.push(""); L.push("2. CONSTATS");
+    m.auto.forEach(function (a) { L.push("- " + a.point + " : " + a.constat.toLowerCase() + ". " + a.detail); });
+    m.man.forEach(function (a) { L.push("- " + a.point + " : " + (a.constat || "à vérifier").toLowerCase() + (a.commentaire ? ". " + a.commentaire : "")); });
+    if (m.sessions.length) { L.push(""); L.push("Sessions de formation"); m.sessions.forEach(function (x) { L.push("- " + fd(x.date) + ", " + x.site + ", " + x.profil + " : " + nf(x.presents) + " présents sur " + nf(x.places) + " places (" + x.formateur + ")"); }); }
+    L.push(""); L.push(m.t.id === "levee" ? "3. ÉTAT DES RÉSERVES" : "3. RÉSERVES");
+    if (!m.res.length) L.push("Aucune.");
+    m.res.forEach(function (r, i) { L.push((i + 1) + ". " + (m.t.id === "levee" ? "[" + r.pv + "] " : "") + r.libelle + " (" + (r.gravite || "Non bloquante").toLowerCase() + ") : " + (r.statut === "Levée" ? "levée" : "à lever par " + (r.responsable || "…") + (r.echeance ? " avant le " + fd(r.echeance) : ""))); });
+    L.push(""); L.push("4. DÉCISION"); pvEffets(m).forEach(function (x) { L.push(x); });
+    if (d.observations) { L.push(""); L.push("Observations : " + d.observations); }
+    L.push(""); L.push("5. SIGNATURES");
+    L.push("Pour le client : " + pvBlank(p.clientNom) + ", " + pvBlank(p.clientFonction) + "    Date et signature :");
+    L.push("Pour l'éditeur : " + pvBlank(p.editeurNom) + ", " + pvBlank(p.editeurFonction) + "    Date et signature :");
+    m.annexes.forEach(function (a) {
+      L.push(""); L.push(a.name.toUpperCase()); L.push(a.cols.join(" | "));
+      a.rows.forEach(function (r) { L.push("- " + r.map(function (v) { return v === "" ? "–" : v; }).join(" | ")); });
+    });
+    return L.join("\n");
+  }
+  V.pv = {
+    main: function () {
+      var p = pvEnsure(), t = pvType(p.type), base = "pv.docs." + t.id;
+      var isLevee = t.id === "levee";
+      return '<div class="panel"><h3>Document</h3><div class="params">' + param("pv.type", "Type de PV", { sel: PV_TYPES.map(function (x) { return [x.id, x.l]; }) }) + param(base + ".date", "Date du PV", "date") + param(base + ".lieu", "Lieu", "text") + param("pv.site", "Site concerné", "text") +
+        param(base + ".decision", "Décision", { sel: [["", "Suivre la proposition de l'outil"]].concat(PV_DEC.map(function (x) { return [x, x]; })) }) + "</div>" +
+        '<label style="display:block;margin-top:10px">Observations<textarea rows="2" data-p="' + base + '.observations">' + esc(p.docs[t.id].observations) + "</textarea></label></div>" +
+        '<div id="sum"></div>' +
+        '<div class="panel"><h3>Points à constater sur place <small>à cocher pendant la visite ou la réunion de signature</small></h3>' + table("pv.points." + t.id, [{ k: "point", l: "Point vérifié", w: 300 }, { k: "constat", l: "Constat", t: "sel", o: PV_CONST }, { k: "commentaire", l: "Commentaire", w: 260 }], { add: false }) + '<div style="margin-top:8px"><button type="button" class="small" data-act="pv-addpt">+ Ajouter un point</button></div></div>' +
+        '<div class="panel"><h3>Registre des réserves <small>' + (isLevee ? "ce PV reprend toutes les réserves" : "ce PV reprend les réserves rattachées à « " + esc(t.l) + " »") + "</small></h3>" +
+        table("pv.reserves", [{ k: "pv", l: "Émise au", t: "sel", o: PV_TYPES.filter(function (x) { return x.id !== "levee"; }).map(function (x) { return x.l; }) }, { k: "libelle", l: "Réserve", w: 280 }, { k: "gravite", l: "Gravité", t: "sel", o: ["Non bloquante", "Bloquante"] }, { k: "responsable", l: "À lever par", t: "sel", o: ["Éditeur", "Client", "Partenaire"] }, { k: "echeance", l: "Échéance", t: "date" }, { k: "statut", l: "Statut", t: "sel", o: ["Ouverte", "Levée"] }], { add: false }) +
+        '<div class="actions" style="margin-top:8px"><button type="button" class="small" data-act="pv-addres">+ Ajouter une réserve</button><button type="button" class="small" data-act="pv-import">Reprendre les réserves du cahier de recette</button></div></div>' +
+        '<div class="panel"><h3>Signataires</h3><div class="params">' + param("pv.clientNom", "Pour le client : nom", "text") + param("pv.clientFonction", "Pour le client : fonction", "text") + param("pv.editeurNom", "Pour l'éditeur : nom", "text") + param("pv.editeurFonction", "Pour l'éditeur : fonction", "text") + "</div></div>";
+    },
+    sum: function () {
+      var m = pvModel(), cls = { "Prononcé sans réserve": "ok", "Prononcé avec réserves": "warn", "Ajourné": "crit", "Rejeté": "crit" };
+      var k = kpis([[m.conf + " / " + m.compt, "Points conformes", m.nc ? "crit" : m.conf === m.compt ? "ok" : "warn"], [String(m.ouv.length), "Réserves ouvertes sur ce PV", m.bloq.length ? "crit" : m.ouv.length ? "warn" : "ok"], [String(m.bloq.length), "Dont bloquantes", m.bloq.length ? "crit" : "ok"], [m.prop, "Proposition de l'outil", cls[m.prop]], [m.fac ? pct(m.fac.part, 1) : "–", m.fac ? "Part du marché facturable à la signature" : "Pas de jalon de facturation lié"]]);
+      var warn = m.tropFavorable ? '<div class="banner err" role="status" style="margin-top:16px"><span>La décision choisie (« ' + esc(m.dec) + " ») est plus favorable que la proposition de l'outil (« " + esc(m.prop) + " ») : " + esc(m.why) + ".</span></div>" : "";
+      var autoT = m.auto.length ? '<div class="tablewrap"><table><thead><tr><th>Point vérifié</th><th>Constat</th><th>Détail</th><th></th></tr></thead><tbody>' + m.auto.map(function (a) { return "<tr><td><strong>" + esc(a.point) + "</strong></td><td>" + pill(a.constat, a.constat === "Conforme" ? "ok" : a.constat === "Non conforme" ? "crit" : "info") + "</td><td>" + esc(a.detail) + '</td><td><a class="srclink" href="#' + HP + a.tool + '">Ouvrir l\'outil</a></td></tr>'; }).join("") + "</tbody></table></div>" : '<p class="note" style="margin:0">Aucun constat automatique pour ce type de PV : il repose sur les points à constater sur place.</p>';
+      return k + warn + '<div class="grid g2" style="margin-top:16px"><div class="panel"><h3>Constats repris des outils <small>calculés en direct</small></h3>' + autoT + '<p class="note" style="margin:10px 0 0">Proposition « ' + esc(m.prop) + " » : " + esc(m.why) + ".</p></div>" +
+        '<div class="panel"><h3>Projet de PV <small><button type="button" class="small" data-act="pv-copy">Copier</button></small></h3><div class="out" id="pvgen-text">' + esc(pvText(m)) + '</div><p class="note" style="margin:10px 0 0">Modèle à adapter aux clauses du marché (CCAP, CCAG). Les exports Word et PDF reprennent ce contenu, avec les cadres de signature et les listes détaillées en annexe.</p></div></div>';
+    }
+  };
+
   /* ================= exports Excel et PDF ================= */
   var LIGHT = { bg: "#F3F5F8", surface: "#FFFFFF", sunk: "#EAEEF3", line: "#D9DFE7", fg: "#15212E", muted: "#5B6878", accent: "#1D4F91", "accent-soft": "#CFE0EE", plan: "#9FBBD3", ok: "#2F7D53", "ok-soft": "#DCEFE3", warn: "#B8700F", "warn-soft": "#FBEBD2", crit: "#B93A33", "crit-soft": "#F7DCDA", mile: "#C9741B" };
   var LIBS = {
@@ -5207,6 +5397,17 @@ function poldatAuto(D, ref) {
         tables: [t("Décisions", cr.decisions), t("Actions", cr.actions, true), t("Points à inscrire au registre", cr.points), t("Risques à inscrire au registre", cr.risques)].filter(function (x) { return x.rows.length; }),
         after: cr.prochain ? [{ h: "Prochaine réunion", b: cr.prochain }] : [] };
     },
+    pv: function () {
+      var m = pvModel(), d = m.d, p = m.p;
+      return { title: "Procès-verbal" + m.t.l.slice(2), subtitle: S.meta.projet + " · " + m.client, aud: "client",
+        sections: [
+          { h: "1. Objet", paras: [m.t.objet], tables: [{ name: "Références", cols: ["Élément", "Valeur"], rows: [["Projet", S.meta.projet], ["Client", m.client], ["Site", p.site || ""], ["Date du PV", d.date ? fd(d.date) : ""], ["Lieu", d.lieu || ""]].concat(m.fac ? [["Jalon contractuel", m.fac.jalon + " (" + pct(m.fac.part, 1) + " du marché)"]] : []) }] },
+          { h: "2. Constats", tables: [{ cols: ["Point vérifié", "Constat", "Détail"], rows: m.auto.map(function (a) { return [a.point, a.constat, a.detail]; }).concat(m.man.map(function (a) { return [a.point, a.constat || "À vérifier", a.commentaire || ""]; })) }].concat(m.sessions.length ? [{ name: "Sessions de formation", cols: ["Date", "Site", "Profil", "Formateur", "Présents", "Places"], rows: m.sessions.map(function (x) { return [fd(x.date), x.site, x.profil, x.formateur, nf(x.presents), nf(x.places)]; }) }] : []) },
+          { h: m.t.id === "levee" ? "3. État des réserves" : "3. Réserves", paras: m.res.length ? [] : ["Aucune réserve."], tables: m.res.length ? [{ cols: ["N°", "Émise au", "Réserve", "Gravité", "À lever par", "Échéance", "Statut"], rows: m.res.map(function (r, i) { return [String(i + 1), r.pv || "", r.libelle || "", r.gravite || "Non bloquante", r.responsable || "", r.echeance ? fd(r.echeance) : "", r.statut || "Ouverte"]; }) }] : [] },
+          { h: "4. Décision", paras: pvEffets(m).concat(d.observations ? ["Observations : " + d.observations] : []) },
+          { h: "5. Signatures", tables: [{ cols: ["Signataire", "Pour le client", "Pour l'éditeur"], rows: [["Nom", p.clientNom || "", p.editeurNom || ""], ["Fonction", p.clientFonction || "", p.editeurFonction || ""], ["Date", "", ""], ["Signature", "", ""]] }] }
+        ].concat(m.annexes.length ? [{ h: "Annexes", paras: ["Détail des constats repris des outils du projet, à la date d'édition du procès-verbal."], tables: m.annexes.map(function (a) { return { name: a.name, cols: a.cols, rows: a.rows }; }) }] : []) };
+    },
     avenant: function (variant) {
       var a = S.avenant, k = avenantCalc();
       if (variant === "client") {
@@ -5222,7 +5423,7 @@ function poldatAuto(D, ref) {
         texts: [{ h: "Objet", b: a.intitule + ". Impact sur le délai : " + nf(a.delaiJours) + " jours." }] };
     }
   };
-  var EXPORT_ORDER = ["paq", "poldat", "stockage", "migration", "prerequis", "modalites", "aet", "flux", "recette", "bascule", "suivi", "formation", "guides", "cr", "avenant"];
+  var EXPORT_ORDER = ["paq", "poldat", "stockage", "migration", "prerequis", "modalites", "aet", "flux", "recette", "pv", "bascule", "suivi", "formation", "guides", "cr", "avenant"];
 
   /* --- format d'une valeur selon sa colonne --- */
   function fmtCell(v, col) {
@@ -5290,7 +5491,7 @@ function poldatAuto(D, ref) {
     var charts = []; specs.forEach(function (sp, i) { (sp.charts || []).forEach(function (ch) { charts.push({ i: i, svg: ch }); }); });
     return Promise.all(charts.map(function (x) { return svgToPng(x.svg); })).then(function (imgs) {
       var J = window.jspdf.jsPDF, doc = new J({ orientation: specs.length === 1 && specs[0].landscape ? "landscape" : "portrait", unit: "mm", format: "a4" });
-      var ACC = [31, 95, 139], INK = [21, 33, 46], MUT = [91, 104, 120];
+      var ACC = [29, 79, 145], INK = [50, 50, 50], MUT = [91, 104, 120];
       function pw() { return doc.internal.pageSize.getWidth(); } function ph() { return doc.internal.pageSize.getHeight(); }
       var y = 0;
       function ensure(h) { if (y + h > ph() - 16) { doc.addPage(); y = 16; } }
@@ -5377,7 +5578,7 @@ function poldatAuto(D, ref) {
   }
   function buildDoc(specs) {
     var e = function (t) { return String(t == null ? "" : t).replace(/[&<>]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]; }); };
-    var h = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><title>' + e(specs[0].title) + '</title><style>body{font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#15212E}h1{font-size:20pt;color:#1D4F91;margin:0 0 4pt}h2{font-size:14pt;color:#1F5F8B;margin:16pt 0 6pt}p{margin:0 0 6pt}table{border-collapse:collapse;width:100%;margin:4pt 0 10pt}th{background:#1D4F91;color:#fff;text-align:left;padding:4pt;font-size:10pt}td{border:1px solid #D9DFE7;padding:4pt;font-size:10pt;vertical-align:top}.meta{color:#5B6878}</style></head><body>';
+    var h = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><title>' + e(specs[0].title) + '</title><style>body{font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#15212E}h1{font-size:20pt;color:#1D4F91;margin:0 0 4pt}h2{font-size:14pt;color:#1D4F91;margin:16pt 0 6pt}p{margin:0 0 6pt}table{border-collapse:collapse;width:100%;margin:4pt 0 10pt}th{background:#1D4F91;color:#fff;text-align:left;padding:4pt;font-size:10pt}td{border:1px solid #D9DFE7;padding:4pt;font-size:10pt;vertical-align:top}.meta{color:#5B6878}</style></head><body>';
     specs.forEach(function (sp) {
       h += "<h1>" + e(sp.title) + "</h1>" + (sp.subtitle ? '<p class="meta">' + e(sp.subtitle) + "</p>" : "");
       (sp.sections || []).forEach(function (sec) {
@@ -5391,7 +5592,7 @@ function poldatAuto(D, ref) {
     return new Blob(["\ufeff" + h + "</body></html>"], { type: "application/msword" });
   }
   function exportButtons(id) {
-    if (id === "paq") return '<div class="actions"><button type="button" data-exp="doc">Exporter en Word</button><button type="button" data-exp="pdf">Exporter en PDF</button><button type="button" data-exp="xlsx">Exporter en Excel</button></div>';
+    if (id === "paq" || id === "pv") return '<div class="actions"><button type="button" data-exp="doc">Exporter en Word</button><button type="button" data-exp="pdf">Exporter en PDF</button><button type="button" data-exp="xlsx">Exporter en Excel</button></div>';
     if (id === "accueil") return '<div class="actions"><button type="button" data-exp="xlsx" data-all="1">Tout exporter en Excel</button><button type="button" data-exp="pdf" data-all="1">Dossier complet en PDF</button><button type="button" data-exp="pdf" data-all="1" data-var="client">Dossier client en PDF</button></div><p class="note" style="margin:6px 0 0">Le dossier complet contient le chiffrage interne de l\'avenant ; le dossier client ne contient que les documents partageables.</p>';
     if (id === "avenant") return '<div class="actions"><button type="button" data-exp="pdf" data-var="client">Proposition client (PDF)</button><button type="button" data-exp="xlsx">Chiffrage interne (Excel)</button><button type="button" data-exp="pdf">Chiffrage interne (PDF)</button></div>';
     return '<div class="actions"><button type="button" data-exp="xlsx">Exporter en Excel</button><button type="button" data-exp="pdf">Exporter en PDF</button></div>';
@@ -5814,7 +6015,7 @@ function pilotSnapshot(wb, source) {
     if (p.indexOf("aet.sites.") === 0) { S.aet.sites[p.slice(10)] = v; } else setP(S, p, v);
     if (el.tagName === "SELECT") el.setAttribute("data-v", el.value);
     saveDraft();
-    if (e.type === "change" && /^(modalites\.rows\.\d+\.site|formation\.profils\.\d+\.profil)$/.test(p)) { render(); return; }
+    if (e.type === "change" && /^(modalites\.rows\.\d+\.site|formation\.profils\.\d+\.profil|pv\.type)$/.test(p)) { render(); return; }
     refreshSum();
   }
   app.addEventListener("input", function (e) { if (e.target.dataset && (e.target.dataset.num || e.target.tagName === "TEXTAREA" || e.target.type === "text")) onEdit(e); });
@@ -5845,6 +6046,18 @@ function pilotSnapshot(wb, source) {
     if (a === "cr-copy") { copyText(document.getElementById("cr-text").textContent, b); return; }
     if (a === "cr-wb") { if (ui.wb && ui.wb.hasOT && ui.cr && !ui.cr.loading && !ui.cr.error) { var rows = crRows(); if (rows.length) wbWrite(false, rows); else { msg = { text: "Aucune décision ni action à inscrire." }; render(); } } return; }
     if (a === "cr-tsv") { copyText(document.getElementById("cr-tsv").value, b); return; }
+    if (a === "pv-copy") { copyText(document.getElementById("pvgen-text").textContent, b); return; }
+    if (a === "pv-addpt") { pvEnsure(); S.pv.points[S.pv.type].push({ point: "", constat: "À vérifier", commentaire: "" }); saveDraft(); render(); return; }
+    if (a === "pv-addres") { var pvT = pvType(pvEnsure().type); S.pv.reserves.push({ pv: pvT.id === "levee" ? pvType("va").l : pvT.l, libelle: "", gravite: "Non bloquante", responsable: "Éditeur", echeance: "", statut: "Ouverte" }); saveDraft(); render(); return; }
+    if (a === "pv-import") {
+      pvEnsure(); var pvN = 0, pvVA = pvType("va").l;
+      S.recette.rows.filter(function (r) { return r.statut === "Réserve" || r.statut === "KO"; }).forEach(function (r) {
+        var lib = r.intitule + (r.commentaire ? " : " + r.commentaire : "");
+        if (S.pv.reserves.some(function (x) { return x.libelle === lib; })) return;
+        S.pv.reserves.push({ pv: pvVA, libelle: lib, gravite: r.statut === "KO" ? "Bloquante" : "Non bloquante", responsable: "Éditeur", echeance: "", statut: "Ouverte" }); pvN++;
+      });
+      saveDraft(); msg = { text: pvN ? pvN + " réserve" + (pvN > 1 ? "s" : "") + " reprise" + (pvN > 1 ? "s" : "") + " du cahier de recette, rattachée" + (pvN > 1 ? "s" : "") + " au PV de VA." : "Aucune nouvelle réserve à reprendre du cahier de recette.", cls: pvN ? "ok" : "" }; render(); return;
+    }
     if (a === "av-copy") { copyText(document.getElementById("av-text").textContent, b); return; }
     if (a === "cr-ai") { aiCR(); return; }
     if (a === "copy-data") { copyText(JSON.stringify(S, null, 1), b); return; }
