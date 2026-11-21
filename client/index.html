@@ -9,7 +9,7 @@
 <title>Cockpit projet PACS</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 /* Mise en page : bandeau projet, onglets de vues, panneaux ; mode présentation en surimpression 16:9. */
 :root {
@@ -202,6 +202,73 @@ ul.retards .rcause.none { color: var(--muted); border-left-color: var(--line); f
 tr.flash td { animation: goflash 2.8s ease-out; }
 @keyframes goflash { 0%, 45% { background: var(--warn-soft); } 100% { background: transparent; } }
 </style>
+<style id="brand-skin">
+/* Habillage aux couleurs relevées sur dedalus.com : bandeau bleu #1D4F91, accent vert anis #C5E86C sur les actions principales, gris clairs, Montserrat (titres en graisse légère + extra-grasse), coins de 8 px. */
+:root {
+  --bg: #EEF1F0; --surface: #FFFFFF; --sunk: #E7ECEA; --line: #D3DAD8; --fg: #323232; --muted: #646967;
+  --accent: #1D4F91; --accent-soft: #DCE6F3; --accent-ink: #FFFFFF; --plan: #A8BAD7;
+  --ok: #2F7D53; --ok-soft: #DCEFE3; --warn: #B8700F; --warn-soft: #FBEBD2; --crit: #B93A33; --crit-soft: #F7DCDA;
+  --mile: #C9741B; --today: #D2453C;
+  --band: #1D4F91; --band-2: #5A75A5; --band-fg: #FFFFFF; --band-muted: #C9D6EA; --lime: #C5E86C; --lime-hover: #B5DB55; --lime-ink: #323232;
+  --font-ui: "Montserrat", "Segoe UI", system-ui, sans-serif;
+  --radius: 8px; color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #081730; --surface: #0F2548; --sunk: #17335F; --line: #2A4575; --fg: #EEF1F0; --muted: #A9B7CE;
+  --accent: #9DBBEC; --accent-soft: #1D3F73; --accent-ink: #081730; --plan: #3F5E93;
+  --ok: #5FBF8A; --ok-soft: #1D3A2B; --warn: #E3A447; --warn-soft: #43321A; --crit: #EE7A71; --crit-soft: #4A2523;
+  --mile: #E39A4E; --today: #F07A70; --band: #0C3170; --band-2: #1D4F91; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #081730; --surface: #0F2548; --sunk: #17335F; --line: #2A4575; --fg: #EEF1F0; --muted: #A9B7CE;
+  --accent: #9DBBEC; --accent-soft: #1D3F73; --accent-ink: #081730; --plan: #3F5E93;
+  --ok: #5FBF8A; --ok-soft: #1D3A2B; --warn: #E3A447; --warn-soft: #43321A; --crit: #EE7A71; --crit-soft: #4A2523;
+  --mile: #E39A4E; --today: #F07A70; --band: #0C3170; --band-2: #1D4F91; color-scheme: dark }
+
+/* Bandeau bleu, trait vert anis en pied */
+header.top { background: linear-gradient(90deg, var(--band) 0%, var(--band) 62%, var(--band-2) 100%); border-bottom: 4px solid var(--lime); color: var(--band-fg); }
+header.top .eyebrow { color: var(--lime); letter-spacing: .1em; }
+.brand h1 { color: var(--band-fg); font-weight: 800; font-size: 26px; letter-spacing: -0.01em; }
+.sub, header.top .note { color: var(--band-muted); }
+.sub strong { color: var(--band-fg); }
+header.top button, header.top .btnlink, header.top select.demo { background: rgba(255, 255, 255, .1); border-color: rgba(255, 255, 255, .35); color: var(--band-fg); }
+header.top button:hover, header.top .btnlink:hover { background: rgba(255, 255, 255, .2); border-color: #fff; }
+header.top select.demo option { background: #fff; color: #323232; }
+header.top button:focus-visible, header.top a:focus-visible { outline-color: var(--lime); }
+header.top .wbstate { background: rgba(255, 255, 255, .14); color: var(--band-fg); }
+header.top .wbstate.todo { background: var(--lime); color: var(--lime-ink); }
+nav.tabs a { color: var(--band-muted); font-weight: 600; border-bottom-width: 4px; margin-bottom: -4px; padding: 12px 14px; }
+nav.tabs a:hover { color: var(--band-fg); }
+nav.tabs a[aria-current="page"] { color: var(--band-fg); font-weight: 700; border-bottom-color: #fff; background: rgba(255, 255, 255, .1); border-radius: 8px 8px 0 0; }
+nav.tabs { padding-bottom: 4px; margin-bottom: -4px; }
+
+/* Actions principales en vert anis, texte sombre */
+button, .btn, .btnlink, select.demo { border-radius: 8px; font-weight: 700; }
+button.primary, header.top button.primary, button.primary.internal, header.top button.primary.internal,
+.audience button[aria-pressed="true"], header.top .audience button[aria-pressed="true"], .filters button[aria-pressed="true"] { background: var(--lime); border-color: var(--lime); color: var(--lime-ink); }
+button.primary:hover, header.top button.primary:hover { background: var(--lime-hover); border-color: var(--lime-hover); }
+
+/* Titres : contraste graisse légère / extra-grasse */
+.panel h2 { font-weight: 800; font-size: 16px; letter-spacing: -0.005em; }
+.panel h2 small { font-weight: 500; }
+.kpi .v { font-weight: 300; font-size: 30px; letter-spacing: -0.02em; color: var(--accent); }
+.kpi .l { font-weight: 600; }
+.weather .state { font-weight: 800; }
+th { font-weight: 700; }
+.panel { border-color: transparent; box-shadow: 0 1px 2px rgba(29, 79, 145, .08), 0 6px 18px rgba(29, 79, 145, .06); }
+.kpis { box-shadow: 0 1px 2px rgba(29, 79, 145, .08); }
+.pletter { background: var(--band); color: #fff; }
+.quote { border-left-color: var(--lime); border-left-width: 4px; }
+.tourcard { border-top-color: var(--lime); }
+
+
+/* Mode présentation */
+.slide h3 { font-weight: 800; }
+.slide.cover { background: linear-gradient(90deg, var(--band) 0%, var(--band) 70%, var(--band-2) 100%); border-color: var(--band); color: #fff; border-bottom: 10px solid var(--lime); }
+.slide.cover h3 { font-weight: 300; } .slide.cover .kick { color: var(--lime); }
+.slide.cover .foot, .slide.cover .agenda { color: #fff; }
+.slide .kick { font-weight: 700; }
+</style>
+
 
 <div id="app"><div class="wrap" style="padding-block:40px"><p class="note">Chargement des données du projet…</p></div></div>
 <input type="file" id="xlsx-input" accept=".xlsx" hidden>

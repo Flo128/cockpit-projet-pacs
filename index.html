@@ -2658,7 +2658,7 @@ function poldatAuto(D, ref) {
   };
 
   /* ================= exports Excel et PDF ================= */
-  var LIGHT = { bg: "#F3F5F8", surface: "#FFFFFF", sunk: "#EAEEF3", line: "#D9DFE7", fg: "#15212E", muted: "#5B6878", accent: "#1F5F8B", "accent-soft": "#CFE0EE", plan: "#9FBBD3", ok: "#2F7D53", "ok-soft": "#DCEFE3", warn: "#B8700F", "warn-soft": "#FBEBD2", crit: "#B93A33", "crit-soft": "#F7DCDA", mile: "#C9741B" };
+  var LIGHT = { bg: "#F3F5F8", surface: "#FFFFFF", sunk: "#EAEEF3", line: "#D9DFE7", fg: "#15212E", muted: "#5B6878", accent: "#1D4F91", "accent-soft": "#CFE0EE", plan: "#9FBBD3", ok: "#2F7D53", "ok-soft": "#DCEFE3", warn: "#B8700F", "warn-soft": "#FBEBD2", crit: "#B93A33", "crit-soft": "#F7DCDA", mile: "#C9741B" };
   var LIBS = {
     XLSX: "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js",
     jspdf: "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js",
@@ -2977,7 +2977,7 @@ function poldatAuto(D, ref) {
   }
   function buildDoc(specs) {
     var e = function (t) { return String(t == null ? "" : t).replace(/[&<>]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]; }); };
-    var h = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><title>' + e(specs[0].title) + '</title><style>body{font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#15212E}h1{font-size:20pt;color:#1F5F8B;margin:0 0 4pt}h2{font-size:14pt;color:#1F5F8B;margin:16pt 0 6pt}p{margin:0 0 6pt}table{border-collapse:collapse;width:100%;margin:4pt 0 10pt}th{background:#1F5F8B;color:#fff;text-align:left;padding:4pt;font-size:10pt}td{border:1px solid #D9DFE7;padding:4pt;font-size:10pt;vertical-align:top}.meta{color:#5B6878}</style></head><body>';
+    var h = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><title>' + e(specs[0].title) + '</title><style>body{font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#15212E}h1{font-size:20pt;color:#1D4F91;margin:0 0 4pt}h2{font-size:14pt;color:#1F5F8B;margin:16pt 0 6pt}p{margin:0 0 6pt}table{border-collapse:collapse;width:100%;margin:4pt 0 10pt}th{background:#1D4F91;color:#fff;text-align:left;padding:4pt;font-size:10pt}td{border:1px solid #D9DFE7;padding:4pt;font-size:10pt;vertical-align:top}.meta{color:#5B6878}</style></head><body>';
     specs.forEach(function (sp) {
       h += "<h1>" + e(sp.title) + "</h1>" + (sp.subtitle ? '<p class="meta">' + e(sp.subtitle) + "</p>" : "");
       (sp.sections || []).forEach(function (sec) {
