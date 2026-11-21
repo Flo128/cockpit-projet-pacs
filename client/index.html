@@ -191,6 +191,16 @@ input[type="range"] { accent-color: var(--accent); }
 .deckbar .count { font-variant-numeric: tabular-nums; color: var(--muted); min-width: 64px; text-align: center; }
 @media (max-width: 640px) { .brand h1 { font-size: 19px; } .seqrow { grid-template-columns: 1fr; } .kpi .v { font-size: 22px; } }
 @media (prefers-reduced-motion: no-preference) { .slide { transition: opacity .18s ease; } }
+.golink { font: inherit; font-size: 12px; font-weight: 600; color: var(--accent); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 3px 9px; cursor: pointer; white-space: nowrap; }
+.golink:hover { border-color: var(--accent); background: var(--accent-soft); }
+.seqrow .golink { display: block; margin-top: 4px; }
+ul.retards { list-style: none; margin: 0; padding: 0; }
+ul.retards li { display: grid; grid-template-columns: 1fr auto; gap: 6px 16px; padding: 10px 0; border-top: 1px solid var(--line); align-items: start; }
+ul.retards .rcause { grid-column: 1 / -1; border-left: 3px solid var(--warn); padding: 2px 0 2px 10px; font-size: 13px; }
+ul.retards .rcause.none { color: var(--muted); border-left-color: var(--line); font-style: italic; }
+.retex { background: var(--crit-soft); border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; }
+tr.flash td { animation: goflash 2.8s ease-out; }
+@keyframes goflash { 0%, 45% { background: var(--warn-soft); } 100% { background: transparent; } }
 </style>
 
 <div id="app"><div class="wrap" style="padding-block:40px"><p class="note">Chargement des données du projet…</p></div></div>
@@ -648,7 +658,7 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
       return '<div class="seqrow"' + tipAttr(seqTip(s, st)) + '><div><strong>' + esc(s.nom) + '</strong><div class="dates mono">' + fds(s.debut) + " → " + fds(s.fin) + '</div></div>' +
         '<div class="bars"><div class="bar" title="Réalisé ' + pct(s.reel) + '"><i style="width:' + Math.round((s.reel || 0) * 100) + '%"></i></div>' +
         '<div class="bar" title="Prévu ' + pct(s.prevu) + '"><i class="plan" style="width:' + Math.round((s.prevu || 0) * 100) + '%"></i></div></div>' +
-        "<div>" + pill(st || "À venir", st ? null : "") + "</div></div>";
+        "<div>" + pill(st || "À venir", st ? null : "") + (st === "En retard" ? goBtn("planning", "", s.nom, "Voir les tâches") : "") + "</div></div>";
     }).join("");
   }
   function fmtTol(t, v) {
@@ -670,7 +680,7 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
     if (!list.length) return '<p class="empty">Aucun risque ouvert.</p>';
     return '<div class="tablewrap"><table><thead><tr><th>ID</th><th>Risque</th><th class="num">P × I</th><th>Niveau</th><th>Propriétaire</th>' + (compact ? "" : "<th>Réponse et actions</th><th>Statut</th>") + "</tr></thead><tbody>" +
       list.map(function (r) {
-        return '<tr' + tipAttr(riskTip(r)) + '><td class="id">' + esc(r.id) + "</td><td>" + esc(r.description) + '</td><td class="num mono">' + (r.probabilite || "–") + " × " + (r.impact || "–") + " = <strong>" + (r.criticite || "–") + "</strong></td><td>" + pill(r.niveau, niveauClass(r.niveau)) + "</td><td>" + esc(r.proprietaire) + "</td>" +
+        return '<tr id="row-' + esc(r.id) + '"' + tipAttr(riskTip(r)) + '><td class="id">' + esc(r.id) + "</td><td>" + esc(r.description) + '</td><td class="num mono">' + (r.probabilite || "–") + " × " + (r.impact || "–") + " = <strong>" + (r.criticite || "–") + "</strong></td><td>" + pill(r.niveau, niveauClass(r.niveau)) + "</td><td>" + esc(r.proprietaire) + "</td>" +
           (compact ? "" : "<td><strong>" + esc(r.reponse) + "</strong> · " + esc(r.actions) + (r.echeance ? ' <span class="note">(échéance ' + fd(r.echeance) + ")</span>" : "") + "</td><td>" + pill(r.statut) + "</td>") + "</tr>";
       }).join("") + "</tbody></table></div>";
   }
@@ -691,21 +701,21 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
     if (!list.length) return '<p class="empty">Aucune tâche sur cette période.</p>';
     return '<div class="tablewrap"><table><thead><tr><th>Tâche</th><th>Responsable</th><th>Début</th><th>Fin</th><th class="num">Réalisé</th><th>Statut</th></tr></thead><tbody>' +
       list.map(function (t) {
-        return "<tr" + tipAttr(taskTip(t)) + "><td>" + (t.jalon ? '<span class="ms" aria-label="Jalon">◆</span> ' : "") + esc(t.tache) + '<div class="note">' + esc(seqCode(t.sequence)) + "</div></td><td>" + esc(t.responsable) + '</td><td class="mono">' + fds(t.debut) + '</td><td class="mono">' + fds(t.fin) + '</td><td class="num">' + (t.reel == null ? "–" : pct(t.reel)) + "</td><td>" + pill(t.statut) + "</td></tr>";
+        return '<tr id="row-' + esc(t.id) + '"' + tipAttr(taskTip(t)) + "><td>" + (t.jalon ? '<span class="ms" aria-label="Jalon">◆</span> ' : "") + esc(t.tache) + '<div class="note">' + esc(seqCode(t.sequence)) + "</div></td><td>" + esc(t.responsable) + '</td><td class="mono">' + fds(t.debut) + '</td><td class="mono">' + fds(t.fin) + '</td><td class="num">' + (t.reel == null ? "–" : pct(t.reel)) + "</td><td>" + pill(t.statut) + "</td></tr>";
       }).join("") + "</tbody></table></div>";
   }
   function pointsTable(list) {
     if (!list.length) return '<p class="empty">Aucun point.</p>';
     return '<div class="tablewrap"><table><thead><tr><th>ID</th><th>Type</th><th>Description</th><th>Décision</th><th class="num">Délai</th><th class="num">Montant</th><th>Statut</th></tr></thead><tbody>' +
       list.map(function (p) {
-        return '<tr' + tipAttr(pointTip(p)) + '><td class="id">' + esc(p.id) + "</td><td>" + esc(p.type) + "</td><td>" + esc(p.description) + (p.decision ? '<div class="note">' + esc(p.decision) + "</div>" : "") + "</td><td>" + esc(p.niveau) + '</td><td class="num">' + (p.impactDelai ? "+" + p.impactDelai + " j" : "–") + '</td><td class="num">' + (p.montant ? eur(p.montant) : "–") + "</td><td>" + pill(p.statut) + "</td></tr>";
+        return '<tr id="row-' + esc(p.id) + '"' + tipAttr(pointTip(p)) + '><td class="id">' + esc(p.id) + "</td><td>" + esc(p.type) + "</td><td>" + esc(p.description) + (p.decision ? '<div class="note">' + esc(p.decision) + "</div>" : "") + "</td><td>" + esc(p.niveau) + '</td><td class="num">' + (p.impactDelai ? "+" + p.impactDelai + " j" : "–") + '</td><td class="num">' + (p.montant ? eur(p.montant) : "–") + "</td><td>" + pill(p.statut) + "</td></tr>";
       }).join("") + "</tbody></table></div>";
   }
   function actionsTable(list) {
     if (!list.length) return '<p class="empty">Aucune action en cours.</p>';
     return '<div class="tablewrap"><table><thead><tr><th>ID</th><th>Décision ou action</th><th>Instance</th><th>Responsable</th><th>Échéance</th><th>Statut</th></tr></thead><tbody>' +
       list.map(function (d) {
-        return '<tr' + tipAttr(actionTip(d)) + '><td class="id">' + esc(d.id) + "</td><td>" + esc(d.texte) + '<div class="note">' + fd(d.date) + "</div></td><td>" + esc(d.instance) + "</td><td>" + esc(d.responsable) + '</td><td class="mono">' + fd(d.echeance) + "</td><td>" + pill(d.statut) + "</td></tr>";
+        return '<tr id="row-' + esc(d.id) + '"' + tipAttr(actionTip(d)) + '><td class="id">' + esc(d.id) + "</td><td>" + esc(d.texte) + '<div class="note">' + fd(d.date) + "</div></td><td>" + esc(d.instance) + "</td><td>" + esc(d.responsable) + '</td><td class="mono">' + fd(d.echeance) + "</td><td>" + pill(d.statut) + "</td></tr>";
       }).join("") + "</tbody></table></div>";
   }
   function jalonsList(list, n) {
@@ -834,6 +844,36 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
     return '<div class="tablewrap gantt"><svg width="' + W.toFixed(0) + '" height="' + H + '" viewBox="0 0 ' + W.toFixed(0) + " " + H + '" role="img" aria-label="Diagramme de Gantt du projet">' + g + "</svg></div>";
   }
 
+  /* ---------- liens vers les explications des retards ---------- */
+  function goBtn(view, id, seq, label) { return '<button type="button" class="golink" data-goto="' + view + '" data-gid="' + esc(id || "") + '" data-gseq="' + esc(seq || "") + '">' + esc(label) + " →</button>"; }
+  function retardsPanel(m, x) {
+    var sit = x.sit, items = [];
+    m.planning.forEach(function (t) {
+      if (!(t.statut === "En retard" || (t.fin && t.fin < sit && (t.reel || 0) < 1))) return;
+      items.push({ k: t.jalon ? "Jalon" : "Tâche", t: t.tache, d: seqCode(t.sequence) + " · " + t.responsable + " · fin prévue " + fd(t.fin) + " · réalisé " + (t.reel == null ? "–" : pct(t.reel)), c: t.cause, b: goBtn("planning", t.id, t.sequence, "Voir dans le planning") });
+    });
+    x.pointsOuverts.forEach(function (p) {
+      if (p.impactDelai) items.push({ k: p.type, t: p.id + " · " + p.description, d: "Impact sur le délai : +" + p.impactDelai + " j · " + p.statut, c: p.decision, b: goBtn("points", p.id, "", "Voir le point") });
+    });
+    x.actions.forEach(function (d) {
+      if (d.echeance && d.echeance < sit) items.push({ k: "Action en retard", t: d.id + " · " + d.texte.replace(/^(Action|Décision)\s*(\(client\))?\s*:\s*/, ""), d: d.responsable + " · échéance " + fd(d.echeance) + " · " + d.instance, c: "", b: goBtn("points", d.id, "", "Voir l'action") });
+    });
+    x.risquesOuverts.forEach(function (r) {
+      if (r.echeance && r.echeance < sit) items.push({ k: "Risque", t: r.id + " · " + r.description, d: "Réponse attendue le " + fd(r.echeance) + " · " + r.proprietaire, c: r.actions, b: goBtn("risques", r.id, "", "Voir le risque") });
+    });
+    if (!x.client) (m.facturation.jalons || []).forEach(function (j) {
+      if (j.datePrevue && j.datePrevue < sit && !j.datePV && j.statut !== "Facturé" && j.statut !== "Payé") items.push({ k: "PV contractuel", t: j.jalon, d: j.declencheur + " attendu le " + fd(j.datePrevue), c: "", b: goBtn("finances", "", "", "Voir la facturation") });
+    });
+    var ex = m.recits && m.recits.exception, exc = !x.client && ex && ex.cause && x.tolerances.some(function (t) { return t.etat !== "Vert"; });
+    if (!items.length && !exc) return "";
+    return '<section class="panel"><h2>Retards et explications <small>' + items.length + " élément" + (items.length > 1 ? "s" : "") + " · cliquez pour aller à l'endroit qui l'explique</small></h2>" +
+      (exc ? '<div class="retex"><strong>Rapport d\'exception</strong><div>' + esc(ex.cause) + "</div>" + (ex.consequences ? '<div class="note" style="margin-top:4px">' + esc(ex.consequences) + "</div>" : "") + '<button type="button" class="golink" style="margin-top:8px" data-present="interne">Voir les options et la recommandation →</button></div>' : "") +
+      '<ul class="retards">' + items.map(function (i) {
+        return "<li><div>" + pill(i.k, "crit") + " <strong>" + esc(i.t) + '</strong><div class="note">' + esc(i.d) + "</div></div><div>" + i.b + "</div>" +
+          (i.c ? '<div class="rcause"><span class="note">Explication</span><br>' + esc(i.c) + "</div>" : '<div class="rcause none">Pas d\'explication saisie dans le classeur.</div>') + "</li>";
+      }).join("") + "</ul></section>";
+  }
+
   /* ---------- vues ---------- */
   function viewSynthese(m, x) {
     var mt = METEO[x.meteo];
@@ -841,7 +881,7 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
       '<div><div class="state" style="color:var(--' + mt.cls + ')">' + mt.label + "</div><div>" + esc(mt.note) + "</div>" + (x.sequenceEnCours ? '<div class="note" style="margin-top:4px">Séquence en cours : ' + esc(x.sequenceEnCours.nom) + "</div>" : "") + "</div></div>" +
       (m.recits.commentaire ? '<div class="quote" style="margin-top:16px">' + esc(m.recits.commentaire) + '</div><p class="note" style="margin-top:6px">Commentaire du chef de projet (rapport de point).</p>' : "") + "</section>" +
       '<section class="panel"><h2>Tolérances <small>gestion par exception</small></h2>' + gauges(x.tolerances) + '<div class="legend"><span style="--c:var(--fg)">Traits : 80 % (vigilance) et 100 % (exception)</span></div></section></div>' +
-      kpiBlock(m, x) +
+      kpiBlock(m, x) + retardsPanel(m, x) +
       '<div class="grid g2"><section class="panel"><h2>Avancement par séquence</h2><div class="legend" style="margin:-4px 0 6px"><span style="--c:var(--accent)">Réalisé</span><span style="--c:var(--plan)">Prévu</span></div>' + seqRows(m) + "</section>" +
       '<section class="panel"><h2>Prochains jalons</h2>' + jalonsList(x.jalons, 6) + '<h2 style="margin-top:18px">Risques à surveiller <small>' + x.risquesOuverts.length + " ouverts</small></h2>" + riskTable(x.risquesOuverts.slice(0, 3), true) + "</section></div>" +
       (m.outils ? '<section class="panel"><h2><span>Préparation technique <small>boîte à outils du projet</small></span>' + (OUTILS_URL && !m.clientOnly ? '<a class="btnlink" href="' + esc(OUTILS_URL) + '"' + (OUTILS_URL.charAt(0) === "#" ? "" : ' target="_blank" rel="noopener"') + ">Ouvrir la boîte à outils</a>" : "") + "</h2>" + poldatStrip(m.outils) + '<h3 class="psub">Indicateurs des outils</h3>' + outilsKpis(m.outils, x.client) + "</section>" : "");
@@ -1144,6 +1184,7 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
       '<nav class="tabs" aria-label="Vues">' + nav + "</nav></div></header>" + (onOT ? "" : '<main><div class="wrap">' + banner + body + '<p class="note">' + (locked ? "Édition client : les données internes à l'éditeur ne figurent pas dans cette version. " : x.client ? "Vue client : affichage seulement, les données internes restent présentes dans la page. Pour transmettre au client, utilisez l'édition client. " : "") + 'Données issues du classeur « Pilotage PRINCE2 PACS, version éditeur ». Projet fictif présenté à titre d\'exemple.</p></div></main>') +
       (state.deck ? renderDeck() : "") + tourCard();
     if (state.tour != null) setTimeout(tourShow, 60);
+    if (state.goAnchor) { var ga = state.goAnchor; state.goAnchor = ""; setTimeout(function () { var el = ga === "top" ? null : document.getElementById(ga); if (!el) { window.scrollTo(0, 0); return; } el.scrollIntoView({ behavior: "smooth", block: "center" }); el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); }, 60); }
     var tabCur = app.querySelector("nav.tabs a[aria-current]"), tabs = app.querySelector("nav.tabs");
     if (tabCur && tabs && tabs.scrollWidth > tabs.clientWidth) tabs.scrollLeft = Math.max(0, tabCur.offsetLeft - tabs.clientWidth + tabCur.offsetWidth + 16);
     if (state.deck) { fitSlide(); var dk = document.getElementById("deck"); if (dk) dk.focus && dk.setAttribute("tabindex", "-1"); }
@@ -1188,6 +1229,15 @@ if (typeof module !== "undefined") module.exports = { parseWorkbook: parseWorkbo
     }
     if (t.dataset.theme) { var nt = isDark() ? "light" : "dark"; document.documentElement.setAttribute("data-theme", nt); try { localStorage.setItem("pacs-theme", nt); } catch (err) {} render(); try { window.dispatchEvent(new HashChangeEvent("hashchange")); } catch (err) {} return; }
     if (t.dataset.aud) { state.audience = t.dataset.aud; try { localStorage.setItem("audience", state.audience); } catch (err) {} render(); return; }
+    if (t.dataset.goto) {
+      var gv = t.dataset.goto;
+      if (gv === "planning") state.seqFiltre = t.dataset.gseq || "";
+      if (gv === "points") state.filtrePoints = "tous";
+      if (gv === "risques") state.filtreRisques = "tous";
+      state.goAnchor = t.dataset.gid ? "row-" + t.dataset.gid : "top";
+      if ((location.hash || "").replace("#", "") === gv) { state.view = gv; render(); } else location.hash = gv;
+      return;
+    }
     if (t.dataset.seq !== undefined) { state.seqFiltre = t.dataset.seq; render(); return; }
     if (t.dataset.rf) { state.filtreRisques = t.dataset.rf; render(); return; }
     if (t.dataset.pf) { state.filtrePoints = t.dataset.pf; render(); return; }
